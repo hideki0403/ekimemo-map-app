@@ -1,0 +1,45 @@
+import 'package:sqflite/sqflite.dart';
+
+enum DatabaseType {
+  station,
+  line,
+  treeSegments,
+  accessLog,
+}
+
+class DatabaseHandler {
+  final int _version = 1;
+  final Map<String, List<String>> _migration = {
+    '1': [
+      'CREATE TABLE IF NOT EXISTS station (code INTEGER PRIMARY KEY, id TEXT, name TEXT, original_name TEXT, name_kana TEXT, closed INTEGER, lat REAL, lng REAL, prefecture INTEGER, lines TEXT, attr TEXT, next TEXT, voronoi TEXT);',
+      'CREATE TABLE IF NOT EXISTS line (code INTEGER PRIMARY KEY, id TEXT, name TEXT, name_kana TEXT, station_size INTEGER, company_code INTEGER, closed INTEGER, color TEXT, station_list TEXT, polyline_list TEXT);',
+      'CREATE TABLE IF NOT EXISTS tree_segments (name TEXT PRIMARY KEY, root INTEGER, node_list TEXT);',
+      'CREATE TABLE IF NOT EXISTS access_log (id TEXT PRIMARY KEY, first_access TEXT, last_access TEXT, access_count INTEGER);',
+    ],
+  };
+
+  void _migrate(Database db, int previousVersion, int oldVersion) async {
+    for(int i = previousVersion + 1; i <= oldVersion; i++){
+      List<String>? queries = _migration[i.toString()];
+      if(queries == null) continue;
+
+      for (String query in queries) {
+        await db.execute(query);
+      }
+    }
+  }
+
+  Database? _db;
+  Future<Database> get db async {
+    _db ??= await openDatabase('database.db',
+      version: _version,
+      onCreate: (db, version) async {
+        _migrate(db, 0, version);
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        _migrate(db, oldVersion, newVersion);
+      },
+    );
+    return _db!;
+  }
+}
