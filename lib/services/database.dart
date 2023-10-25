@@ -11,10 +11,15 @@ class DatabaseHandler {
   final int _version = 1;
   final Map<String, List<String>> _migration = {
     '1': [
-      'CREATE TABLE IF NOT EXISTS station (code INTEGER PRIMARY KEY, id TEXT, name TEXT, original_name TEXT, name_kana TEXT, closed INTEGER, lat REAL, lng REAL, prefecture INTEGER, lines TEXT, attr TEXT, next TEXT, voronoi TEXT);',
-      'CREATE TABLE IF NOT EXISTS line (code INTEGER PRIMARY KEY, id TEXT, name TEXT, name_kana TEXT, station_size INTEGER, company_code INTEGER, closed INTEGER, color TEXT, station_list TEXT, polyline_list TEXT);',
+      // create table
+      'CREATE TABLE IF NOT EXISTS station (id TEXT PRIMARY KEY, code INTEGER, name TEXT, original_name TEXT, name_kana TEXT, closed INTEGER, lat REAL, lng REAL, prefecture INTEGER, lines TEXT, attr TEXT, next TEXT, voronoi TEXT);',
+      'CREATE TABLE IF NOT EXISTS line (id TEXT PRIMARY KEY, code INTEGER, name TEXT, name_kana TEXT, station_size INTEGER, company_code INTEGER, closed INTEGER, color TEXT, station_list TEXT, unique_station_list TEXT, polyline_list TEXT);',
       'CREATE TABLE IF NOT EXISTS tree_segments (name TEXT PRIMARY KEY, root INTEGER, node_list TEXT);',
       'CREATE TABLE IF NOT EXISTS access_log (id TEXT PRIMARY KEY, first_access TEXT, last_access TEXT, access_count INTEGER);',
+      // create index
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_station ON station (id, code);',
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_line ON line (id, code);',
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_access_log ON access_log (id);',
     ],
   };
 
