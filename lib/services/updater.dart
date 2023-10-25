@@ -125,7 +125,7 @@ class AssetUpdater {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('適用しています...'),
+            Text('適用しています...\n(時間がかかる場合があります)'),
             SizedBox(height: 16),
             LinearProgressIndicator(),
           ],
@@ -145,7 +145,9 @@ class AssetUpdater {
       stationsRepository.clear().then((_) => stationsRepository.bulkInsertModel(stationsData.cast<Station>() as List<Station>)),
       linesRepository.clear().then((_) => linesRepository.bulkInsertModel(linesData.cast<Line>() as List<Line>)),
       treeSegmentsRepository.clear().then((_) => treeSegmentsRepository.bulkInsertModel(treeSegmentsData.cast<TreeSegments>() as List<TreeSegments>)),
-    ]).then((_) {
+    ]).then((_) async {
+      await linesRepository.rebuildUniqueStationList();
+    }).then((_) {
       isCanPop = true;
       popContext(null);
 

@@ -11,6 +11,7 @@ class Line extends AbstractModel {
   late final bool closed;
   late final String? color;
   late final List<Map<String, dynamic>> stationList;
+  late final List<String> uniqueStationList;
   late final Map<String, dynamic>? polylineList;
 
   @override
@@ -25,6 +26,7 @@ class Line extends AbstractModel {
     line.closed = map['closed'] == 1;
     line.color = map['color'];
     line.stationList = jsonDecode(map['station_list']).cast<Map<String, dynamic>>() as List<Map<String, dynamic>>;
+    line.uniqueStationList = jsonDecode(map['unique_station_list']).cast<String>() as List<String>;
     line.polylineList = jsonDecode(map['polyline_list']);
     return line;
   }
@@ -41,6 +43,7 @@ class Line extends AbstractModel {
     line.closed = json['closed'];
     line.color = json['color'];
     line.stationList = json['station_list'].cast<Map<String, dynamic>>() as List<Map<String, dynamic>>;
+    line.uniqueStationList = [];
     line.polylineList = json['polyline_list'];
     return line;
   }
@@ -57,6 +60,7 @@ class Line extends AbstractModel {
       'closed': closed ? 1 : 0,
       'color': color,
       'station_list': jsonEncode(stationList),
+      'unique_station_list': jsonEncode(uniqueStationList),
       'polyline_list': jsonEncode(polylineList),
     };
   }
