@@ -7,7 +7,6 @@ abstract class AbstractRepository<T extends AbstractModel> {
   late final String _tableName;
   late final String _primaryKey;
   late final T _model;
-  final Map<String, T> _cache = {};
 
   AbstractRepository(T model, String tableName, String primaryKey) {
     _tableName = tableName;
@@ -19,22 +18,18 @@ abstract class AbstractRepository<T extends AbstractModel> {
     _database = await DatabaseHandler().db;
   }
 
-  Future<T?> get(dynamic key) async {
+  Future<T?> get(dynamic key, {String? column}) async {
     if (_database == null) await _initialize();
     final stringKey = key.toString();
-
-    if (_cache.containsKey(stringKey)) return _cache[stringKey];
+    final targetColumn = column ?? _primaryKey;
 
     final List<Map<String, dynamic>> maps = await _database!.query(
       _tableName,
-      where: '$_primaryKey = ?',
+      where: '$targetColumn = ?',
       whereArgs: [stringKey],
     );
     if (maps.isEmpty) return null;
-
-    final model = _model.fromMap(maps[0]);
-    _cache[stringKey] = model;
-    return model;
+    return _model.fromMap(maps[0]);
   }
 
   Future<List<T>> getAll() async {
@@ -45,6 +40,16 @@ abstract class AbstractRepository<T extends AbstractModel> {
     });
   }
 
+  Future<Map<K, Map<String, dynamic>>> getAllMap<K>() async {
+    if (_database == null) await _initialize();
+    final List<Map<String, dynamic>> maps = await _database!.query(_tableName);
+    final result = <K, Map<String, dynamic>>{};
+    for (Map<String, dynamic> map in maps) {
+      result[map[_primaryKey]] = map;
+    }
+    return result;
+  }
+
   Future<void> insert(Map<String, dynamic> data) async {
     if (_database == null) await _initialize();
     await _database!.insert(
@@ -52,9 +57,6 @@ abstract class AbstractRepository<T extends AbstractModel> {
       data,
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-
-
-    if (_cache.containsKey(data[_primaryKey])) _cache.remove(data[_primaryKey]);
   }
 
   Future<void> bulkInsert(List<Map<String, dynamic>> data) async {
@@ -77,9 +79,6 @@ abstract class AbstractRepository<T extends AbstractModel> {
       model.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-
-    final key = model.toMap()[_primaryKey];
-    _cache[key] = model;
   }
 
   Future<void> bulkInsertModel(List<T> models) async {
@@ -98,8 +97,6 @@ abstract class AbstractRepository<T extends AbstractModel> {
   Future<void> update(T model) async {
     if (_database == null) await _initialize();
     final mappedModel = model.toMap();
-    final key = mappedModel[_primaryKey];
-    _cache[key] = model;
 
     await _database!.update(
       _tableName,
@@ -121,7 +118,6 @@ abstract class AbstractRepository<T extends AbstractModel> {
   Future<void> clear() async {
     if (_database == null) await _initialize();
     await _database!.delete(_tableName);
-    _cache.clear();
   }
 
   Future<int> count() async {
