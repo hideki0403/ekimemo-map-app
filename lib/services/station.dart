@@ -224,6 +224,27 @@ class StationManager extends ChangeNotifier {
     }
   }
 
+  Future<void> _searchRect(StationNode node, Bounds bounds, List<Station> dist, int? maxResults) async {
+    final station = await node.get();
+    if (maxResults != null && dist.length >= maxResults) return;
+
+    if (bounds.isInsideRect(station.lat, station.lng)) {
+      dist.add(station);
+    }
+
+    final tasks = <Future<void>>[];
+
+    if (node.left != null && ((node.depth % 2 == 0 && bounds.west < station.lng) || (node.depth % 2 == 1 && bounds.south < station.lat))) {
+      tasks.add(_searchRect(node.left!, bounds, dist, maxResults));
+    }
+
+    if (node.right != null && ((node.depth % 2 == 0 && bounds.east > station.lng) || (node.depth % 2 == 1 && bounds.north > station.lat))) {
+      tasks.add(_searchRect(node.right!, bounds, dist, maxResults));
+    }
+
+    await Future.wait(tasks);
+  }
+
   Future<void> updateLocation(double latitude, double longitude, {int maxDistance = 0}) async {
     final maxResults = Config.maxResults;
     if (maxResults <= 0) return;
@@ -285,6 +306,19 @@ class StationManager extends ChangeNotifier {
     }
 
     print('[${DateFormat('HH:mm:ss').format(now)}] updateLocation: ${stopWatch.elapsedMilliseconds}ms');
+  }
+
+  Future<List<Station>> updateRectRegion(double north, double east, double south, double west, {int? maxResults}) async {
+    if (_root == null) throw Exception('Root node is not initialized');
+    final dist = <Station>[];
+    final bounds = Bounds(north: north, east: east, south: south, west: west);
+    final stopWatch = Stopwatch();
+
+    stopWatch.start();
+    await _searchRect(_root!, bounds, dist, maxResults);
+
+    print('updateRectRegion: ${stopWatch.elapsedMilliseconds}ms');
+    return dist;
   }
 
   void _scheduleNotification() {
