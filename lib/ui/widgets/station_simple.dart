@@ -29,7 +29,13 @@ class StationSimple extends StatelessWidget {
           padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12, right: 20),
           child: Row(
             children: [
-              Text('${index + 1}'),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text('${index + 1}'),
+                  getAttrIcon(stationData.station.attr),
+                ],
+              ),
               const SizedBox(width: 20),
               Expanded(
                 child: Column(
@@ -40,15 +46,20 @@ class StationSimple extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        getAttrIcon(stationData.station.attr),
                         const SizedBox(width: 4),
-                        Opacity(opacity: 0.8, child: stationData.isNew ? const Text('未アクセス (新駅)') : _CooldownTimer(stationData: stationData, index: index)),
+                        Opacity(opacity: 0.8, child: Text(stationData.lineName ?? '')),
                       ],
                     ),
                   ],
                 ),
               ),
-              Text(stationData.distance ?? '', textScaleFactor: 1.2),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(stationData.distance ?? '', textScaleFactor: 1.2),
+                  if (!stationData.isNew) Opacity(opacity: 0.8, child: _CooldownTimer(stationData: stationData, index: index)),
+                ],
+              ),
             ],
           ),
         ),
@@ -111,6 +122,6 @@ class _CooldownTimerState extends State<_CooldownTimer> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(_coolDown == 0 ? 'アクセス可能' : beautifySeconds(_coolDown));
+    return _coolDown != 0 ? Text(beautifySeconds(_coolDown)) : const SizedBox();
   }
 }
