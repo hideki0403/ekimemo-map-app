@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:ffi';
+import 'dart:collection';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +9,7 @@ import 'package:ekimemo_map/models/tree_node.dart';
 import 'package:ekimemo_map/models/access_log.dart';
 import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/tree_segments.dart';
+import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'config.dart';
 import 'notification.dart';
@@ -40,6 +41,7 @@ class StationData {
   DateTime? lastAccess;
   int accessCount;
   bool isNew;
+  String? lineName;
   int? index;
 
   StationData(this.station, this.rawDistance, {this.distance, this.firstAccess, this.lastAccess, this.accessCount = 0, this.isNew = true, this.index});
@@ -290,6 +292,28 @@ class StationManager extends ChangeNotifier {
         accessLog.accessCount++;
         AccessLogRepository().update(accessLog);
       }
+
+      // 優先表示される路線名を計算
+      final lineIdCount = <int, int>{};
+      for (final stationData in _searchList) {
+        final lines = stationData.station.lines;
+        for (final line in lines) {
+          lineIdCount[line] = (lineIdCount[line] ?? 0) + 1;
+        }
+      }
+
+      final lineIdCountList = lineIdCount.entries.toList();
+      lineIdCountList.sort((a, b) => b.value.compareTo(a.value));
+      final lineIdRanking = lineIdCountList.map((x) => x.key).toList();
+
+      // 付近駅の最頻出路線を元に、最寄り駅が属する路線を決定
+      final masterLineId = lineIdRanking.firstWhere((x) => _searchList.first.station.lines.contains(x));
+
+      await Future.wait(_searchList.map((x) async {
+        final hasMasterLine = x.station.lines.contains(masterLineId);
+        final lineId = hasMasterLine ? masterLineId : lineIdRanking.firstWhere((line) => x.station.lines.contains(line));
+        x.lineName = (await LineRepository().get(lineId))?.name;
+      }));
     }
 
     // _searchListの中身を更新
