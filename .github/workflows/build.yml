@@ -12,9 +12,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Get commit hash
-        id: commit_hash
-        run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Get commit count
+        id: commit_count
+        run: echo "number=$(git rev-list HEAD --count)" >> $GITHUB_OUTPUT
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -32,7 +32,7 @@ jobs:
         run: flutter pub get
 
       - name: Build
-        run: flutter build apk --release --build-number=${{ steps.commit_hash.outputs.short }}
+        run: flutter build apk --release --build-number=${{ steps.commit_count.outputs.number }}
 
       - name: Get flutter version
         id: flutter_version
@@ -42,5 +42,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: true
-          tag_name: ${{ steps.flutter_version.outputs.version_number }}+${{ steps.commit_hash.outputs.short }}
+          tag_name: ${{ steps.flutter_version.outputs.version_number }}+${{ steps.commit_count.outputs.number }}
           files: build/app/outputs/flutter-apk/app-release.apk
