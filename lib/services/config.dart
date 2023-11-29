@@ -21,7 +21,7 @@ class ConfigProvider extends ChangeNotifier {
   int get maxResults => _config?.getInt('max_results') ?? 12;
   double get updateFrequency => _config?.getDouble('update_frequency') ?? 3;
   int get maxAcceptableAccuracy => _config?.getInt('max_acceptable_accuracy') ?? 0;
-  String get stationDataVersion => _config?.getString('station_data_version') ?? '----';
+  String get stationDataVersion => _config?.getString('station_data_version') ?? '';
 
   void notify() {
     notifyListeners();
