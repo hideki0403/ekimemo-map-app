@@ -12,7 +12,7 @@
         </intent>
     </queries>
     <application
-        android:label="ekimemo_map"
+        android:label="駅メモマップ"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
