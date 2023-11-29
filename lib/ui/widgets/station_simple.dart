@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/config.dart';
-import 'package:ekimemo_map/services/notification.dart';
 import 'package:go_router/go_router.dart';
 
 class StationSimple extends StatelessWidget {
