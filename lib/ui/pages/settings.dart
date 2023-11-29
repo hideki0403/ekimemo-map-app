@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:ekimemo_map/services/updater.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/services/utils.dart';
+import 'package:ekimemo_map/services/database.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
 
@@ -124,6 +125,12 @@ class SettingsView extends StatelessWidget {
                 title: const Text('駅データのバージョンをリセットする'),
                 onTap: () {
                   Config.setString('station_data_version', '');
+                },
+              ),
+              ListTile(
+                title: const Text('データベースを消し飛ばす'),
+                onTap: () {
+                  DatabaseHandler().reset();
                 },
               )
             ]),

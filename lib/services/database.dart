@@ -47,4 +47,9 @@ class DatabaseHandler {
     );
     return _db!;
   }
+
+  Future<void> reset() async {
+    await deleteDatabase('database.db');
+    _db = null;
+  }
 }
