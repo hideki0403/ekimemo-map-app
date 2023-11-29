@@ -20,8 +20,7 @@ class HomeView extends StatelessWidget {
       appBar: AppBar(title: const Text('駅メモマップ'), actions: [
         IconButton(
           onPressed: () {
-            // TODO
-            // context.push('/map');
+            context.push('/map');
           },
           icon: const Icon(Icons.map),
         ),

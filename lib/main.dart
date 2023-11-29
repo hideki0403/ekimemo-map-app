@@ -11,6 +11,7 @@ import 'services/notification.dart';
 
 import 'ui/pages/home.dart';
 import 'ui/pages/settings.dart';
+import 'ui/pages/map.dart';
 import 'ui/pages/station_detail.dart';
 
 void main() async {
@@ -63,6 +64,10 @@ class Root extends StatelessWidget {
             GoRoute(
               path: '/settings',
               builder: (context, state) => const SettingsView(),
+            ),
+            GoRoute(
+              path: '/map',
+              builder: (context, state) => const MapView(),
             ),
             GoRoute(
               path: '/station',
