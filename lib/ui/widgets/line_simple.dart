@@ -21,7 +21,7 @@ class LineSimple extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text(line.name, textScaleFactor: 1.2),
+                child: Text(line.name, textScaler: const TextScaler.linear(1.2)),
               ),
               _AccessProgress(stationList: line.uniqueStationList),
             ],

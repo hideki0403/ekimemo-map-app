@@ -87,7 +87,7 @@ class HomeView extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('駅データがありません', textScaleFactor: 1.2),
+                      const Text('駅データがありません', textScaler: TextScaler.linear(1.2)),
                       const Text('下のボタンから駅データを更新することで、利用できるようになります。'),
                       ElevatedButton(
                         onPressed: () {
