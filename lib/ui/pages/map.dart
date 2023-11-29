@@ -7,10 +7,14 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import 'package:ekimemo_map/models/station.dart';
+import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/services/station.dart';
 
 class MapView extends StatefulWidget {
-  const MapView({Key? key}) : super(key: key);
+  final String? stationId;
+  final String? lineId;
+
+  const MapView({this.stationId, this.lineId, Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _MapViewState();
@@ -68,6 +72,23 @@ class _MapViewState extends State<MapView> {
     controller.setLayerVisibility('voronoi', true);
   }
 
+  void _renderSingleStation() async {
+    final controller = await _mapReadyCompleter.future;
+
+    final station = await StationRepository().get(widget.stationId!);
+    if (station == null) return;
+
+    controller.setGeoJsonSource('voronoi', _buildVoronoi([station]));
+    controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
+      target: LatLng(station.lat, station.lng),
+      zoom: 14.0,
+    )));
+  }
+
+  void _renderSingleLine() async {
+    // TODO: 路線の描画
+  }
+
   @override
   void initState() {
     super.initState();
@@ -96,8 +117,19 @@ class _MapViewState extends State<MapView> {
                   lineColor: '#ff0000',
                   lineWidth: 1.0,
                 ));
+
+                if (widget.stationId != null) {
+                  _renderSingleStation();
+                  return;
+                }
+
+                if (widget.lineId != null) {
+                  _renderSingleLine();
+                  return;
+                }
               },
               onCameraIdle: () async {
+                if (widget.stationId != null || widget.lineId != null) return;
                 _renderVoronoi();
               },
               styleString: 'https://assets.yukineko.dev/map/style/google_maps_style.json',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
@@ -80,10 +81,28 @@ class _StationDetailViewState extends State<StationDetailView> {
                   ),
                 ),
               ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.center,
+                child: ElevatedButton(
+                  onPressed: () {
+                    context.push(Uri(path: '/map', queryParameters: {'station-id': widget.stationId}).toString());
+                  },
+                  child: const Text('マップで見る'),
+                ),
+              ),
               const SectionTitle(title: 'アクセス情報'),
-              Text('アクセス回数: ${accessLog?.accessCount ?? 0}回'),
-              Text('最終アクセス: ${accessLog?.lastAccess ?? '未アクセス'}'),
-              Text('初回アクセス: ${accessLog?.firstAccess ?? '未アクセス'}'),
+              Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('アクセス回数: ${accessLog?.accessCount ?? 0}回'),
+                    Text('最終アクセス: ${accessLog?.lastAccess ?? '未アクセス'}'),
+                    Text('初回アクセス: ${accessLog?.firstAccess ?? '未アクセス'}'),
+                  ],
+                ),
+              ),
               const SectionTitle(title: '路線情報'),
               ListView.builder(
                   padding: EdgeInsets.zero,

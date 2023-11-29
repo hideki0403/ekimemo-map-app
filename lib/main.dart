@@ -66,7 +66,10 @@ class Root extends StatelessWidget {
             ),
             GoRoute(
               path: '/map',
-              builder: (context, state) => const MapView(),
+              builder: (context, state) {
+                final params = state.uri.queryParameters;
+                return MapView(stationId: params['station-id'], lineId: params['line-id']);
+              },
             ),
             GoRoute(
               path: '/station',
