@@ -12,6 +12,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Get commit hash
+        id: commit_hash
+        run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
@@ -28,10 +32,15 @@ jobs:
         run: flutter pub get
 
       - name: Build
-        run: flutter build apk --release
+        run: flutter build apk --release --build-number=${{ steps.commit_hash.outputs.short }}
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+      - name: Get flutter version
+        id: flutter_version
+        uses: its404/get-flutter-version@v1.0.0
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: app-release.apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          prerelease: true
+          tag_name: ${{ steps.flutter_version.outputs.version_number }}+${{ steps.commit_hash.outputs.short }}
+          files: build/app/outputs/flutter-apk/app-release.apk
