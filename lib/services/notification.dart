@@ -10,7 +10,7 @@ class NotificationManager {
 
   final _notification = FlutterLocalNotificationsPlugin();
 
-  Future<void> init() async {
+  Future<void> initialize() async {
     await _notification.initialize(const InitializationSettings(android: AndroidInitializationSettings('ic_launcher')));
   }
 
