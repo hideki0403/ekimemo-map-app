@@ -15,7 +15,7 @@ class AssetUpdater {
   static final _dio = Dio();
   static bool _isChecking = false;
 
-  static void check(BuildContext context, {bool force = false}) {
+  static void check(BuildContext context, {bool force = false, silent = false}) {
     if (_isChecking) return;
     _isChecking = true;
     _dio.get('https://raw.githubusercontent.com/Seo-4d696b75/station_database/main/latest_info.json').then((response) {
@@ -27,6 +27,7 @@ class AssetUpdater {
       if (Config.getString('station_data_version') != latestInfo['version'].toString()) updateAvailable = true;
 
       if (force) return _update(context, latestInfo['url']!, latestInfo['size']!);
+      if (!updateAvailable && silent) return;
 
       showDialog(context: context, builder: (ctx) {
         return updateAvailable ? AlertDialog(

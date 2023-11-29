@@ -8,6 +8,7 @@ import 'services/state.dart';
 import 'services/gps.dart';
 import 'services/station.dart';
 import 'services/notification.dart';
+import 'services/updater.dart';
 
 import 'ui/pages/home.dart';
 import 'ui/pages/settings.dart';
@@ -47,8 +48,9 @@ class Root extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: 起動時に駅情報のアップデートを確認
     NotificationManager().init();
+    AssetUpdater.check(context, silent: true);
+
     return DynamicColorBuilder(
       // TODO: テーマを変えられるように
       builder: (lightColorScheme, darkColorScheme) => MaterialApp.router(
