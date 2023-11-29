@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'services/config.dart';
 import 'services/state.dart';
@@ -85,6 +86,7 @@ ThemeData _buildTheme(Brightness brightness, ColorScheme? colorScheme) {
     useMaterial3: true,
     brightness: brightness,
     colorScheme: colorScheme,
+    fontFamily: GoogleFonts.notoSansJp().fontFamily,
   );
 }
 
