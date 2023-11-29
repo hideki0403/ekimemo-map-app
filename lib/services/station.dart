@@ -146,6 +146,8 @@ class StationNode {
 }
 
 class StationManager extends ChangeNotifier {
+  static final _instance = StationManager._internal();
+
   StationNode? _root;
   bool _locked = false;
   
@@ -156,6 +158,12 @@ class StationManager extends ChangeNotifier {
   DateTime? _lastUpdatedTime;
   StationData? _currentStation;
   Timer? _notificationTimer;
+
+  factory StationManager() {
+    return _instance;
+  }
+
+  StationManager._internal();
 
   Future<void> initialize({String rootName = 'root'}) async {
     if (await TreeSegmentsRepository().count() == 0) return;

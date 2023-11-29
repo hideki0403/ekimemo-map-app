@@ -18,25 +18,22 @@ import 'ui/pages/station_detail.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final stationManager = StationManager();
   final configProvider = ConfigProvider();
   await configProvider.init();
+
+  final stationManager = StationManager();
+  await stationManager.initialize();
+
   Config.init(configProvider);
+  NotificationManager().initialize();
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => StateManager()),
         ChangeNotifierProvider(create: (_) => configProvider),
-        ChangeNotifierProvider(create: (_) {
-          final gpsManager = GpsManager();
-          gpsManager.setStationManager(stationManager);
-          return gpsManager;
-        }),
-        ChangeNotifierProvider(create: (_) {
-          stationManager.initialize();
-          return stationManager;
-        }),
+        ChangeNotifierProvider(create: (_) => stationManager),
+        ChangeNotifierProvider(create: (_) => StateManager()),
+        ChangeNotifierProvider(create: (_) => GpsManager()),
       ],
       child: const Root(),
     ),
@@ -48,7 +45,6 @@ class Root extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    NotificationManager().init();
     AssetUpdater.check(context, silent: true);
 
     return DynamicColorBuilder(
