@@ -11,7 +11,7 @@ class Line extends AbstractModel {
   late final bool closed;
   late final String? color;
   late final List<Map<String, dynamic>> stationList;
-  late final List<String> uniqueStationList;
+  late List<String> uniqueStationList;
   late final Map<String, dynamic>? polylineList;
 
   @override
