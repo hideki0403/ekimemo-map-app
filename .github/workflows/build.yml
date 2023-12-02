@@ -44,7 +44,7 @@ jobs:
         run: |
           mkdir dist
           cp build/app/outputs/flutter-apk/app-release.apk dist/
-          echo '{"version": "${{ steps.flutter_version.outputs.version }}", "build": "${{ steps.commit_count.outputs.number }}", "datetime": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'", "commit": "'$(git rev-parse --short HEAD)'", "size": '$(stat -c%s dist/app-release.apk)'}' > dist/version.json
+          echo '{"version": "${{ steps.flutter_version.outputs.version_number }}", "build": "${{ steps.commit_count.outputs.number }}", "datetime": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'", "commit": "'$(git rev-parse --short HEAD)'", "size": '$(stat -c%s dist/app-release.apk)'}' > dist/version.json
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
