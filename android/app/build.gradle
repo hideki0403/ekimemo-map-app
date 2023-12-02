@@ -22,6 +22,12 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def getCommitHash() {
+    def process = "git rev-parse --short HEAD".execute()
+    process.waitFor()
+    (process.exitValue() == 0) ? process.text.trim() : ""
+}
+
 android {
     namespace "dev.yukineko.ekimemo_map"
     compileSdkVersion flutter.compileSdkVersion
@@ -53,6 +59,7 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        buildConfigField("String", "COMMIT_HASH", "\"" + getCommitHash() + "\"")
     }
 
     buildTypes {
