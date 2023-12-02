@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get commit count
         id: commit_count
@@ -38,9 +40,16 @@ jobs:
         id: flutter_version
         uses: its404/get-flutter-version@v1.0.0
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
+      - name: Prepare deploy
+        run: |
+          mkdir dist
+          cp build/app/outputs/flutter-apk/app-release.apk dist/
+          echo '{"version": "${{ steps.flutter_version.outputs.version }}", "build": "${{ steps.commit_count.outputs.number }}", "datetime": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'", "commit": "'$(git rev-parse HEAD)'"}' > dist/version.json
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          prerelease: true
-          tag_name: ${{ steps.flutter_version.outputs.version_number }}+${{ steps.commit_count.outputs.number }}
-          files: build/app/outputs/flutter-apk/app-release.apk
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
