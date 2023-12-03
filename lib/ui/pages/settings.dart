@@ -1,15 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+
 import 'package:ekimemo_map/services/updater.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/database.dart';
+import 'package:ekimemo_map/services/native.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
 
-class SettingsView extends StatelessWidget {
+class SettingsView extends StatefulWidget {
   const SettingsView({Key? key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends State<SettingsView> {
+  String _version = '';
+  String _commitHash = '';
+
+  Future<void> _fetchAppInfo() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    final commitHash = await NativeMethods().getCommitHash();
+    setState(() {
+      _version = packageInfo.version;
+      _commitHash = commitHash;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAppInfo();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +158,17 @@ class SettingsView extends StatelessWidget {
                 onTap: () {
                   DatabaseHandler().reset();
                 },
-              )
+              ),
+              ListTile(
+                title: const Text('バージョン'),
+                subtitle: Text('v$_version ($_commitHash)'),
+                trailing: ElevatedButton(
+                  onPressed: () {
+                    AppUpdater.check(context);
+                  },
+                  child: const Text('更新を確認'),
+                ),
+              ),
             ]),
           ),
         ],
