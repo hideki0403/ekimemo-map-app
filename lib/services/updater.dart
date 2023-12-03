@@ -196,7 +196,7 @@ class AppUpdater {
     showDialog(context: context, builder: (ctx) {
       return updateAvailable ? AlertDialog(
         title: const Text('アプリ更新'),
-        content: Text('新しいバージョン ($releaseCommitHash) が利用可能です。更新しますか？'),
+        content: Text('新しいバージョン v${info['version']} ($releaseCommitHash) が利用可能です。更新しますか？'),
         actions: [
           TextButton(
             onPressed: () {
