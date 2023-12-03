@@ -21,6 +21,7 @@ class SettingsView extends StatefulWidget {
 
 class _SettingsViewState extends State<SettingsView> {
   String _version = '';
+  String _buildNumber = '';
   String _commitHash = '';
 
   Future<void> _fetchAppInfo() async {
@@ -28,6 +29,7 @@ class _SettingsViewState extends State<SettingsView> {
     final commitHash = await NativeMethods().getCommitHash();
     setState(() {
       _version = packageInfo.version;
+      _buildNumber = packageInfo.buildNumber;
       _commitHash = commitHash;
     });
   }
@@ -167,7 +169,7 @@ class _SettingsViewState extends State<SettingsView> {
               ),
               ListTile(
                 title: const Text('バージョン'),
-                subtitle: Text('v$_version ($_commitHash)'),
+                subtitle: Text('v$_version+$_buildNumber ($_commitHash)'),
                 trailing: ElevatedButton(
                   onPressed: () {
                     AppUpdater.check();
