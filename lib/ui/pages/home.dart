@@ -19,7 +19,7 @@ class HomeView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('駅メモマップ'), actions: [
         IconButton(
-          onPressed: () {
+          onPressed: config.stationDataVersion == '' ? null : () {
             context.push('/map');
           },
           icon: const Icon(Icons.map),
