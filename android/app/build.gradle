@@ -75,7 +75,7 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        buildConfigField('String', 'COMMIT_HASH', '"${getCommitHash()}"')
+        buildConfigField('String', 'COMMIT_HASH', "\"${getCommitHash()}\"")
     }
 
     buildTypes {
