@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -51,9 +52,16 @@ class _SettingsViewState extends State<SettingsView> {
                 title: const Text('探索する駅数'),
                 subtitle: Text('${config.maxResults}駅'),
                 onTap: () async {
-                  final result = await showEditorDialog(title: '探索する駅数', data: config.maxResults.toString(), type: EditorDialogType.integer);
+                  final result = await showEditorDialog(
+                      title: '探索する駅数',
+                      caption: '探索する最大駅数を指定できます。1以上で指定してください。',
+                      data: config.maxResults.toString(),
+                      suffix: '駅',
+                      type: EditorDialogType.integer
+                  );
+
                   if (result != null) {
-                    config.setMaxResults(int.parse(result));
+                    config.setMaxResults(max(1, int.parse(result)));
                   }
                 },
               ),
@@ -65,13 +73,12 @@ class _SettingsViewState extends State<SettingsView> {
                       title: '更新頻度',
                       caption: '最高更新頻度を指定できます。1.0秒以上で指定してください。',
                       data: config.updateFrequency.toString(),
+                      suffix: '秒',
                       type: EditorDialogType.double
                   );
 
                   if (result != null) {
-                    final freq = double.parse(result);
-                    if (freq < 1.0) return;
-                    config.setUpdateFrequency(freq);
+                    config.setUpdateFrequency(max(1.0, double.parse(result)));
                   }
                 },
               ),
@@ -83,11 +90,12 @@ class _SettingsViewState extends State<SettingsView> {
                       title: 'GPSの取得精度制限',
                       caption: 'GPSの精度がここで入力した値を超えた場合に、取得した位置情報を無視します。0mで無効になります。',
                       data: config.maxAcceptableAccuracy.toString(),
+                      suffix: 'm',
                       type: EditorDialogType.integer
                   );
 
                   if (result != null) {
-                    config.setMaxAcceptableAccuracy(int.parse(result));
+                    config.setMaxAcceptableAccuracy(max(0, int.parse(result)));
                   }
                 },
               ),
@@ -116,11 +124,12 @@ class _SettingsViewState extends State<SettingsView> {
                       title: 'リマインドを行う間隔',
                       caption: '秒数を指定してください',
                       data: config.cooldownTime.toString(),
+                      suffix: '秒',
                       type: EditorDialogType.integer
                   );
 
                   if (result != null) {
-                    config.setCooldownTime(int.parse(result));
+                    config.setCooldownTime(max(10, int.parse(result)));
                   }
                 },
               ),

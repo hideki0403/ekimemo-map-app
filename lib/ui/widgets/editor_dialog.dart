@@ -11,9 +11,10 @@ class EditorDialog extends StatefulWidget {
   final String? title;
   final String? data;
   final String? caption;
+  final String? suffix;
   final EditorDialogType? type;
 
-  const EditorDialog({Key? key, required this.data, this.title, this.caption, this.type}) : super(key: key);
+  const EditorDialog({Key? key, required this.data, this.title, this.caption, this.suffix, this.type}) : super(key: key);
 
   @override
   State<EditorDialog> createState() => _EditorDialogState();
@@ -71,6 +72,7 @@ class _EditorDialogState extends State<EditorDialog> {
             focusNode: focusNode,
             keyboardType: keyboardType,
             inputFormatters: inputFormatters,
+            decoration: widget.suffix != null ? InputDecoration(suffixText: widget.suffix) : null
           ),
           if (widget.caption != null) const SizedBox(height: 16),
           if (widget.caption != null) Opacity(opacity: 0.8, child: Text(widget.caption!)),

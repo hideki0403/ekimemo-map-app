@@ -67,11 +67,11 @@ int getCoolDownTimeFromAccessLog(AccessLog log) {
   return coolDown - timeDiff;
 }
 
-Future<String?> showEditorDialog({String? data, String? title, String? caption, EditorDialogType? type}) async {
+Future<String?> showEditorDialog({String? data, String? title, String? caption, String? suffix, EditorDialogType? type}) async {
   return showDialog(
     context: navigatorKey.currentContext!,
     builder: (context) {
-      return EditorDialog(data: data, title: title, caption: caption, type: type);
+      return EditorDialog(data: data, title: title, caption: caption, suffix: suffix, type: type);
     },
   );
 }
