@@ -13,6 +13,8 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AssetUpdater.check(silent: true, first: true);
+
     final stationManager = Provider.of<StationManager>(context);
     final gpsManager = Provider.of<GpsManager>(context);
     final config = Provider.of<ConfigProvider>(context);
@@ -91,7 +93,7 @@ class HomeView extends StatelessWidget {
                       const Text('下のボタンから駅データを更新することで、利用できるようになります。'),
                       ElevatedButton(
                         onPressed: () {
-                          AssetUpdater.check(context, force: true);
+                          AssetUpdater.check(force: true);
                         },
                         child: const Text('駅データを更新'),
                       ),

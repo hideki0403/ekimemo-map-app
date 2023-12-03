@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+
+import 'package:ekimemo_map/main.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/models/station.dart';
@@ -65,9 +67,9 @@ int getCoolDownTimeFromAccessLog(AccessLog log) {
   return coolDown - timeDiff;
 }
 
-Future<String?> showEditorDialog(BuildContext context, {String? data, String? title, String? caption, EditorDialogType? type}) async {
+Future<String?> showEditorDialog({String? data, String? title, String? caption, EditorDialogType? type}) async {
   return showDialog(
-    context: context,
+    context: navigatorKey.currentContext!,
     builder: (context) {
       return EditorDialog(data: data, title: title, caption: caption, type: type);
     },

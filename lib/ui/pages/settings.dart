@@ -51,7 +51,7 @@ class _SettingsViewState extends State<SettingsView> {
                 title: const Text('探索する駅数'),
                 subtitle: Text('${config.maxResults}駅'),
                 onTap: () async {
-                  final result = await showEditorDialog(context, title: '探索する駅数', data: config.maxResults.toString(), type: EditorDialogType.integer);
+                  final result = await showEditorDialog(title: '探索する駅数', data: config.maxResults.toString(), type: EditorDialogType.integer);
                   if (result != null) {
                     config.setMaxResults(int.parse(result));
                   }
@@ -62,7 +62,6 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: Text('${config.updateFrequency}秒'),
                 onTap: () async {
                   final result = await showEditorDialog(
-                      context,
                       title: '更新頻度',
                       caption: '最高更新頻度を指定できます。1.0秒以上で指定してください。',
                       data: config.updateFrequency.toString(),
@@ -81,7 +80,6 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: Text(config.maxAcceptableAccuracy == 0 ? 'なし' : '${config.maxAcceptableAccuracy}m'),
                 onTap: () async {
                   final result = await showEditorDialog(
-                      context,
                       title: 'GPSの取得精度制限',
                       caption: 'GPSの精度がここで入力した値を超えた場合に、取得した位置情報を無視します。0mで無効になります。',
                       data: config.maxAcceptableAccuracy.toString(),
@@ -115,7 +113,6 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: Text(beautifySeconds(config.cooldownTime, jp: true)),
                 onTap: () async {
                   final result = await showEditorDialog(
-                      context,
                       title: 'リマインドを行う間隔',
                       caption: '秒数を指定してください',
                       data: config.cooldownTime.toString(),
@@ -133,7 +130,7 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: Text(config.stationDataVersion != '' ? 'v${config.stationDataVersion}' : '不明'),
                 trailing: ElevatedButton(
                   onPressed: () {
-                    AssetUpdater.check(context);
+                    AssetUpdater.check();
                   },
                   child: const Text('更新を確認'),
                 ),
@@ -164,7 +161,7 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: Text('v$_version ($_commitHash)'),
                 trailing: ElevatedButton(
                   onPressed: () {
-                    AppUpdater.check(context);
+                    AppUpdater.check();
                   },
                   child: const Text('更新を確認'),
                 ),

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:install_plugin/install_plugin.dart';
 
+import 'package:ekimemo_map/main.dart';
 import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/repository/tree_segments.dart';
@@ -17,9 +18,16 @@ import 'package:ekimemo_map/services/config.dart';
 class AssetUpdater {
   static final _dio = Dio();
   static bool _isChecking = false;
+  static bool _isInitialized = false;
 
-  static void check(BuildContext context, {bool force = false, silent = false}) async {
+  static void check({force = false, silent = false, first = false}) async {
     if (_isChecking) return;
+
+    if (first) {
+      if (_isInitialized) return;
+      _isInitialized = true;
+    }
+
     _isChecking = true;
     final response = await _dio.get('https://raw.githubusercontent.com/Seo-4d696b75/station_database/main/latest_info.json');
     _isChecking = false;
@@ -29,11 +37,10 @@ class AssetUpdater {
     final latestInfo = jsonDecode(response.data);
     if (Config.getString('station_data_version') != latestInfo['version'].toString()) updateAvailable = true;
 
-    if (!context.mounted) return;
-    if (force) return _update(context, latestInfo['url']!, latestInfo['size']!);
+    if (force) return _update(latestInfo['url']!, latestInfo['size']!);
     if (!updateAvailable && silent) return;
 
-    showDialog(context: context, builder: (ctx) {
+    showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
       return updateAvailable ? AlertDialog(
         title: const Text('駅データ更新'),
         content: Text('新しい駅データ (${latestInfo['version']}) が利用可能です。更新しますか？'),
@@ -47,7 +54,7 @@ class AssetUpdater {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              _update(context, latestInfo['url']!, latestInfo['size']!);
+              _update(latestInfo['url']!, latestInfo['size']!);
             },
             child: const Text('更新'),
           ),
@@ -67,7 +74,7 @@ class AssetUpdater {
     });
   }
 
-  static void _update(BuildContext context, String assetUrl, int size) {
+  static void _update(String assetUrl, int size) {
     final streamController = StreamController<double>();
     BuildContext? internalContext;
     bool isCanPop = false;
@@ -78,7 +85,7 @@ class AssetUpdater {
       Navigator.pop(internalContext!);
     }
 
-    showDialog(context: context, barrierDismissible: false, builder: (ctx) {
+    showDialog(context: navigatorKey.currentContext!, barrierDismissible: false, builder: (ctx) {
       popContext(ctx);
       return AlertDialog(
         title: const Text('駅データ更新'),
@@ -106,11 +113,11 @@ class AssetUpdater {
       popContext(null);
       if (response.statusCode != 200) throw Exception('Failed to download asset');
 
-      _apply(context, jsonDecode(response.data));
+      _apply(jsonDecode(response.data));
     });
   }
 
-  static void _apply(BuildContext context, Map<String, dynamic> data) {
+  static void _apply(Map<String, dynamic> data) {
     BuildContext? internalContext;
     bool isCanPop = false;
 
@@ -120,7 +127,7 @@ class AssetUpdater {
       Navigator.pop(internalContext!);
     }
 
-    showDialog(context: context, barrierDismissible: false, builder: (ctx) {
+    showDialog(context: navigatorKey.currentContext!, barrierDismissible: false, builder: (ctx) {
       popContext(ctx);
       return const AlertDialog(
         title: Text('駅データ更新'),
@@ -155,7 +162,7 @@ class AssetUpdater {
 
       Config.setString('station_data_version', data['version'].toString());
 
-      showDialog(context: context, builder: (ctx) {
+      showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
         return AlertDialog(
           title: const Text('駅データ更新'),
           content: const Text('駅データを更新しました'),
@@ -177,7 +184,7 @@ class AppUpdater {
   static final _dio = Dio();
   static bool _isChecking = false;
 
-  static void check(BuildContext context, {silent = false}) async {
+  static void check({silent = false}) async {
     if (_isChecking) return;
     _isChecking = true;
     final response = await _dio.get('https://pages.yukineko.me/ekimemo-map-app/version.json');
@@ -189,11 +196,9 @@ class AppUpdater {
     final releaseCommitHash = info['commit'].toString();
     final appCommitHash = await NativeMethods().getCommitHash();
     if (appCommitHash != releaseCommitHash) updateAvailable = true;
-
-    if (!context.mounted) return;
     if (!updateAvailable && silent) return;
 
-    showDialog(context: context, builder: (ctx) {
+    showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
       return updateAvailable ? AlertDialog(
         title: const Text('アプリ更新'),
         content: Text('新しいバージョン v${info['version']} ($releaseCommitHash) が利用可能です。更新しますか？'),
@@ -207,7 +212,7 @@ class AppUpdater {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              _update(context, 'https://pages.yukineko.me/ekimemo-map-app/app-release.apk', info['size']!);
+              _update('https://pages.yukineko.me/ekimemo-map-app/app-release.apk', info['size']!);
             },
             child: const Text('更新'),
           ),
@@ -227,7 +232,7 @@ class AppUpdater {
     });
   }
 
-  static void _update(BuildContext context, String assetUrl, int size) async {
+  static void _update(String assetUrl, int size) async {
     final streamController = StreamController<double>();
     BuildContext? internalContext;
     bool isCanPop = false;
@@ -238,7 +243,7 @@ class AppUpdater {
       Navigator.pop(internalContext!);
     }
 
-    showDialog(context: context, barrierDismissible: false, builder: (ctx) {
+    showDialog(context: navigatorKey.currentContext!, barrierDismissible: false, builder: (ctx) {
       popContext(ctx);
       return AlertDialog(
           title: const Text('アプリ更新'),

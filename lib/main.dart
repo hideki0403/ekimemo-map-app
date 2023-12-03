@@ -9,12 +9,13 @@ import 'services/state.dart';
 import 'services/gps.dart';
 import 'services/station.dart';
 import 'services/notification.dart';
-import 'services/updater.dart';
 
 import 'ui/pages/home.dart';
 import 'ui/pages/settings.dart';
 import 'ui/pages/map.dart';
 import 'ui/pages/station_detail.dart';
+
+final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,14 +47,13 @@ class Root extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AssetUpdater.check(context, silent: true);
-
     return DynamicColorBuilder(
       // TODO: テーマを変えられるように
       builder: (lightColorScheme, darkColorScheme) => MaterialApp.router(
         theme: _buildTheme(Brightness.light, lightColorScheme),
         darkTheme: _buildTheme(Brightness.dark, darkColorScheme),
         routerConfig: GoRouter(
+          navigatorKey: navigatorKey,
           initialLocation: '/',
           routes: [
             GoRoute(
