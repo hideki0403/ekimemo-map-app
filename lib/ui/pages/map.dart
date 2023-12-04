@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:location/location.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import 'package:ekimemo_map/models/station.dart';
@@ -169,12 +170,19 @@ class _MapViewState extends State<MapView> {
                   _renderSingleLine();
                   return;
                 }
+
+                final location = await Location().getLocation();
+                controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
+                  target: LatLng(location.latitude!, location.longitude!),
+                  zoom: 12.0,
+                )));
               },
               onCameraIdle: () async {
                 if (widget.stationId != null || widget.lineId != null) return;
                 _renderVoronoi();
               },
               styleString: 'https://assets.yukineko.dev/map/style/google_maps_style.json',
+              // myLocationEnabled: true,
             )),
             Padding(
               padding: const EdgeInsets.only(top: 8, bottom: 8),
