@@ -32,6 +32,7 @@ class StationSimple extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text('${index + 1}'),
+                  const SizedBox(height: 4),
                   getAttrIcon(stationData.station.attr),
                 ],
               ),
