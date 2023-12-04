@@ -49,11 +49,12 @@ Icon getAttrIcon(StationAttr attr) {
   }
 }
 
-int getCoolDownTime(StationData data) {
-  if (data.isNew || data.lastAccess == null || !Config.enableReminder) return 0;
+int getCoolDownTime(String stationId) {
+  final data = AccessCacheManager.get(stationId);
+  if (data == null || !Config.enableReminder) return 0;
 
   final coolDown = Config.cooldownTime;
-  final timeDiff = DateTime.now().difference(data.lastAccess!).inSeconds;
+  final timeDiff = DateTime.now().difference(data).inSeconds;
   if (timeDiff > coolDown) return 0;
 
   return coolDown - timeDiff;

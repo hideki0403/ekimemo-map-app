@@ -36,17 +36,47 @@ class StationData {
   Station station;
   double rawDistance;
   String? distance;
-  DateTime? firstAccess;
-  DateTime? lastAccess;
-  int accessCount;
-  bool isNew;
   String? lineName;
   int? index;
 
-  StationData(this.station, this.rawDistance, {this.distance, this.firstAccess, this.lastAccess, this.accessCount = 0, this.isNew = true, this.index});
+  StationData(this.station, this.rawDistance, {this.distance, this.index});
 
   factory StationData.create(Station station, double rawDistance) {
     return StationData(station, rawDistance);
+  }
+}
+
+class AccessCacheManager {
+  static final accessCache = <String, DateTime>{};
+
+  static Future<void> initialize() async {
+    if (accessCache.isNotEmpty) return;
+
+    final accessLogs = await AccessLogRepository().getAll();
+    for (final accessLog in accessLogs) {
+      accessCache[accessLog.id] = accessLog.lastAccess;
+    }
+  }
+
+  static Future<void> update(String id, DateTime lastAccess) async {
+    accessCache[id] = lastAccess;
+    final accessLog = await AccessLogRepository().get(id);
+    if (accessLog == null) {
+      final record = AccessLog();
+      record.id = id;
+      record.firstAccess = lastAccess;
+      record.lastAccess = lastAccess;
+      record.accessCount = 1;
+      AccessLogRepository().insertModel(record);
+    } else {
+      accessLog.lastAccess = lastAccess;
+      accessLog.accessCount++;
+      AccessLogRepository().update(accessLog);
+    }
+  }
+
+  static DateTime? get(String id) {
+    return accessCache[id];
   }
 }
 
@@ -167,6 +197,8 @@ class StationManager extends ChangeNotifier {
   StationManager._internal();
 
   Future<void> initialize({String rootName = 'root'}) async {
+    AccessCacheManager.initialize();
+
     if (await TreeSegmentsRepository().count() == 0) return;
 
     final treeSegment = await TreeSegmentsRepository().get(rootName);
@@ -277,20 +309,7 @@ class StationManager extends ChangeNotifier {
     final now = DateTime.now();
     if (isChanged) {
       _lastUpdatedTime = now;
-
-      final accessLog = await AccessLogRepository().get(currentStation.station.id);
-      if (accessLog == null) {
-        final record = AccessLog();
-        record.id = currentStation.station.id;
-        record.firstAccess = now;
-        record.lastAccess = now;
-        record.accessCount = 1;
-        AccessLogRepository().insertModel(record);
-      } else if(getCoolDownTimeFromAccessLog(accessLog) == 0) {
-        accessLog.lastAccess = now;
-        accessLog.accessCount++;
-        AccessLogRepository().update(accessLog);
-      }
+      await AccessCacheManager.update(currentStation.station.id, now);
 
       // 優先表示される路線名を計算
       final lineIdCount = <int, int>{};
@@ -318,19 +337,14 @@ class StationManager extends ChangeNotifier {
     // _searchListの中身を更新
     await Future.wait(_searchList.map((x) async {
       x.distance = beautifyDistance(measure(latitude, longitude, x.station.lat, x.station.lng));
-      final accessLog = await AccessLogRepository().get(x.station.id);
-      if (accessLog == null) return;
-      x.isNew = false;
-      x.accessCount = accessLog.accessCount;
-      x.firstAccess = accessLog.firstAccess;
-      x.lastAccess = accessLog.lastAccess;
     }));
 
     _currentStation = _searchList.first;
     _locked = false;
     notifyListeners();
 
-    final isCoolDown = getCoolDownTime(_currentStation!) > 0 && _currentStation!.lastAccess!.difference(now).inSeconds != 0;
+    final lastAccess = AccessCacheManager.get(_currentStation!.station.id);
+    final isCoolDown = getCoolDownTime(_currentStation!.station.id) > 0 && lastAccess!.difference(now).inSeconds != 0;
     if (isChanged) {
       if (!isCoolDown) NotificationManager().showStationNotification(_currentStation!);
       _scheduleNotification();
@@ -356,7 +370,7 @@ class StationManager extends ChangeNotifier {
     if (_currentStation == null) return;
     _notificationTimer?.cancel();
 
-    final coolDownTime = getCoolDownTime(_currentStation!);
+    final coolDownTime = getCoolDownTime(_currentStation!.station.id);
     if (coolDownTime <= 0) return;
 
     _notificationTimer = Timer(Duration(seconds: coolDownTime), () async {

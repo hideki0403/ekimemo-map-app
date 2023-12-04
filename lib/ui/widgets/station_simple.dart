@@ -50,7 +50,7 @@ class StationSimple extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(stationData.distance ?? '', textScaler: const TextScaler.linear(1.2)),
-                  if (!stationData.isNew) Opacity(opacity: 0.8, child: _CooldownTimer(stationData: stationData, index: index)),
+                  Opacity(opacity: 0.8, child: _CooldownTimer(stationData: stationData, index: index)),
                 ],
               ),
             ],
@@ -98,7 +98,7 @@ class _CooldownTimerState extends State<_CooldownTimer> {
   }
 
   void rebuildTimer() {
-    _coolDown = getCoolDownTime(widget.stationData);
+    _coolDown = getCoolDownTime(widget.stationData.station.id);
     if (_coolDown == 0) return;
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
