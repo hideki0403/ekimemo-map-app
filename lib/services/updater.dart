@@ -14,6 +14,7 @@ import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
 import 'package:ekimemo_map/models/tree_segments.dart';
 import 'package:ekimemo_map/services/config.dart';
+import 'package:ekimemo_map/services/station.dart';
 
 class AssetUpdater {
   static final _dio = Dio();
@@ -117,7 +118,7 @@ class AssetUpdater {
     });
   }
 
-  static void _apply(Map<String, dynamic> data) {
+  static void _apply(Map<String, dynamic> data) async {
     BuildContext? internalContext;
     bool isCanPop = false;
 
@@ -150,32 +151,36 @@ class AssetUpdater {
     final linesData = data['lines']!.map((x) => Line().fromJson(x)).toList();
     final treeSegmentsData = data['tree_segments']!.map((x) => TreeSegments().fromJson(x)).toList();
 
-    Future.wait([
+    await Future.wait([
       stationsRepository.clear().then((_) => stationsRepository.bulkInsertModel(stationsData.cast<Station>() as List<Station>)),
       linesRepository.clear().then((_) => linesRepository.bulkInsertModel(linesData.cast<Line>() as List<Line>)),
       treeSegmentsRepository.clear().then((_) => treeSegmentsRepository.bulkInsertModel(treeSegmentsData.cast<TreeSegments>() as List<TreeSegments>)),
     ]).then((_) async {
       await linesRepository.rebuildUniqueStationList();
-    }).then((_) {
-      isCanPop = true;
-      popContext(null);
+    });
 
-      Config.setString('station_data_version', data['version'].toString());
+    isCanPop = true;
+    popContext(null);
 
-      showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
-        return AlertDialog(
-          title: const Text('駅データ更新'),
-          content: const Text('駅データを更新しました'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      });
+    Config.setString('station_data_version', data['version'].toString());
+
+    // TreeNodeを再構築する
+    StationManager().clear();
+    await StationManager().initialize();
+
+    showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
+      return AlertDialog(
+        title: const Text('駅データ更新'),
+        content: const Text('駅データを更新しました'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      );
     });
   }
 }
