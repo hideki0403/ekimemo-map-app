@@ -188,6 +188,8 @@ class StationManager extends ChangeNotifier {
   final List<StationData> _searchList = [];
   DateTime? _lastUpdatedTime;
   StationData? _currentStation;
+  int? _currentMasterLineId;
+  List<int>? _currentLineIdRanking;
   Timer? _notificationTimer;
 
   factory StationManager() {
@@ -325,17 +327,16 @@ class StationManager extends ChangeNotifier {
       final lineIdRanking = lineIdCountList.map((x) => x.key).toList();
 
       // 付近駅の最頻出路線を元に、最寄り駅が属する路線を決定
-      final masterLineId = lineIdRanking.firstWhere((x) => _searchList.first.station.lines.contains(x));
-
-      await Future.wait(_searchList.map((x) async {
-        final hasMasterLine = x.station.lines.contains(masterLineId);
-        final lineId = hasMasterLine ? masterLineId : lineIdRanking.firstWhere((line) => x.station.lines.contains(line));
-        x.lineName = (await LineRepository().get(lineId))?.name;
-      }));
+      _currentMasterLineId = lineIdRanking.firstWhere((x) => _searchList.first.station.lines.contains(x));
+      _currentLineIdRanking = lineIdRanking;
     }
 
     // _searchListの中身を更新
     await Future.wait(_searchList.map((x) async {
+      final hasMasterLine = x.station.lines.contains(_currentMasterLineId);
+      final lineId = (hasMasterLine ? _currentMasterLineId : _currentLineIdRanking?.firstWhere((line) => x.station.lines.contains(line))) ?? x.station.lines.first;
+
+      x.lineName = (await LineRepository().get(lineId))?.name ?? '不明';
       x.distance = beautifyDistance(measure(latitude, longitude, x.station.lat, x.station.lng));
     }));
 
