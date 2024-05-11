@@ -34,7 +34,7 @@ android {
     namespace 'dev.yukineko.ekimemo_map'
     compileSdkVersion flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
-    compileSdkVersion 33
+    compileSdkVersion 34
 
     compileOptions {
         coreLibraryDesugaringEnabled true
