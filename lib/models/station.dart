@@ -17,7 +17,6 @@ class Station extends AbstractModel  {
   late final StationAttr attr;
   late final String postalCode;
   late final String address;
-  late final List<int> next;
   late final Map<String, dynamic> voronoi;
 
   @override
@@ -34,7 +33,6 @@ class Station extends AbstractModel  {
     station.prefecture = map['prefecture'];
     station.lines = jsonDecode(map['lines']).cast<int>() as List<int>;
     station.attr = StationAttr.values.byName(map['attr']);
-    station.next = jsonDecode(map['next']).cast<int>() as List<int>;
     station.voronoi = jsonDecode(map['voronoi']).cast<String, dynamic>() as Map<String, dynamic>;
     return station;
   }
@@ -53,7 +51,6 @@ class Station extends AbstractModel  {
     station.prefecture = json['prefecture'];
     station.lines = json['lines'].cast<int>() as List<int>;
     station.attr = StationAttr.values.byName(json['attr']);
-    station.next = json['next'].cast<int>() as List<int>;
     station.voronoi = json['voronoi'].cast<String, dynamic>() as Map<String, dynamic>;
     return station;
   }
@@ -72,7 +69,6 @@ class Station extends AbstractModel  {
       'prefecture': prefecture,
       'lines': jsonEncode(lines),
       'attr': attr.name,
-      'next': jsonEncode(next),
       'voronoi': jsonEncode(voronoi),
     };
   }

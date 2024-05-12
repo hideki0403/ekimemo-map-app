@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:msgpack_dart/msgpack_dart.dart';
 import 'package:ekimemo_map/services/native.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,10 +10,10 @@ import 'package:install_plugin/install_plugin.dart';
 import 'package:ekimemo_map/main.dart';
 import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/line.dart';
-import 'package:ekimemo_map/repository/tree_segments.dart';
+import 'package:ekimemo_map/repository/tree_node.dart';
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
-import 'package:ekimemo_map/models/tree_segments.dart';
+import 'package:ekimemo_map/models/tree_node.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/services/station.dart';
 
@@ -30,21 +31,23 @@ class AssetUpdater {
     }
 
     _isChecking = true;
-    final response = await _dio.get('https://raw.githubusercontent.com/Seo-4d696b75/station_database/main/latest_info.json');
+    final response = await _dio.get('https://api.github.com/repos/hideki0403/ekimemo-map-database/releases/latest');
     _isChecking = false;
     var updateAvailable = false;
     if (response.statusCode != 200) throw Exception('Failed to get latest info');
 
-    final latestInfo = jsonDecode(response.data);
-    if (Config.getString('station_data_version') != latestInfo['version'].toString()) updateAvailable = true;
+    final release = response.data;
+    final latestVersion = release['tag_name'].toString();
+    final size = release['assets'].firstWhere((x) => x['name'] == 'station_database.msgpack')?['size'] ?? 0;
+    if (SystemState.getString('station_data_version') != latestVersion) updateAvailable = true;
 
-    if (force) return _update(latestInfo['url']!, latestInfo['size']!);
+    if (force) return _update(size, latestVersion);
     if (!updateAvailable && silent) return;
 
     showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
       return updateAvailable ? AlertDialog(
         title: const Text('駅データ更新'),
-        content: Text('新しい駅データ (${latestInfo['version']}) が利用可能です。更新しますか？'),
+        content: Text('新しい駅データ ($latestVersion) が利用可能です。更新しますか？'),
         actions: [
           TextButton(
             onPressed: () {
@@ -55,7 +58,7 @@ class AssetUpdater {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              _update(latestInfo['url']!, latestInfo['size']!);
+              _update(size, latestVersion);
             },
             child: const Text('更新'),
           ),
@@ -75,7 +78,7 @@ class AssetUpdater {
     });
   }
 
-  static void _update(String assetUrl, int size) {
+  static void _update(int size, String version) {
     final streamController = StreamController<double>();
     BuildContext? internalContext;
     bool isCanPop = false;
@@ -107,18 +110,17 @@ class AssetUpdater {
       );
     });
 
-    _dio.get(assetUrl, onReceiveProgress: (current, _) {
+    _dio.get('https://github.com/hideki0403/ekimemo-map-database/releases/download/$version/station_database.msgpack', onReceiveProgress: (current, _) {
       streamController.add(current / size);
-    }).then((response) {
+    }, options: Options(responseType: ResponseType.bytes)).then((response) {
       isCanPop = true;
       popContext(null);
-      if (response.statusCode != 200) throw Exception('Failed to download asset');
-
-      _apply(jsonDecode(response.data));
+      if (response.statusCode != 200 || response.data == null) throw Exception('Failed to download asset');
+      _apply(deserialize(response.data).cast<String, dynamic>(), version);
     });
   }
 
-  static void _apply(Map<String, dynamic> data) async {
+  static void _apply(Map<String, dynamic> data, String version) async {
     BuildContext? internalContext;
     bool isCanPop = false;
 
@@ -145,24 +147,24 @@ class AssetUpdater {
 
     final stationsRepository = StationRepository();
     final linesRepository = LineRepository();
-    final treeSegmentsRepository = TreeSegmentsRepository();
+    final treeNodesRepository = TreeNodeRepository();
 
-    final stationsData = data['stations']!.map((x) => Station().fromJson(x)).toList();
-    final linesData = data['lines']!.map((x) => Line().fromJson(x)).toList();
-    final treeSegmentsData = data['tree_segments']!.map((x) => TreeSegments().fromJson(x)).toList();
+    final stationsData = data['station']!.map((x) => Station().fromJson(x.cast<String, dynamic>())).toList();
+    final linesData = data['line']!.map((x) => Line().fromJson(x.cast<String, dynamic>())).toList();
+    final treeNodesData = data['tree']['node_list'].map((x) => TreeNode().fromJson(x.cast<String, dynamic>())).toList();
+
+    SystemState.setString('tree_node_root', data['tree']['root'].toString());
 
     await Future.wait([
       stationsRepository.clear().then((_) => stationsRepository.bulkInsertModel(stationsData.cast<Station>() as List<Station>)),
       linesRepository.clear().then((_) => linesRepository.bulkInsertModel(linesData.cast<Line>() as List<Line>)),
-      treeSegmentsRepository.clear().then((_) => treeSegmentsRepository.bulkInsertModel(treeSegmentsData.cast<TreeSegments>() as List<TreeSegments>)),
-    ]).then((_) async {
-      await linesRepository.rebuildUniqueStationList();
-    });
+      treeNodesRepository.clear().then((_) => treeNodesRepository.bulkInsertModel(treeNodesData.cast<TreeNode>() as List<TreeNode>)),
+    ]);
 
     isCanPop = true;
     popContext(null);
 
-    Config.setString('station_data_version', data['version'].toString());
+    SystemState.setString('station_data_version', version);
 
     // TreeNodeを再構築する
     StationManager().clear();

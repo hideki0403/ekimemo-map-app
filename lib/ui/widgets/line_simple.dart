@@ -23,7 +23,7 @@ class LineSimple extends StatelessWidget {
               Expanded(
                 child: Text(line.name, textScaler: const TextScaler.linear(1.2)),
               ),
-              _AccessProgress(stationList: line.uniqueStationList),
+              _AccessProgress(stationList: line.stationList),
             ],
           ),
         ),

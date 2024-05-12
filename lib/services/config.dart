@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:ekimemo_map/models/meta.dart';
+import 'package:ekimemo_map/repository/meta.dart';
+
 class ConfigProvider extends ChangeNotifier {
   static final _instance = ConfigProvider._internal();
   factory ConfigProvider() => _instance;
@@ -21,7 +24,6 @@ class ConfigProvider extends ChangeNotifier {
   int get maxResults => _config?.getInt('max_results') ?? 12;
   double get updateFrequency => _config?.getDouble('update_frequency') ?? 3;
   int get maxAcceptableAccuracy => _config?.getInt('max_acceptable_accuracy') ?? 0;
-  String get stationDataVersion => _config?.getString('station_data_version') ?? '';
 
   void notify() {
     notifyListeners();
@@ -79,5 +81,59 @@ class Config {
   static void setString(String key, String value) {
     _configProvider?.config?.setString(key, value);
     _configProvider?.notify();
+  }
+}
+
+class SystemStateProvider extends ChangeNotifier {
+  static final _instance = SystemStateProvider._internal();
+  factory SystemStateProvider() => _instance;
+  SystemStateProvider._internal();
+
+  final state = <String, String>{};
+  final MetaRepository _repo = MetaRepository();
+
+  String get stationDataVersion => state['station_data_version'] ?? '';
+  String get treeNodeRoot => state['tree_node_root'] ?? '';
+
+  Future<void> init() async {
+    final records = await _repo.getAll();
+    for (final record in records) {
+      state[record.key] = record.value;
+    }
+  }
+
+  void set(String key, String value) {
+    state[key] = value;
+    _repo.setValue(key, value);
+    notifyListeners();
+  }
+
+  void setStationDataVersion(String value) {
+    set('station_data_version', value);
+  }
+
+  void setTreeNodeRoot(String value) {
+    set('tree_node_root', value);
+  }
+}
+
+class SystemState {
+  static SystemStateProvider? _systemStateProvider;
+
+  static void init(SystemStateProvider instance) {
+    _systemStateProvider = instance;
+  }
+
+  static bool get serviceAvailable => _systemStateProvider != null;
+
+  static String get stationDataVersion => _systemStateProvider?.stationDataVersion ?? '';
+  static String get treeNodeRoot => _systemStateProvider?.treeNodeRoot ?? '0';
+
+  static String getString(String key, {String defaultValue = ''}) {
+    return _systemStateProvider?.state[key] ?? defaultValue;
+  }
+
+  static void setString(String key, String value) {
+    _systemStateProvider?.set(key, value);
   }
 }

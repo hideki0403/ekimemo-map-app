@@ -7,7 +7,6 @@ class TreeNode extends AbstractModel {
   late final double lng;
   late final int? left;
   late final int? right;
-  late final String? segment;
 
   @override
   TreeNode fromMap(Map<String, dynamic> map) {
@@ -18,7 +17,6 @@ class TreeNode extends AbstractModel {
     node.lng = map['lng'];
     node.left = map['left'];
     node.right = map['right'];
-    node.segment = map['segment'];
     return node;
   }
 
@@ -31,7 +29,6 @@ class TreeNode extends AbstractModel {
     node.lng = json['lng'];
     node.left = json['left'];
     node.right = json['right'];
-    node.segment = json['segment'];
     return node;
   }
 
@@ -44,7 +41,6 @@ class TreeNode extends AbstractModel {
       'lng': lng,
       'left': left,
       'right': right,
-      'segment': segment,
     };
   }
 }

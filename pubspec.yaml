@@ -43,7 +43,6 @@ dependencies:
   permission_handler: ^11.1.0
   location: ^6.0.2
   flutter_local_notifications: ^17.1.2
-  shared_preferences: ^2.2.2
   intl: ^0.19.0
   url_launcher: ^6.1.14
   latlong2: ^0.9.0
@@ -56,6 +55,8 @@ dependencies:
   install_plugin: ^2.1.0
   package_info_plus: ^8.0.0
   collection: ^1.18.0
+  msgpack_dart: ^1.0.1
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:

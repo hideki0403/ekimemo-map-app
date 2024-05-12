@@ -43,6 +43,7 @@ class _SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
     final config = Provider.of<ConfigProvider>(context);
+    final state = Provider.of<SystemStateProvider>(context);
     return Scaffold(
       appBar: AppBar(title: const Text('設定')),
       body: CustomScrollView(
@@ -138,7 +139,7 @@ class _SettingsViewState extends State<SettingsView> {
               const SectionTitle(title: '駅データ'),
               ListTile(
                 title: const Text('バージョン'),
-                subtitle: Text(config.stationDataVersion != '' ? 'v${config.stationDataVersion}' : '不明'),
+                subtitle: Text(state.stationDataVersion != '' ? state.stationDataVersion : '不明'),
                 trailing: ElevatedButton(
                   onPressed: () {
                     AssetUpdater.check();
@@ -148,25 +149,13 @@ class _SettingsViewState extends State<SettingsView> {
               ),
               ListTile(
                 title: const Text('License'),
-                subtitle: const Text('"station_database" by Seo-4d696b75 is licensed under CC BY-SA 4.0'),
+                subtitle: const Text('"station_database" by Seo-4d696b75, Licensed under CC BY 4.0'),
                 onTap: () async {
                   const url = 'https://github.com/Seo-4d696b75/station_database';
                   if (await canLaunchUrlString(url)) await launchUrlString(url);
                 },
               ),
-              const SectionTitle(title: 'デバッグ'),
-              ListTile(
-                title: const Text('駅データのバージョンをリセットする'),
-                onTap: () {
-                  Config.setString('station_data_version', '');
-                },
-              ),
-              ListTile(
-                title: const Text('データベースを消し飛ばす'),
-                onTap: () {
-                  DatabaseHandler().reset();
-                },
-              ),
+              const SectionTitle(title: 'アプリ'),
               ListTile(
                 title: const Text('バージョン'),
                 subtitle: Text('v$_version+$_buildNumber ($_commitHash)'),
@@ -177,6 +166,23 @@ class _SettingsViewState extends State<SettingsView> {
                   child: const Text('更新を確認'),
                 ),
               ),
+              const SectionTitle(title: 'デバッグ'),
+              ListTile(
+                title: const Text('駅データのバージョンをリセットする'),
+                onTap: () {
+                  state.setStationDataVersion('');
+                },
+              ),
+              ListTile(
+                title: const Text('データベースを消し飛ばす'),
+                onTap: () {
+                  DatabaseHandler().reset();
+                },
+              ),
+              ListTile(
+                title: const Text('Tree node root'),
+                subtitle: Text(state.treeNodeRoot),
+              )
             ]),
           ),
         ],

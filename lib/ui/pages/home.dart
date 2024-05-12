@@ -17,11 +17,11 @@ class HomeView extends StatelessWidget {
 
     final stationManager = Provider.of<StationManager>(context);
     final gpsManager = Provider.of<GpsManager>(context);
-    final config = Provider.of<ConfigProvider>(context);
+    final state = Provider.of<SystemStateProvider>(context);
     return Scaffold(
       appBar: AppBar(title: const Text('駅メモマップ'), actions: [
         IconButton(
-          onPressed: config.stationDataVersion == '' ? null : () {
+          onPressed: state.stationDataVersion == '' ? null : () {
             context.push('/map');
           },
           icon: const Icon(Icons.map),
@@ -56,7 +56,7 @@ class HomeView extends StatelessWidget {
                         const SizedBox(width: 8),
                         Switch(
                           value: gpsManager.isEnabled,
-                          onChanged: config.stationDataVersion == '' ? null : (value) {
+                          onChanged: state.stationDataVersion == '' ? null : (value) {
                             gpsManager.setGpsEnabled(value);
                             if (!value) {
                               stationManager.cleanup();
@@ -71,7 +71,7 @@ class HomeView extends StatelessWidget {
             ]),
           ),
           SliverList(
-            delegate: SliverChildListDelegate.fixed(config.stationDataVersion != '' ? [
+            delegate: SliverChildListDelegate.fixed(state.stationDataVersion != '' ? [
               ListView.builder(
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,

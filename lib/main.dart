@@ -23,16 +23,21 @@ void main() async {
   final configProvider = ConfigProvider();
   await configProvider.init();
 
-  final stationManager = StationManager();
-  await stationManager.initialize();
+  final systemStateProvider = SystemStateProvider();
+  await systemStateProvider.init();
 
   Config.init(configProvider);
+  SystemState.init(systemStateProvider);
   NotificationManager().initialize();
+
+  final stationManager = StationManager();
+  stationManager.initialize();
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => configProvider),
+        ChangeNotifierProvider(create: (_) => systemStateProvider),
         ChangeNotifierProvider(create: (_) => stationManager),
         ChangeNotifierProvider(create: (_) => StateManager()),
         ChangeNotifierProvider(create: (_) => GpsManager()),

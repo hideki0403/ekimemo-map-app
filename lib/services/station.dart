@@ -1,19 +1,23 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 
 import 'package:ekimemo_map/models/station.dart';
-import 'package:ekimemo_map/models/tree_node.dart';
 import 'package:ekimemo_map/models/access_log.dart';
+import 'package:ekimemo_map/models/tree_node.dart';
 import 'package:ekimemo_map/repository/station.dart';
-import 'package:ekimemo_map/repository/tree_segments.dart';
+import 'package:ekimemo_map/repository/tree_node.dart';
 import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'config.dart';
 import 'notification.dart';
 import 'utils.dart';
+
+final _stationRepository = StationRepository();
+final _treeNodeRepository = TreeNodeRepository();
 
 class Bounds {
   final double north;
@@ -49,11 +53,12 @@ class StationData {
 
 class AccessCacheManager {
   static final accessCache = <String, DateTime>{};
+  static final _repository = AccessLogRepository();
 
   static Future<void> initialize() async {
     if (accessCache.isNotEmpty) return;
 
-    final accessLogs = await AccessLogRepository().getAll();
+    final accessLogs = await _repository.getAll();
     for (final accessLog in accessLogs) {
       accessCache[accessLog.id] = accessLog.lastAccess;
     }
@@ -61,18 +66,18 @@ class AccessCacheManager {
 
   static Future<void> update(String id, DateTime lastAccess) async {
     accessCache[id] = lastAccess;
-    final accessLog = await AccessLogRepository().get(id);
+    final accessLog = await _repository.get(id);
     if (accessLog == null) {
       final record = AccessLog();
       record.id = id;
       record.firstAccess = lastAccess;
       record.lastAccess = lastAccess;
       record.accessCount = 1;
-      AccessLogRepository().insertModel(record);
+      _repository.insertModel(record);
     } else {
       accessLog.lastAccess = lastAccess;
       accessLog.accessCount++;
-      AccessLogRepository().update(accessLog);
+      _repository.update(accessLog);
     }
   }
 
@@ -81,12 +86,26 @@ class AccessCacheManager {
   }
 }
 
+class TreeNodeManager {
+  static final _cache = SplayTreeMap<int, TreeNode?>();
+
+  static Future<TreeNode?> get(int id) async {
+    if (_cache.containsKey(id)) return _cache[id];
+    final node = await _treeNodeRepository.get(id);
+    _cache[id] = node;
+    return node;
+  }
+
+  static void clear() {
+    _cache.clear();
+  }
+}
+
 class StationNode {
   final int depth;
   final int code;
   final Bounds region;
 
-  String? segmentName;
   Station? station;
   StationNode? left;
   StationNode? right;
@@ -97,26 +116,20 @@ class StationNode {
     required this.region,
   });
 
-  Future<StationNode> build(TreeNode data, Map<int, TreeNode> dataMap) async {
-    await buildTree(data, dataMap);
+  Future<StationNode> build(TreeNode data) async {
+    await buildTree(data);
     return this;
   }
 
-  Future<void> buildTree(TreeNode data, Map<int, TreeNode> dataMap) async {
-    // LeafNode
-    if (data.segment != null) {
-      segmentName = data.segment;
-      return;
-    }
-
-    station = await StationRepository().get(data.code);
+  Future<void> buildTree(TreeNode data) async {
+    station = await _stationRepository.get(data.code);
     if (station == null) throw Exception('Station not found: ${data.code}');
     if (!region.isInsideRect(station!.lat, station!.lng)) throw Exception('Station ${data.code} is out of region');
 
     final isEven = depth % 2 == 0;
 
     if (data.left != null) {
-      final leftNode = dataMap[data.left];
+      final leftNode = await TreeNodeManager.get(data.left!);
       if (leftNode == null) throw Exception('Node ${data.left} not found');
 
       final leftNodeRegion = Bounds(
@@ -126,11 +139,11 @@ class StationNode {
         west: region.west,
       );
 
-      left = await StationNode(depth: depth + 1, code: leftNode.code, region: leftNodeRegion).build(leftNode, dataMap);
+      left = await StationNode(depth: depth + 1, code: leftNode.code, region: leftNodeRegion).build(leftNode);
     }
 
     if (data.right != null) {
-      final rightNode = dataMap[data.right];
+      final rightNode = await TreeNodeManager.get(data.right!);
       if (rightNode == null) throw Exception('Node ${data.right} not found');
 
       final rightNodeRegion = Bounds(
@@ -140,7 +153,7 @@ class StationNode {
         west: isEven ? station!.lng : region.west,
       );
 
-      right = await StationNode(depth: depth + 1, code: rightNode.code, region: rightNodeRegion).build(rightNode, dataMap);
+      right = await StationNode(depth: depth + 1, code: rightNode.code, region: rightNodeRegion).build(rightNode);
     }
   }
 
@@ -154,23 +167,11 @@ class StationNode {
 
   Future<Station> get() async {
     if (station != null) return station!;
-    if (segmentName == null) throw Exception('Segment name not found');
 
-    final treeSegment = await TreeSegmentsRepository().get(segmentName!);
-    if (treeSegment == null) throw Exception('Tree segment ${segmentName!} not found');
+    final rootNode = await TreeNodeManager.get(code);
+    if (rootNode == null) throw Exception('Node $code not found');
 
-    if (treeSegment.root != code) throw Exception('Root node is not matched');
-
-    final dataMap = <int, TreeNode>{};
-    for (final rawNode in treeSegment.nodeList) {
-      final node = TreeNode().fromMap(rawNode);
-      dataMap[node.code] = node;
-    }
-
-    final rootNode = dataMap[treeSegment.root];
-    if (rootNode == null) throw Exception('Root node ${treeSegment.root} not found');
-
-    await buildTree(rootNode, dataMap);
+    await buildTree(rootNode);
 
     if (station == null) throw Exception('Station not found');
     return station!;
@@ -199,25 +200,23 @@ class StationManager extends ChangeNotifier {
 
   StationManager._internal();
 
-  Future<void> initialize({String rootName = 'root'}) async {
+  Future<void> initialize() async {
+    TreeNodeManager.clear();
     AccessCacheManager.initialize();
 
-    if (await TreeSegmentsRepository().count() == 0) return;
+    if (await _treeNodeRepository.count() == 0) return;
 
-    final treeSegment = await TreeSegmentsRepository().get(rootName);
-    if (treeSegment == null) throw Exception('Tree segment $rootName not found');
-
-    final dataMap = <int, TreeNode>{};
-    for (final rawNode in treeSegment.nodeList) {
-      final node = TreeNode().fromMap(rawNode);
-      dataMap[node.code] = node;
+    final rootNodeId = int.parse(SystemState.treeNodeRoot);
+    final rootNode = await TreeNodeManager.get(rootNodeId);
+    if (rootNode == null) {
+      print('Root node not found: $rootNodeId, service: ${SystemState.serviceAvailable}');
+      return;
     }
 
-    final rootNode = dataMap[treeSegment.root];
-    if (rootNode == null) throw Exception('Root node ${treeSegment.root} not found');
-
-    _root = await StationNode(depth: 0, code: rootNode.code, region: Bounds(north: 90, east: 180, south: -90, west: -180)).build(rootNode, dataMap);
+    // TODO: 起動時に全てのノードを構築しようとするのを修正したい
+    _root = await StationNode(depth: 0, code: rootNode.code, region: Bounds(north: 90, east: 180, south: -90, west: -180)).build(rootNode);
     _serviceAvailable = true;
+    print('StationManager initialized');
   }
 
   void clear() {
