@@ -102,59 +102,27 @@ class TreeNodeManager {
 }
 
 class StationNode {
-  final int depth;
-  final int code;
-  final Bounds region;
+  late final int depth;
+  late final Bounds region;
+  late final int code;
+  late final int? leftCode;
+  late final int? rightCode;
 
   Station? station;
   StationNode? left;
   StationNode? right;
 
-  StationNode({
-    required this.depth,
-    required this.code,
-    required this.region,
-  });
-
-  Future<StationNode> build(TreeNode data) async {
-    await buildTree(data);
-    return this;
+  StationNode({required this.depth, required TreeNode node, required this.region}) {
+    code = node.code;
+    leftCode = node.left;
+    rightCode = node.right;
   }
 
-  Future<void> buildTree(TreeNode data) async {
-    station = await _stationRepository.get(data.code);
-    if (station == null) throw Exception('Station not found: ${data.code}');
-    if (!region.isInsideRect(station!.lat, station!.lng)) throw Exception('Station ${data.code} is out of region');
-
-    final isEven = depth % 2 == 0;
-
-    if (data.left != null) {
-      final leftNode = await TreeNodeManager.get(data.left!);
-      if (leftNode == null) throw Exception('Node ${data.left} not found');
-
-      final leftNodeRegion = Bounds(
-        north: isEven ? region.north : station!.lat,
-        south: region.south,
-        east: isEven ? station!.lng : region.east,
-        west: region.west,
-      );
-
-      left = await StationNode(depth: depth + 1, code: leftNode.code, region: leftNodeRegion).build(leftNode);
-    }
-
-    if (data.right != null) {
-      final rightNode = await TreeNodeManager.get(data.right!);
-      if (rightNode == null) throw Exception('Node ${data.right} not found');
-
-      final rightNodeRegion = Bounds(
-        north: region.north,
-        south: isEven ? region.south : station!.lat,
-        east: region.east,
-        west: isEven ? station!.lng : region.west,
-      );
-
-      right = await StationNode(depth: depth + 1, code: rightNode.code, region: rightNodeRegion).build(rightNode);
-    }
+  Future<StationNode> build() async {
+    station = await _stationRepository.get(code);
+    if (station == null) throw Exception('Station not found: $code');
+    if (!region.isInsideRect(station!.lat, station!.lng)) throw Exception('Station $code is out of region');
+    return this;
   }
 
   void clear() {
@@ -165,16 +133,44 @@ class StationNode {
     right = null;
   }
 
-  Future<Station> get() async {
-    if (station != null) return station!;
+  Future<StationNode?> getLeft() async {
+    final isEven = depth % 2 == 0;
 
-    final rootNode = await TreeNodeManager.get(code);
-    if (rootNode == null) throw Exception('Node $code not found');
+    if (leftCode != null && left == null) {
+      final leftNode = await TreeNodeManager.get(leftCode!);
+      if (leftNode == null) throw Exception('Node $leftCode not found');
 
-    await buildTree(rootNode);
+      final leftNodeRegion = Bounds(
+        north: isEven ? region.north : station!.lat,
+        south: region.south,
+        east: isEven ? station!.lng : region.east,
+        west: region.west,
+      );
 
-    if (station == null) throw Exception('Station not found');
-    return station!;
+      left = await StationNode(depth: depth + 1, node: leftNode, region: leftNodeRegion).build();
+    }
+
+    return left;
+  }
+
+  Future<StationNode?> getRight() async {
+    final isEven = depth % 2 == 0;
+
+    if (rightCode != null && right == null) {
+      final rightNode = await TreeNodeManager.get(rightCode!);
+      if (rightNode == null) throw Exception('Node $rightCode not found');
+
+      final rightNodeRegion = Bounds(
+        north: region.north,
+        south: isEven ? region.south : station!.lat,
+        east: region.east,
+        west: isEven ? station!.lng : region.west,
+      );
+
+      right = await StationNode(depth: depth + 1, node: rightNode, region: rightNodeRegion).build();
+    }
+
+    return right;
   }
 }
 
@@ -213,8 +209,7 @@ class StationManager extends ChangeNotifier {
       return;
     }
 
-    // TODO: 起動時に全てのノードを構築しようとするのを修正したい
-    _root = await StationNode(depth: 0, code: rootNode.code, region: Bounds(north: 90, east: 180, south: -90, west: -180)).build(rootNode);
+    _root = await StationNode(depth: 0, node: rootNode, region: Bounds(north: 90, east: 180, south: -90, west: -180)).build();
     _serviceAvailable = true;
     print('StationManager initialized');
   }
@@ -232,7 +227,7 @@ class StationManager extends ChangeNotifier {
     var value = 0.0;
     var threshold = 0.0;
 
-    final s = await node.get();
+    final s = node.station!;
     final d = sqrt(pow(s.lat - latitude, 2) + pow(s.lng - longitude, 2));
 
     var index = -1;
@@ -257,10 +252,10 @@ class StationManager extends ChangeNotifier {
     value = isEven ? longitude : latitude;
     threshold = isEven ? s.lng : s.lat;
 
-    final next = value < threshold ? node.left : node.right;
+    final next = value < threshold ? await node.getLeft() : await node.getRight();
     if (next != null) await _search(next, latitude, longitude, maxResults, maxDistance: maxDistance);
 
-    final opposite = value < threshold ? node.right : node.left;
+    final opposite = value < threshold ? await node.getRight() : await node.getLeft();
 
     if (opposite != null && (value - threshold).abs() < max(_searchList.last.rawDistance, maxDistance)) {
       await _search(opposite, latitude, longitude, maxResults, maxDistance: maxDistance);
@@ -268,7 +263,7 @@ class StationManager extends ChangeNotifier {
   }
 
   Future<void> _searchRect(StationNode node, Bounds bounds, List<Station> dist, int? maxResults) async {
-    final station = await node.get();
+    final station = node.station!;
     if (maxResults != null && dist.length >= maxResults) return;
 
     if (bounds.isInsideRect(station.lat, station.lng)) {
@@ -277,12 +272,12 @@ class StationManager extends ChangeNotifier {
 
     final tasks = <Future<void>>[];
 
-    if (node.left != null && ((node.depth % 2 == 0 && bounds.west < station.lng) || (node.depth % 2 == 1 && bounds.south < station.lat))) {
-      tasks.add(_searchRect(node.left!, bounds, dist, maxResults));
+    if (node.leftCode != null && ((node.depth % 2 == 0 && bounds.west < station.lng) || (node.depth % 2 == 1 && bounds.south < station.lat))) {
+      tasks.add(_searchRect((await node.getLeft())!, bounds, dist, maxResults));
     }
 
-    if (node.right != null && ((node.depth % 2 == 0 && bounds.east > station.lng) || (node.depth % 2 == 1 && bounds.north > station.lat))) {
-      tasks.add(_searchRect(node.right!, bounds, dist, maxResults));
+    if (node.rightCode != null && ((node.depth % 2 == 0 && bounds.east > station.lng) || (node.depth % 2 == 1 && bounds.north > station.lat))) {
+      tasks.add(_searchRect((await node.getRight())!, bounds, dist, maxResults));
     }
 
     await Future.wait(tasks);

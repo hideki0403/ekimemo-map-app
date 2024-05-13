@@ -31,7 +31,7 @@ void main() async {
   NotificationManager().initialize();
 
   final stationManager = StationManager();
-  stationManager.initialize();
+  await stationManager.initialize();
 
   runApp(
     MultiProvider(
