@@ -42,8 +42,6 @@ class GpsManager extends ChangeNotifier {
     if (!_stationManager.serviceAvailable) return;
     if (Config.maxAcceptableAccuracy != 0 && Config.maxAcceptableAccuracy < location.accuracy!) return;
 
-    print('scheduled update location: lat=${location.latitude}, lng=${location.longitude}');
-
     final updateFrequency = (Config.updateFrequency * 1000).toInt();
     final lastUpdateElapsed = _lastUpdate == null ? updateFrequency : DateTime.now().difference(_lastUpdate!).inMilliseconds;
     if (updateFrequency <= lastUpdateElapsed) {
@@ -58,6 +56,5 @@ class GpsManager extends ChangeNotifier {
     _isScheduledUpdate = false;
     _lastUpdate = DateTime.now();
     _stationManager.updateLocation(_lastLocation!.latitude!, _lastLocation!.longitude!);
-    print('send update location');
   }
 }
