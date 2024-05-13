@@ -26,6 +26,7 @@ class GpsManager extends ChangeNotifier {
         _locationListener?.cancel();
         return;
       }
+      _location.changeNotificationOptions(title: '駅メモマップ', subtitle: '最寄り駅を探索中', channelName: '最寄り駅探索サービス');
       _location.enableBackgroundMode(enable: true);
       _locationListener = _location.onLocationChanged.listen((event) => _updateHandler(event));
     } else {
