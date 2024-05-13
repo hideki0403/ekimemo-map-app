@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
@@ -99,8 +100,8 @@ class _StationDetailViewState extends State<StationDetailView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('アクセス回数: ${accessLog?.accessCount ?? 0}回'),
-                    Text('最終アクセス: ${accessLog?.lastAccess ?? '未アクセス'}'),
-                    Text('初回アクセス: ${accessLog?.firstAccess ?? '未アクセス'}'),
+                    Text('最終アクセス: ${accessLog?.lastAccess != null ? DateFormat('yyyy/MM/dd HH:mm:ss').format(accessLog!.lastAccess) : '未アクセス'}'),
+                    Text('初回アクセス: ${accessLog?.firstAccess != null ? DateFormat('yyyy/MM/dd HH:mm:ss').format(accessLog!.firstAccess) : '未アクセス'}'),
                   ],
                 ),
               ),
