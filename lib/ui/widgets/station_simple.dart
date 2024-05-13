@@ -19,7 +19,7 @@ class StationSimple extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         onTap: () {
-          context.push(Uri(path: '/station', queryParameters: {'id': stationData.station.code.toString()}).toString());
+          context.push(Uri(path: '/station', queryParameters: {'id': stationData.station.id}).toString());
         },
         onLongPress: () {
           // TODO: アクセス済みの駅にできるなどの機能を追加
@@ -67,7 +67,7 @@ class _CooldownTimer extends StatefulWidget {
   final StationData stationData;
   final int index;
 
-  const _CooldownTimer({Key? key, required this.stationData, required this.index}) : super(key: key);
+  const _CooldownTimer({super.key, required this.stationData, required this.index});
 
   @override
   _CooldownTimerState createState() => _CooldownTimerState();

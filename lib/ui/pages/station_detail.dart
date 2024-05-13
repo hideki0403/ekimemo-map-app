@@ -15,13 +15,14 @@ import 'package:ekimemo_map/ui/widgets/section_title.dart';
 // TODO
 class StationDetailView extends StatefulWidget {
   final String? stationId;
-  const StationDetailView({this.stationId, Key? key}) : super(key: key);
+  const StationDetailView({this.stationId, super.key});
 
   @override
   _StationDetailViewState createState() => _StationDetailViewState();
 }
 
 class _StationDetailViewState extends State<StationDetailView> {
+  final LineRepository _lineRepository = LineRepository();
   Station? station;
   List<Line> lines = [];
   AccessLog? accessLog;
@@ -31,7 +32,7 @@ class _StationDetailViewState extends State<StationDetailView> {
     super.initState();
     if (widget.stationId == null) return;
 
-    StationRepository().get(widget.stationId!).then((x) {
+    StationRepository().get(widget.stationId!, column: 'id').then((x) {
       if (x == null) return;
       setState(() {
         station = x;
@@ -39,7 +40,7 @@ class _StationDetailViewState extends State<StationDetailView> {
 
       List<Line> tmp = [];
       station?.lines.forEach((lineCode) async {
-        await LineRepository().get(lineCode).then((x) {
+        await _lineRepository.get(lineCode).then((x) {
           if (x == null) return;
           tmp.add(x);
         }).then((_) => {

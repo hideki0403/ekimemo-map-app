@@ -4,7 +4,7 @@ import 'package:ekimemo_map/models/line.dart';
 
 class LineSimple extends StatelessWidget {
   final Line line;
-  const LineSimple({required this.line, Key? key}) : super(key: key);
+  const LineSimple({required this.line, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +41,7 @@ class _AccessProgress extends StatefulWidget {
 }
 
 class _AccessProgressState extends State<_AccessProgress> {
+  final AccessLogRepository _accessLogRepository = AccessLogRepository();
   List<String> accessedStation = [];
   bool isComplete = false;
 
@@ -59,7 +60,7 @@ class _AccessProgressState extends State<_AccessProgress> {
   Future<void> rebuild() async {
     final stations = <String>[];
     await Future.wait(widget.stationList.map((stationId) async {
-      final x = await AccessLogRepository().get(stationId);
+      final x = await _accessLogRepository.get(stationId);
       if (x == null) return;
       stations.add(x.id);
     }));
