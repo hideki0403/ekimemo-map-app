@@ -76,3 +76,29 @@ Future<String?> showEditorDialog({String? data, String? title, String? caption, 
     },
   );
 }
+
+Future<bool?> showConfirmDialog({String? title, String? caption}) async {
+  return showDialog(
+    context: navigatorKey.currentContext!,
+    builder: (context) {
+      return AlertDialog(
+        title: title != null ? Text(title) : null,
+        content: caption != null ? Text(caption) : null,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
+}

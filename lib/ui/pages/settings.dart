@@ -175,8 +175,15 @@ class _SettingsViewState extends State<SettingsView> {
               ),
               ListTile(
                 title: const Text('データベースを消し飛ばす'),
-                onTap: () {
-                  DatabaseHandler().reset();
+                onTap: () async {
+                  final result = await showConfirmDialog(
+                      title: 'データベースのリセット',
+                      caption: '本当にデータベースを吹き飛ばしますか？'
+                  );
+
+                  if (result == true) {
+                    DatabaseHandler().reset();
+                  }
                 },
               ),
               ListTile(
