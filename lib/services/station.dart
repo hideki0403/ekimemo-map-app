@@ -17,6 +17,7 @@ import 'notification.dart';
 import 'utils.dart';
 
 final _stationRepository = StationRepository();
+final _lineRepository = LineRepository();
 final _treeNodeRepository = TreeNodeRepository();
 
 class Bounds {
@@ -64,7 +65,7 @@ class AccessCacheManager {
     }
   }
 
-  static Future<void> update(String id, DateTime lastAccess) async {
+  static Future<void> update(String id, DateTime lastAccess, { updateOnly = false }) async {
     accessCache[id] = lastAccess;
     final accessLog = await _repository.get(id);
     if (accessLog == null) {
@@ -76,7 +77,7 @@ class AccessCacheManager {
       _repository.insertModel(record);
     } else {
       accessLog.lastAccess = lastAccess;
-      accessLog.accessCount++;
+      if (!updateOnly) accessLog.accessCount++;
       _repository.update(accessLog);
     }
   }
@@ -331,7 +332,7 @@ class StationManager extends ChangeNotifier {
       final hasMasterLine = x.station.lines.contains(_currentMasterLineId);
       final lineId = (hasMasterLine ? _currentMasterLineId : _currentLineIdRanking?.firstWhereOrNull((line) => x.station.lines.contains(line))) ?? x.station.lines.first;
 
-      x.lineName = (await LineRepository().get(lineId))?.name ?? '不明';
+      x.lineName = (await _lineRepository.get(lineId))?.name ?? '不明';
       x.distance = beautifyDistance(measure(latitude, longitude, x.station.lat, x.station.lng));
     }));
 
@@ -372,10 +373,10 @@ class StationManager extends ChangeNotifier {
     _notificationTimer = Timer(Duration(seconds: coolDownTime), () async {
       NotificationManager().showStationNotification(_currentStation!, reNotify: true);
 
-      final accessLog = await AccessLogRepository().get(_currentStation?.station.id);
-      if (accessLog != null) {
-        accessLog.lastAccess = DateTime.now();
-        AccessLogRepository().update(accessLog);
+      final stationId = _currentStation?.station.id;
+      final accessLog = stationId != null ? AccessCacheManager.get(stationId) : null;
+      if (accessLog != null && stationId != null) {
+        AccessCacheManager.update(stationId, DateTime.now(), updateOnly: true);
       }
 
       _scheduleNotification();
