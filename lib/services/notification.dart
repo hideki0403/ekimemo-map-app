@@ -5,6 +5,26 @@ import 'station.dart';
 import 'config.dart';
 import 'utils.dart';
 
+enum NotificationSound {
+  se1('notification_1', '通知音1'),
+  se2('notification_2', '通知音2'),;
+
+  const NotificationSound(this.id, this.displayName);
+  final String id;
+  final String displayName;
+
+  @override
+  String toString() => id;
+}
+
+enum VibrationPattern {
+  pattern1('パターン1', [0, 100, 200, 100, 100, 300, 150, 100, 200, 100, 100, 300]);
+
+  const VibrationPattern(this.displayName, this.pattern);
+  final List<int> pattern;
+  final String displayName;
+}
+
 class NotificationManager {
   static final _instance = NotificationManager._internal();
   factory NotificationManager() => _instance;
@@ -27,9 +47,10 @@ class NotificationManager {
     );
     const platform = NotificationDetails(android: android);
     await _notification.show(0, title, body, platform);
-    
-    _audioPlayer.play(AssetSource('sound/notification_1.mp3')); // TODO: 通知音を変更できるように
-    Vibration.vibrate(pattern: [0, 100, 200, 100, 100, 300, 150, 100, 200, 100, 100, 300]); // TODO: パターンを変更できるように
+
+    _audioPlayer.setVolume(Config.notificationSoundVolume / 100);
+    _audioPlayer.play(AssetSource('sound/${Config.notificationSound.toString()}.mp3'));
+    if (Config.enableVibration) Vibration.vibrate(pattern: Config.vibrationPattern.pattern);
   }
 
   Future<void> showStationNotification(StationData data, {bool reNotify = false}) async {

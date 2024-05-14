@@ -7,6 +7,7 @@ import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/access_log.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
+import 'package:ekimemo_map/ui/widgets/select_dialog.dart';
 
 int measure(double plat1, double plng1, double plat2, double plng2) {
   final lng1 = pi * plng1 / 180;
@@ -73,6 +74,15 @@ Future<String?> showEditorDialog({String? data, String? title, String? caption, 
     context: navigatorKey.currentContext!,
     builder: (context) {
       return EditorDialog(data: data, title: title, caption: caption, suffix: suffix, type: type);
+    },
+  );
+}
+
+Future<String?> showSelectDialog({String? title, required Map<String, String> data, String? defaultValue, String? caption}) async {
+  return showDialog(
+    context: navigatorKey.currentContext!,
+    builder: (context) {
+      return SelectDialog(data: data, defaultValue: defaultValue, title: title, caption: caption);
     },
   );
 }

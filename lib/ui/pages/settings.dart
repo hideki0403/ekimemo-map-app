@@ -9,6 +9,7 @@ import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/database.dart';
 import 'package:ekimemo_map/services/native.dart';
+import 'package:ekimemo_map/services/notification.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
 
@@ -133,6 +134,60 @@ class _SettingsViewState extends State<SettingsView> {
 
                   if (result != null) {
                     config.setCooldownTime(max(10, int.parse(result)));
+                  }
+                },
+              ),
+              ListTile(
+                title: const Text('通知音'),
+                subtitle: Text(config.notificationSound.displayName),
+                onTap: () async {
+                  final result = await showSelectDialog(
+                      title: '通知音',
+                      data: Map.fromEntries(NotificationSound.values.map((e) => MapEntry(e.name, e.displayName))),
+                      defaultValue: config.notificationSound.name,
+                  );
+
+                  if (result != null) {
+                    config.setNotificationSound(NotificationSound.values.byName(result));
+                  }
+                },
+              ),
+              ListTile(
+                title: const Text('通知音量'),
+                subtitle: Text('${config.notificationSoundVolume}%'),
+                onTap: () async {
+                  final result = await showEditorDialog(
+                      title: '通知音量',
+                      data: config.notificationSoundVolume.toString(),
+                      suffix: '%',
+                      type: EditorDialogType.integer
+                  );
+
+                  if (result != null) {
+                    config.setNotificationSoundVolume(max(0, min(100, int.parse(result))));
+                  }
+                },
+              ),
+              SwitchListTile(
+                title: const Text('バイブレーション'),
+                subtitle: const Text('通知時にバイブレーションでお知らせします。'),
+                value: config.enableVibration,
+                onChanged: (value) {
+                  config.setEnableVibration(value);
+                },
+              ),
+              ListTile(
+                title: const Text('バイブレーションパターン'),
+                subtitle: Text(config.vibrationPattern.displayName),
+                onTap: () async {
+                  final result = await showSelectDialog(
+                      title: 'バイブレーションパターン',
+                      data: Map.fromEntries(VibrationPattern.values.map((e) => MapEntry(e.name, e.displayName))),
+                      defaultValue: config.vibrationPattern.name,
+                  );
+
+                  if (result != null) {
+                    config.setVibrationPattern(VibrationPattern.values.byName(result));
                   }
                 },
               ),

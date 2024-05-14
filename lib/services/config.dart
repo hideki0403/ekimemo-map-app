@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:ekimemo_map/models/meta.dart';
 import 'package:ekimemo_map/repository/meta.dart';
+
+import 'notification.dart';
 
 class ConfigProvider extends ChangeNotifier {
   static final _instance = ConfigProvider._internal();
@@ -24,6 +25,10 @@ class ConfigProvider extends ChangeNotifier {
   int get maxResults => _config?.getInt('max_results') ?? 12;
   double get updateFrequency => _config?.getDouble('update_frequency') ?? 3;
   int get maxAcceptableAccuracy => _config?.getInt('max_acceptable_accuracy') ?? 0;
+  NotificationSound get notificationSound => NotificationSound.values.byName(_config?.getString('notification_sound') ?? NotificationSound.se1.name);
+  VibrationPattern get vibrationPattern => VibrationPattern.values.byName(_config?.getString('vibration_pattern') ?? VibrationPattern.pattern1.name);
+  int get notificationSoundVolume => _config?.getInt('notification_sound_volume') ?? 100;
+  bool get enableVibration => _config?.getBool('enable_vibration') ?? true;
 
   void notify() {
     notifyListeners();
@@ -58,6 +63,26 @@ class ConfigProvider extends ChangeNotifier {
     _config?.setInt('max_acceptable_accuracy', value);
     notifyListeners();
   }
+
+  void setNotificationSound(NotificationSound value) {
+    _config?.setString('notification_sound', value.name);
+    notifyListeners();
+  }
+
+  void setVibrationPattern(VibrationPattern value) {
+    _config?.setString('vibration_pattern', value.name);
+    notifyListeners();
+  }
+
+  void setNotificationSoundVolume(int value) {
+    _config?.setInt('notification_sound_volume', value);
+    notifyListeners();
+  }
+
+  void setEnableVibration(bool value) {
+    _config?.setBool('enable_vibration', value);
+    notifyListeners();
+  }
 }
 
 class Config {
@@ -73,6 +98,10 @@ class Config {
   static int get maxResults => _configProvider?.maxResults ?? 12;
   static int get maxAcceptableAccuracy => _configProvider?.maxAcceptableAccuracy ?? 0;
   static double get updateFrequency => _configProvider?.updateFrequency ?? 3;
+  static NotificationSound get notificationSound => _configProvider?.notificationSound ?? NotificationSound.se1;
+  static VibrationPattern get vibrationPattern => _configProvider?.vibrationPattern ?? VibrationPattern.pattern1;
+  static int get notificationSoundVolume => _configProvider?.notificationSoundVolume ?? 100;
+  static bool get enableVibration => _configProvider?.enableVibration ?? true;
 
   static String getString(String key, {String defaultValue = ''}) {
     return _configProvider?.config?.getString(key) ?? defaultValue;
