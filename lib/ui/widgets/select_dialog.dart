@@ -5,8 +5,9 @@ class SelectDialog extends StatefulWidget {
   final Map<String, String> data;
   final String? defaultValue;
   final String? caption;
+  final bool? noRadio;
 
-  const SelectDialog({super.key, required this.data, this.defaultValue, this.title, this.caption });
+  const SelectDialog({super.key, required this.data, this.defaultValue, this.title, this.caption, this.noRadio });
 
   @override
   State<SelectDialog> createState() => _SelectDialogState();
@@ -23,12 +24,17 @@ class _SelectDialogState extends State<SelectDialog> {
         children: [
           if (widget.caption != null) Text(widget.caption!),
           for (final key in widget.data.keys)
-            RadioListTile<String>(
+            widget.noRadio != true ? RadioListTile<String>(
               title: Text(widget.data[key]!),
               value: key,
               groupValue: widget.defaultValue,
               onChanged: (value) {
                 Navigator.of(context).pop(value);
+              },
+            ) : ListTile(
+              title: Text(widget.data[key]!),
+              onTap: () {
+                Navigator.of(context).pop(key);
               },
             ),
         ],
