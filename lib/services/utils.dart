@@ -69,6 +69,15 @@ int getCoolDownTimeFromAccessLog(AccessLog log) {
   return coolDown - timeDiff;
 }
 
+String rectToString(Rect rect) {
+  return '${rect.left},${rect.top},${rect.right},${rect.bottom}';
+}
+
+Rect stringToRect(String str) {
+  final rawRect = str.split(',').map((e) => double.parse(e)).toList();
+  return Rect.fromLTRB(rawRect[0], rawRect[1], rawRect[2], rawRect[3]);
+}
+
 Future<String?> showEditorDialog({String? data, String? title, String? caption, String? suffix, EditorDialogType? type}) async {
   return showDialog(
     context: navigatorKey.currentContext!,
@@ -78,11 +87,11 @@ Future<String?> showEditorDialog({String? data, String? title, String? caption, 
   );
 }
 
-Future<String?> showSelectDialog({String? title, required Map<String, String> data, String? defaultValue, String? caption}) async {
+Future<String?> showSelectDialog({String? title, required Map<String, String> data, String? defaultValue, String? caption, bool? noRadio}) async {
   return showDialog(
     context: navigatorKey.currentContext!,
     builder: (context) {
-      return SelectDialog(data: data, defaultValue: defaultValue, title: title, caption: caption);
+      return SelectDialog(data: data, defaultValue: defaultValue, title: title, caption: caption, noRadio: noRadio);
     },
   );
 }

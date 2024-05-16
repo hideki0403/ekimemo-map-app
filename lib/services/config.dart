@@ -124,6 +124,7 @@ class SystemStateProvider extends ChangeNotifier {
   String get stationDataVersion => state['station_data_version'] ?? '';
   String get treeNodeRoot => state['tree_node_root'] ?? '';
   String get debugPackageName => state['debug_package_name'] ?? 'dev.yukineko.ekimemo_map';
+  String get assistantFlow => state['assistant_flow'] ?? '[]';
 
   Future<void> init() async {
     final records = await _repo.getAll();
@@ -162,6 +163,7 @@ class SystemState {
 
   static String get stationDataVersion => _systemStateProvider?.stationDataVersion ?? '';
   static String get treeNodeRoot => _systemStateProvider?.treeNodeRoot ?? '0';
+  static String get assistantFlow => _systemStateProvider?.assistantFlow ?? '[]';
 
   static String getString(String key, {String defaultValue = ''}) {
     return _systemStateProvider?.state[key] ?? defaultValue;

@@ -13,6 +13,8 @@ import 'ui/pages/home.dart';
 import 'ui/pages/settings.dart';
 import 'ui/pages/map.dart';
 import 'ui/pages/station_detail.dart';
+import 'ui/pages/assistant_flow.dart';
+import 'ui/pages/assistant_choose_rect.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -66,6 +68,14 @@ class Root extends StatelessWidget {
             GoRoute(
               path: '/settings',
               builder: (context, state) => const SettingsView(),
+            ),
+            GoRoute(
+              path: '/assistant-flow',
+              builder: (context, state) => const AssistantFlowView(),
+            ),
+            GoRoute(
+              path: '/assistant-choose-rect',
+              builder: (context, state) => const AssistantChooseRectView(),
             ),
             GoRoute(
               path: '/map',
