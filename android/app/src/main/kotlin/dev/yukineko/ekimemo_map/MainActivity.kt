@@ -27,7 +27,7 @@ class MainActivity: FlutterActivity() {
                 "hasPermission" -> {
                     val am = context.getSystemService(ACCESSIBILITY_SERVICE) as AccessibilityManager
                     val enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_GENERIC)
-                    result.success(Settings.canDrawOverlays(this) && enabledServices.any { it.id == context.packageName + "/" + AssistantService::class.qualifiedName })
+                    result.success(Settings.canDrawOverlays(this) && enabledServices.any { it.id.split("/").first() == context.packageName })
                 }
                 "setDebugPackageName" -> {
                     val packageName = call.argument<String>("packageName")
