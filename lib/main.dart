@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'services/config.dart';
-import 'services/state.dart';
 import 'services/gps.dart';
 import 'services/station.dart';
 import 'services/notification.dart';
@@ -39,7 +38,6 @@ void main() async {
         ChangeNotifierProvider(create: (_) => configProvider),
         ChangeNotifierProvider(create: (_) => systemStateProvider),
         ChangeNotifierProvider(create: (_) => stationManager),
-        ChangeNotifierProvider(create: (_) => StateManager()),
         ChangeNotifierProvider(create: (_) => GpsManager()),
       ],
       child: const Root(),
