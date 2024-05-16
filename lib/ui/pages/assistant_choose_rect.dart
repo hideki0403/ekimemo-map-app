@@ -17,7 +17,6 @@ class _AssistantChooseRectViewState extends State<AssistantChooseRectView> {
   final CropController _controller = CropController();
 
   Uint8List? _image;
-  Uint8List? _result;
 
   @override
   Widget build(BuildContext context) {
