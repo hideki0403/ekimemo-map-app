@@ -59,6 +59,8 @@ dependencies:
   shared_preferences: ^2.2.3
   audioplayers: ^6.0.0
   vibration: ^1.8.4
+  crop_your_image: ^1.0.2
+  image_picker: ^1.1.1
 
 dev_dependencies:
   flutter_test:
