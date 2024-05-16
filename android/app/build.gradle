@@ -71,7 +71,7 @@ android {
     defaultConfig {
         multiDexEnabled true
         applicationId 'dev.yukineko.ekimemo_map'
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

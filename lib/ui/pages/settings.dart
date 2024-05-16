@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -24,14 +25,20 @@ class _SettingsViewState extends State<SettingsView> {
   String _version = '';
   String _buildNumber = '';
   String _commitHash = '';
+  bool _hasPermission = false;
+  bool _isDebug = kDebugMode;
 
   Future<void> _fetchAppInfo() async {
     final packageInfo = await PackageInfo.fromPlatform();
-    final commitHash = await NativeMethods().getCommitHash();
+
+    final nativeMethods = NativeMethods();
+    final commitHash = await nativeMethods.getCommitHash();
+    final hasPermission = await nativeMethods.hasPermission();
     setState(() {
       _version = packageInfo.version;
       _buildNumber = packageInfo.buildNumber;
       _commitHash = commitHash;
+      _hasPermission = hasPermission;
     });
   }
 
@@ -46,7 +53,29 @@ class _SettingsViewState extends State<SettingsView> {
     final config = Provider.of<ConfigProvider>(context);
     final state = Provider.of<SystemStateProvider>(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('設定')),
+      appBar: AppBar(
+        title: const Text('設定'),
+        actions: [
+          // More Vert Icon
+          PopupMenuButton(
+            itemBuilder: (BuildContext context) {
+              return [
+                const PopupMenuItem(
+                  value: 'enableDebug',
+                  child: Text('デバッグ項目を有効化'),
+                ),
+              ];
+            },
+            onSelected: (String s) {
+              if (s == 'enableDebug') {
+                setState(() {
+                  _isDebug = true;
+                });
+              }
+            },
+          )
+        ],
+      ),
       body: CustomScrollView(
         slivers: [
           SliverList(
@@ -221,30 +250,52 @@ class _SettingsViewState extends State<SettingsView> {
                   child: const Text('更新を確認'),
                 ),
               ),
-              const SectionTitle(title: 'デバッグ'),
-              ListTile(
-                title: const Text('駅データのバージョンをリセットする'),
-                onTap: () {
-                  state.setStationDataVersion('');
-                },
-              ),
-              ListTile(
-                title: const Text('データベースを消し飛ばす'),
-                onTap: () async {
-                  final result = await showConfirmDialog(
-                      title: 'データベースのリセット',
-                      caption: '本当にデータベースを吹き飛ばしますか？'
-                  );
+              if (_isDebug) ...[
+                const SectionTitle(title: 'デバッグ'),
+                ListTile(
+                  title: const Text('駅データのバージョンをリセットする'),
+                  onTap: () {
+                    state.setStationDataVersion('');
+                  },
+                ),
+                ListTile(
+                  title: const Text('データベースを消し飛ばす'),
+                  onTap: () async {
+                    final result = await showConfirmDialog(
+                        title: 'データベースのリセット',
+                        caption: '本当にデータベースを吹き飛ばしますか？'
+                    );
 
-                  if (result == true) {
-                    DatabaseHandler().reset();
-                  }
-                },
-              ),
-              ListTile(
-                title: const Text('Tree node root'),
-                subtitle: Text(state.treeNodeRoot),
-              )
+                    if (result == true) {
+                      DatabaseHandler().reset();
+                    }
+                  },
+                ),
+                ListTile(
+                  title: const Text('Tree node root'),
+                  subtitle: Text(state.treeNodeRoot),
+                ),
+                if (_hasPermission) ...[
+                  const SectionTitle(title: 'アシスタント (デバッグ用)'),
+                  ListTile(
+                    title: const Text('デバッグ対象パッケージ名'),
+                    subtitle: Text(state.debugPackageName),
+                    onTap: () async {
+                      final result = await showEditorDialog(
+                          title: 'パッケージ名',
+                          data: state.debugPackageName,
+                          type: EditorDialogType.text
+                      );
+
+                      if (result != null) {
+                        state.setDebugPackageName(result);
+                      }
+                    },
+                  ),
+                ],
+                // End of _hasPermission
+              ],
+              // End of _isDebug
             ]),
           ),
         ],

@@ -123,6 +123,7 @@ class SystemStateProvider extends ChangeNotifier {
 
   String get stationDataVersion => state['station_data_version'] ?? '';
   String get treeNodeRoot => state['tree_node_root'] ?? '';
+  String get debugPackageName => state['debug_package_name'] ?? 'dev.yukineko.ekimemo_map';
 
   Future<void> init() async {
     final records = await _repo.getAll();
@@ -143,6 +144,10 @@ class SystemStateProvider extends ChangeNotifier {
 
   void setTreeNodeRoot(String value) {
     set('tree_node_root', value);
+  }
+
+  void setDebugPackageName(String value) {
+    set('debug_package_name', value);
   }
 }
 
