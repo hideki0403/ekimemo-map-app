@@ -20,9 +20,9 @@ class GpsManager extends ChangeNotifier {
 
   Future<void> setGpsEnabled(bool value) async {
     if (value) {
-      await NotificationPermissionsHandler().checkAndRequest();
+      await NotificationPermissionsHandler.checkAndRequest();
 
-      if (!await LocationPermissionsHandler().checkAndRequest()) {
+      if (!await LocationPermissionsHandler.checkAndRequest()) {
         _locationListener?.cancel();
         return;
       }

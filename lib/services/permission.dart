@@ -3,7 +3,7 @@ import 'package:permission_handler/permission_handler.dart';
 enum LocationPermissionStatus { granted, denied, permanentlyDenied, restricted }
 
 class LocationPermissionsHandler {
-  Future<bool> get isGranted async {
+  static Future<bool> get isGranted async {
     final status = await Permission.location.status;
     switch (status) {
       case PermissionStatus.granted:
@@ -18,11 +18,11 @@ class LocationPermissionsHandler {
     }
   }
 
-  Future<bool> get isAlwaysGranted {
+  static Future<bool> get isAlwaysGranted {
     return Permission.locationAlways.isGranted;
   }
 
-  Future<LocationPermissionStatus> request() async {
+  static Future<LocationPermissionStatus> request() async {
     final status = await Permission.location.request();
     switch (status) {
       case PermissionStatus.granted:
@@ -39,8 +39,8 @@ class LocationPermissionsHandler {
     }
   }
 
-  Future<bool> checkAndRequest() async {
-    final isGranted = await this.isGranted;
+  static Future<bool> checkAndRequest() async {
+    final isGranted = await LocationPermissionsHandler.isGranted;
     if (isGranted) return true;
     final status = await request();
     return status == LocationPermissionStatus.granted;
@@ -50,7 +50,7 @@ class LocationPermissionsHandler {
 enum NotificationPermissionStatus { granted, denied, unknown }
 
 class NotificationPermissionsHandler {
-  Future<bool> get isGranted async {
+  static Future<bool> get isGranted async {
     final status = await Permission.notification.status;
     switch (status) {
       case PermissionStatus.granted:
@@ -64,7 +64,7 @@ class NotificationPermissionsHandler {
     }
   }
 
-  Future<NotificationPermissionStatus> request() async {
+  static Future<NotificationPermissionStatus> request() async {
     final status = await Permission.notification.request();
     switch (status) {
       case PermissionStatus.granted:
@@ -80,8 +80,8 @@ class NotificationPermissionsHandler {
     }
   }
 
-  Future<bool> checkAndRequest() async {
-    final isGranted = await this.isGranted;
+  static Future<bool> checkAndRequest() async {
+    final isGranted = await NotificationPermissionsHandler.isGranted;
     if (isGranted) return true;
     final status = await request();
     return status == NotificationPermissionStatus.granted;
