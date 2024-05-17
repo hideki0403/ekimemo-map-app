@@ -13,12 +13,6 @@ class AssistantFlow {
     final data = AssistantFlowUtils.stringify(items);
     SystemState.setString('assistant_flow', data);
   }
-
-  static void push(AssistantFlowItem item) {
-    final items = get();
-    items.add(item);
-    set(items);
-  }
 }
 
 class AssistantFlowUtils {
@@ -32,6 +26,8 @@ class AssistantFlowUtils {
           return TapRectItem.fromJson(json);
         case 'wait':
           return WaitItem.fromJson(json);
+        case 'waitRandom':
+          return WaitRandomItem.fromJson(json);
         default:
           throw Exception('Unknown type');
       }
