@@ -15,6 +15,7 @@ import 'package:ekimemo_map/repository/access_log.dart';
 import 'config.dart';
 import 'notification.dart';
 import 'utils.dart';
+import 'assistant.dart';
 
 final _stationRepository = StationRepository();
 final _lineRepository = LineRepository();
@@ -343,7 +344,7 @@ class StationManager extends ChangeNotifier {
     final lastAccess = AccessCacheManager.get(_currentStation!.station.id);
     final isCoolDown = getCoolDownTime(_currentStation!.station.id) > 0 && lastAccess!.difference(now).inSeconds != 0;
     if (isChanged) {
-      if (!isCoolDown) NotificationManager().showStationNotification(_currentStation!);
+      if (!isCoolDown) _handleStationUpdate(_currentStation!);
       _scheduleNotification();
     }
 
@@ -371,7 +372,7 @@ class StationManager extends ChangeNotifier {
     if (coolDownTime <= 0) return;
 
     _notificationTimer = Timer(Duration(seconds: coolDownTime), () async {
-      NotificationManager().showStationNotification(_currentStation!, reNotify: true);
+      _handleStationUpdate(_currentStation!, reNotify: true);
 
       final stationId = _currentStation?.station.id;
       final accessLog = stationId != null ? AccessCacheManager.get(stationId) : null;
@@ -381,6 +382,12 @@ class StationManager extends ChangeNotifier {
 
       _scheduleNotification();
     });
+  }
+
+  void _handleStationUpdate(StationData data, { bool reNotify = false }) {
+    final body = !reNotify ? '${data.distance}で最寄り駅になりました' : '最後に通知してから${beautifySeconds(Config.cooldownTime)}が経過しました';
+    NotificationManager.showNotification('${data.station.name} [${data.station.nameKana}]', body);
+    AssistantFlow.run();
   }
 
   double _fixedLatLng(double value) {

@@ -48,9 +48,4 @@ class NotificationManager {
     _audioPlayer.play(AssetSource('sound/${Config.notificationSound.toString()}.mp3'));
     if (Config.enableVibration) Vibration.vibrate(pattern: Config.vibrationPattern.pattern);
   }
-
-  static Future<void> showStationNotification(StationData data, {bool reNotify = false}) async {
-    final body = !reNotify ? '${data.distance}で最寄り駅になりました' : '最後に通知してから${beautifySeconds(Config.cooldownTime)}が経過しました';
-    showNotification('${data.station.name} [${data.station.nameKana}]', body);
-  }
 }
