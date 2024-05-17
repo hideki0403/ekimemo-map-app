@@ -16,7 +16,7 @@ import 'package:ekimemo_map/ui/widgets/section_title.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
 
 class SettingsView extends StatefulWidget {
-  const SettingsView({Key? key}) : super(key: key);
+  const SettingsView({super.key});
 
   @override
   State<StatefulWidget> createState() => _SettingsViewState();
@@ -178,6 +178,7 @@ class _SettingsViewState extends State<SettingsView> {
                   );
 
                   if (result != null) {
+                    // TODO: 通知音選択時に鳴らすように
                     config.setNotificationSound(NotificationSound.values.byName(result));
                   }
                 },
@@ -217,6 +218,7 @@ class _SettingsViewState extends State<SettingsView> {
                   );
 
                   if (result != null) {
+                    // TODO: パターン選択時に動かすように
                     config.setVibrationPattern(VibrationPattern.values.byName(result));
                   }
                 },
@@ -243,7 +245,7 @@ class _SettingsViewState extends State<SettingsView> {
               const SectionTitle(title: 'アプリ'),
               ListTile(
                 title: const Text('バージョン'),
-                subtitle: Text('v$_version+$_buildNumber ($_commitHash)'),
+                subtitle: Text('v$_version'),
                 trailing: ElevatedButton(
                   onPressed: () {
                     AppUpdater.check();
@@ -275,6 +277,14 @@ class _SettingsViewState extends State<SettingsView> {
                 ListTile(
                   title: const Text('Tree node root'),
                   subtitle: Text(state.treeNodeRoot),
+                ),
+                ListTile(
+                  title: const Text('App commit hash'),
+                  subtitle: Text(_commitHash),
+                ),
+                ListTile(
+                  title: const Text('App build number'),
+                  subtitle: Text(_buildNumber),
                 ),
                 if (_hasPermission) ...[
                   const SectionTitle(title: 'アシスタント (デバッグ用)'),
