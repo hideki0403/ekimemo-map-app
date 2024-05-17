@@ -5,14 +5,30 @@ allprojects {
     }
 }
 
-rootProject.buildDir = '../build'
+rootProject.layout.setBuildDirectory(file("../build"))
+
 subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
+    project.layout.buildDirectory.set(rootProject.layout.buildDirectory.dir(project.name))
+
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android {
+                if (namespace == null) {
+                    namespace project.group
+                }
+
+                tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile.class).configureEach {
+                    jvmTargetValidationMode = org.jetbrains.kotlin.gradle.dsl.jvm.JvmTargetValidationMode.WARNING
+                }
+            }
+        }
+    }
 }
+
 subprojects {
     project.evaluationDependsOn(':app')
 }
 
 tasks.register("clean", Delete) {
-    delete rootProject.buildDir
+    delete rootProject.layout.buildDirectory
 }

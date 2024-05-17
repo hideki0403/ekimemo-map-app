@@ -33,7 +33,7 @@ static def getCommitHash() {
 android {
     namespace 'dev.yukineko.ekimemo_map'
     compileSdkVersion flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    ndkVersion "26.1.10909125"
     compileSdkVersion 34
 
     compileOptions {
@@ -66,6 +66,10 @@ android {
                 storePassword System.getenv('STORE_PASSWORD')
             }
         }
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 
     defaultConfig {
