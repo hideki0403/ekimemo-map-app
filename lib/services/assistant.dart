@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:ui';
 import 'config.dart';
 import 'utils.dart';
+import 'native.dart';
 
 class AssistantFlow {
   static List<AssistantFlowItem> get() {
@@ -12,6 +14,34 @@ class AssistantFlow {
   static void set(List<AssistantFlowItem> items) {
     final data = AssistantFlowUtils.stringify(items);
     SystemState.setString('assistant_flow', data);
+  }
+
+  static Future<void> run() async {
+    if (!(await NativeMethods.hasPermission())) return;
+    final items = get();
+    for (final item in items) {
+      print('AssistantFlow: Next ${item.type}, ${item.content}');
+      switch (item.type) {
+        case 'tap':
+          final tapItem = item as TapItem;
+          await NativeMethods.performTap(tapItem.x, tapItem.y);
+          break;
+        case 'tapRect':
+          final tapRectItem = (item as TapRectItem).value;
+          await NativeMethods.performTap(randomInRange(tapRectItem.left, tapRectItem.right), randomInRange(tapRectItem.top, tapRectItem.bottom));
+          break;
+        case 'wait':
+          final waitItem = item as WaitItem;
+          await Future.delayed(Duration(milliseconds: waitItem.value));
+          break;
+        case 'waitRandom':
+          final waitRandomItem = item as WaitRandomItem;
+          await Future.delayed(Duration(milliseconds: Random().nextInt(waitRandomItem.value)));
+          break;
+      }
+    }
+
+    print('AssistantFlow: Done');
   }
 }
 
