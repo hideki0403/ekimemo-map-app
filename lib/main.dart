@@ -116,6 +116,13 @@ ThemeData _buildTheme(Brightness brightness, ColorScheme? colorScheme) {
     brightness: brightness,
     colorScheme: colorScheme,
     fontFamily: GoogleFonts.notoSansJp().fontFamily,
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: <TargetPlatform, PageTransitionsBuilder>{
+        TargetPlatform.android: ZoomPageTransitionsBuilder(
+          allowEnterRouteSnapshotting: false,
+        ),
+      },
+    ),
   );
 }
 
