@@ -6,6 +6,7 @@ import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/services/gps.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/updater.dart';
+import 'package:ekimemo_map/services/assistant.dart';
 import 'package:ekimemo_map/ui/widgets/station_simple.dart';
 
 class HomeView extends StatelessWidget {
@@ -57,6 +58,7 @@ class HomeView extends StatelessWidget {
                         Switch(
                           value: gpsManager.isEnabled,
                           onChanged: state.stationDataVersion == '' ? null : (value) {
+                            AssistantFlow.init();
                             gpsManager.setGpsEnabled(value);
                             if (!value) {
                               stationManager.cleanup();

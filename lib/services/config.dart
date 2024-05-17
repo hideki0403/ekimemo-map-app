@@ -164,6 +164,7 @@ class SystemState {
   static String get stationDataVersion => _systemStateProvider?.stationDataVersion ?? '';
   static String get treeNodeRoot => _systemStateProvider?.treeNodeRoot ?? '0';
   static String get assistantFlow => _systemStateProvider?.assistantFlow ?? '[]';
+  static String get debugPackageName => _systemStateProvider?.debugPackageName ?? 'dev.yukineko.ekimemo_map';
 
   static String getString(String key, {String defaultValue = ''}) {
     return _systemStateProvider?.state[key] ?? defaultValue;

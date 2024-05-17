@@ -16,6 +16,10 @@ class AssistantFlow {
     SystemState.setString('assistant_flow', data);
   }
 
+  static void init() {
+    NativeMethods.setDebugPackageName(SystemState.debugPackageName);
+  }
+
   static Future<void> run() async {
     if (!(await NativeMethods.hasPermission())) return;
     final items = get();
