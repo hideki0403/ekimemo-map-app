@@ -54,31 +54,31 @@ class _SettingsViewState extends State<SettingsView> {
     final config = Provider.of<ConfigProvider>(context);
     final state = Provider.of<SystemStateProvider>(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('設定'),
-        actions: [
-          // More Vert Icon
-          PopupMenuButton(
-            itemBuilder: (BuildContext context) {
-              return [
-                const PopupMenuItem(
-                  value: 'enableDebug',
-                  child: Text('デバッグ項目を有効化'),
-                ),
-              ];
-            },
-            onSelected: (String s) {
-              if (s == 'enableDebug') {
-                setState(() {
-                  _isDebug = true;
-                });
-              }
-            },
-          )
-        ],
-      ),
       body: CustomScrollView(
         slivers: [
+          SliverAppBar.large(
+            title: const Text('設定'),
+            actions: [
+              // More Vert Icon
+              PopupMenuButton(
+                itemBuilder: (BuildContext context) {
+                  return [
+                    const PopupMenuItem(
+                      value: 'enableDebug',
+                      child: Text('デバッグ項目を有効化'),
+                    ),
+                  ];
+                },
+                onSelected: (String s) {
+                  if (s == 'enableDebug') {
+                    setState(() {
+                      _isDebug = true;
+                    });
+                  }
+                },
+              )
+            ],
+          ),
           SliverList(
             delegate: SliverChildListDelegate([
               const SectionTitle(title: '探索設定'),

@@ -76,9 +76,6 @@ class _AssistantFlowViewState extends State<AssistantFlowView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Assistant Flow'),
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await showSelectDialog(
@@ -100,6 +97,9 @@ class _AssistantFlowViewState extends State<AssistantFlowView> {
       ),
       body: CustomScrollView(
         slivers: [
+          const SliverAppBar.large(
+            title: Text('Assistant Flow'),
+          ),
           SliverPadding(
             padding: const EdgeInsets.only(left: 20, right: 20),
             sliver: SliverReorderableList(
