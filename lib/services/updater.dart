@@ -201,7 +201,7 @@ class AppUpdater {
 
     final info = response.data;
     final releaseCommitHash = info['commit'].toString();
-    final appCommitHash = await NativeMethods().getCommitHash();
+    final appCommitHash = await NativeMethods.getCommitHash();
     if (appCommitHash != releaseCommitHash) updateAvailable = true;
     if (!updateAvailable && silent) return;
 

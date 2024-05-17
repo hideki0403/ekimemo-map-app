@@ -31,10 +31,8 @@ class _SettingsViewState extends State<SettingsView> {
 
   Future<void> _fetchAppInfo() async {
     final packageInfo = await PackageInfo.fromPlatform();
-
-    final nativeMethods = NativeMethods();
-    final commitHash = await nativeMethods.getCommitHash();
-    final hasPermission = await nativeMethods.hasPermission();
+    final commitHash = await NativeMethods.getCommitHash();
+    final hasPermission = await NativeMethods.hasPermission();
     setState(() {
       _version = packageInfo.version;
       _buildNumber = packageInfo.buildNumber;
