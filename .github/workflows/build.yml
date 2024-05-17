@@ -45,7 +45,9 @@ jobs:
 
       - name: Get flutter version
         id: flutter_version
-        uses: its404/get-flutter-version@v1.0.0
+        run: |
+          VERSION=$(cat pubspec.yaml | grep 'version:' | awk '{print $2}' | awk -F '+' '{print $1}')
+          echo "version_number=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Prepare deploy
         run: |
