@@ -29,7 +29,7 @@ void main() async {
 
   Config.init(configProvider);
   SystemState.init(systemStateProvider);
-  NotificationManager().initialize();
+  NotificationManager.initialize();
 
   final stationManager = StationManager();
   await stationManager.initialize();

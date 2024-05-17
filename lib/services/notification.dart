@@ -26,18 +26,14 @@ enum VibrationPattern {
 }
 
 class NotificationManager {
-  static final _instance = NotificationManager._internal();
-  factory NotificationManager() => _instance;
-  NotificationManager._internal();
+  static final _notification = FlutterLocalNotificationsPlugin();
+  static final _audioPlayer = AudioPlayer();
 
-  final _notification = FlutterLocalNotificationsPlugin();
-  final _audioPlayer = AudioPlayer();
-
-  Future<void> initialize() async {
+  static Future<void> initialize() async {
     await _notification.initialize(const InitializationSettings(android: AndroidInitializationSettings('ic_launcher')));
   }
 
-  Future<void> showNotification(String title, String body) async {
+  static Future<void> showNotification(String title, String body) async {
     if (!Config.enableNotification) return;
     const android = AndroidNotificationDetails('nearest_station', '最寄り駅通知',
       importance: Importance.high,
@@ -53,7 +49,7 @@ class NotificationManager {
     if (Config.enableVibration) Vibration.vibrate(pattern: Config.vibrationPattern.pattern);
   }
 
-  Future<void> showStationNotification(StationData data, {bool reNotify = false}) async {
+  static Future<void> showStationNotification(StationData data, {bool reNotify = false}) async {
     final body = !reNotify ? '${data.distance}で最寄り駅になりました' : '最後に通知してから${beautifySeconds(Config.cooldownTime)}が経過しました';
     showNotification('${data.station.name} [${data.station.nameKana}]', body);
   }
