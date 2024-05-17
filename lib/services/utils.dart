@@ -78,6 +78,10 @@ Rect stringToRect(String str) {
   return Rect.fromLTRB(rawRect[0], rawRect[1], rawRect[2], rawRect[3]);
 }
 
+double randomInRange(double min, double max) {
+  return min + Random().nextDouble() * (max - min);
+}
+
 Future<String?> showEditorDialog({String? data, String? title, String? caption, String? suffix, EditorDialogType? type}) async {
   return showDialog(
     context: navigatorKey.currentContext!,
