@@ -16,7 +16,7 @@ class AssistantService : AccessibilityService() {
 
     private val TAG = "AssistantService"
     private var foregroundPackageName: String? = null
-    private var targetDebugPackageName: String? = null
+    private var targetDebugPackageName: Regex? = null
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || event.eventType == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
@@ -43,12 +43,18 @@ class AssistantService : AccessibilityService() {
     }
 
     fun setDebugPackageName(packageName: String) {
-        targetDebugPackageName = packageName
+        val regex = packageName
+            .filter { it.isLetter() || it.isDigit() || it == '.' || it == '*' }
+            .lowercase()
+            .replace(".", "\\.")
+            .replace("*", ".*")
+
+        targetDebugPackageName = Regex("^$regex$")
     }
 
     fun performTap(x: Float, y: Float): Boolean {
         Log.d(TAG, "Performing tap at $x, $y, Foreground app: $foregroundPackageName, Target app: $targetDebugPackageName")
-        if (foregroundPackageName != targetDebugPackageName) {
+        if (targetDebugPackageName?.matches(foregroundPackageName ?: "") != true) {
             Log.d(TAG, "Foreground app is not the target app")
             return false
         }
