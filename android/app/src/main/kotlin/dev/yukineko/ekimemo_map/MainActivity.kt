@@ -38,18 +38,6 @@ class MainActivity: FlutterActivity() {
                         result.error("INVALID_ARGUMENT", "packageName must be provided", null)
                     }
                 }
-//                TODO?: Remove this
-//                "requestAccessibilityPermission" -> {
-//                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-//                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY)
-//                    startActivity(intent)
-//                }
-//                "requestOverlayPermission" -> {
-//                    if (!Settings.canDrawOverlays(this)) {
-//                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
-//                        this.startActivity(intent)
-//                    }
-//                }
                 "performTap" -> {
                     val x = call.argument<Double>("x")?.toFloat()
                     val y = call.argument<Double>("y")?.toFloat()

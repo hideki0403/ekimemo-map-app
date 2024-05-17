@@ -23,7 +23,6 @@ class AssistantService : AccessibilityService() {
             val packageName = event.packageName.toString()
             if (packageName.startsWith("com.android")) return
             foregroundPackageName = packageName
-            Log.d(TAG, "Foreground app: $foregroundPackageName")
         }
     }
 
@@ -53,14 +52,14 @@ class AssistantService : AccessibilityService() {
     }
 
     fun performTap(x: Float, y: Float): Boolean {
-        Log.d(TAG, "Performing tap at $x, $y, Foreground app: $foregroundPackageName, Target app: $targetDebugPackageName")
+        Log.d(TAG, "Performing tap at $x, $y, foreground app: $foregroundPackageName, target app: $targetDebugPackageName")
         if (targetDebugPackageName?.matches(foregroundPackageName ?: "") != true) {
-            Log.d(TAG, "Foreground app is not the target app")
+            Log.d(TAG, "Not in target app, skipping tap")
             return false
         }
         val path = Path()
         path.moveTo(x, y)
-        val strokeDescription = GestureDescription.StrokeDescription(path, 0, 100)
+        val strokeDescription = GestureDescription.StrokeDescription(path, 0, 90 + (Math.random() * 20).toLong())
         val gestureDescription = GestureDescription.Builder().addStroke(strokeDescription).build()
         val result = dispatchGesture(gestureDescription, null, null)
         if (!result) {
