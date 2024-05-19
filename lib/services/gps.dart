@@ -1,61 +1,81 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'permission.dart';
 import 'station.dart';
 import 'config.dart';
+import 'utils.dart';
 
 class GpsManager extends ChangeNotifier {
-  bool _isEnabled = false;
-  bool _isScheduledUpdate = false;
-  StreamSubscription? _locationListener;
-  LocationData? _lastLocation;
-  DateTime? _lastUpdate;
   final _stationManager = StationManager();
-  final _location = Location();
+  StreamSubscription? _locationListener;
+  Position? _lastLocation;
 
-  bool get isEnabled => _isEnabled;
-  LocationData? get lastLocation => _lastLocation;
+  bool get isEnabled => _locationListener != null;
+  Position? get lastLocation => _lastLocation;
 
   Future<void> setGpsEnabled(bool value) async {
     if (value) {
-      await NotificationPermissionsHandler.checkAndRequest();
-
-      if (!await LocationPermissionsHandler.checkAndRequest()) {
-        _locationListener?.cancel();
-        return;
+      if (!(await NotificationPermissionsHandler.checkAndRequest())) {
+        showMessageDialog(
+          title: '権限が必要です',
+          message: '通知の許可がないため、最寄り駅の通知を行うことが出来ません。',
+        );
       }
-      _location.changeNotificationOptions(title: '駅メモマップ', subtitle: '最寄り駅を探索中', channelName: '最寄り駅探索サービス');
-      _location.enableBackgroundMode(enable: true);
-      _locationListener = _location.onLocationChanged.listen((event) => _updateHandler(event));
+      if (!(await _checkPermission())) return;
+
+      final locationSettings = AndroidSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10,
+        intervalDuration: Duration(milliseconds: (Config.updateFrequency * 1000).toInt()),
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
+          notificationTitle: '駅メモマップ',
+          notificationText: '最寄り駅を探索中',
+          notificationChannelName: '最寄り駅探索サービス',
+        ),
+      );
+
+      _locationListener = Geolocator.getPositionStream(locationSettings: locationSettings).listen(_updateHandler);
     } else {
-      _location.enableBackgroundMode(enable: false);
       _locationListener?.cancel();
+      _locationListener = null;
     }
 
-    _isEnabled = value;
     notifyListeners();
   }
 
-  void _updateHandler(LocationData location) {
-    _lastLocation = location;
-    if (!_stationManager.serviceAvailable) return;
-    if (Config.maxAcceptableAccuracy != 0 && Config.maxAcceptableAccuracy < location.accuracy!) return;
+  Future<bool> _checkPermission() async {
+    LocationPermission permission;
 
-    final updateFrequency = (Config.updateFrequency * 1000).toInt();
-    final lastUpdateElapsed = _lastUpdate == null ? updateFrequency : DateTime.now().difference(_lastUpdate!).inMilliseconds;
-    if (updateFrequency <= lastUpdateElapsed) {
-      _updateLocation();
-    } else if (!_isScheduledUpdate) {
-      _isScheduledUpdate = true;
-      Future.delayed(Duration(milliseconds: updateFrequency - lastUpdateElapsed), () => _updateLocation());
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      showMessageDialog(
+        title: '位置情報が無効です',
+        message: '位置情報が無効になっているため、駅の探索を行うことが出来ません。',
+      );
+
+      return false;
     }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) permission = await Geolocator.requestPermission();
+
+    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      showMessageDialog(
+        title: '権限が必要です',
+        message: '位置情報を取得する権限がないため、駅の探索を行うことが出来ません。',
+      );
+
+      return false;
+    }
+
+    return true;
   }
 
-  void _updateLocation() {
-    _isScheduledUpdate = false;
-    _lastUpdate = DateTime.now();
-    _stationManager.updateLocation(_lastLocation!.latitude!, _lastLocation!.longitude!);
+  void _updateHandler(Position location) {
+    _lastLocation = location;
+    if (!_stationManager.serviceAvailable) return;
+    if (Config.maxAcceptableAccuracy != 0 && Config.maxAcceptableAccuracy < location.accuracy) return;
+    _stationManager.updateLocation(location.latitude, location.longitude);
   }
 }

@@ -5,7 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import 'package:ekimemo_map/models/station.dart';
@@ -16,7 +16,7 @@ class MapView extends StatefulWidget {
   final String? stationId;
   final String? lineId;
 
-  const MapView({this.stationId, this.lineId, Key? key}) : super(key: key);
+  const MapView({this.stationId, this.lineId, super.key});
 
   @override
   State<StatefulWidget> createState() => _MapViewState();
@@ -171,9 +171,9 @@ class _MapViewState extends State<MapView> {
                   return;
                 }
 
-                final location = await Location().getLocation();
+                final location = await Geolocator.getCurrentPosition();
                 controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
-                  target: LatLng(location.latitude!, location.longitude!),
+                  target: LatLng(location.latitude, location.longitude),
                   zoom: 12.0,
                 )));
               },
