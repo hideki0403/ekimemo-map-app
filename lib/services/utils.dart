@@ -82,6 +82,26 @@ double randomInRange(double min, double max) {
   return min + Random().nextDouble() * (max - min);
 }
 
+Future<void> showMessageDialog({String? title, String? message, Widget? content}) async {
+  return showDialog(
+    context: navigatorKey.currentContext!,
+    builder: (context) {
+      return AlertDialog(
+        title: title != null ? Text(title) : null,
+        content: content ?? (message != null ? Text(message) : null),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 Future<String?> showEditorDialog({String? data, String? title, String? caption, String? suffix, EditorDialogType? type}) async {
   return showDialog(
     context: navigatorKey.currentContext!,
