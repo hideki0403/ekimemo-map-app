@@ -4,13 +4,29 @@ plugins {
     id 'dev.flutter.flutter-gradle-plugin'
 }
 
-def keystorePropertiesFile = rootProject.file('key.properties')
-
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
     localPropertiesFile.withReader('UTF-8') { reader ->
         localProperties.load(reader)
+    }
+}
+
+def tokenProperties = new Properties()
+def tokenPropertiesFile = rootProject.file('token.properties')
+def isExistTokenProperties = tokenPropertiesFile.exists()
+if (isExistTokenProperties) {
+    tokenPropertiesFile.withReader('UTF-8') { reader ->
+        tokenProperties.load(reader)
+    }
+}
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+def isExistKeyStoreProperties = keystorePropertiesFile.exists()
+if (isExistKeyStoreProperties) {
+    keystorePropertiesFile.withReader('UTF-8') { reader ->
+        keystoreProperties.load(reader)
     }
 }
 
@@ -52,13 +68,11 @@ android {
 
     signingConfigs {
         release {
-            if (keystorePropertiesFile.exists()) {
-                def keystoreProperties = new Properties()
-                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-                keyAlias keystoreProperties['keyAlias']
-                keyPassword keystoreProperties['keyPassword']
-                storeFile file(keystoreProperties['storeFile'])
-                storePassword keystoreProperties['storePassword']
+            if (isExistKeyStoreProperties) {
+                keyAlias keystoreProperties.getProperty('keyAlias')
+                keyPassword keystoreProperties.getProperty('keyPassword')
+                storeFile file(keystoreProperties.getProperty('storeFile'))
+                storePassword keystoreProperties.getProperty('storePassword')
             } else {
                 keyAlias System.getenv('KEY_ALIAS')
                 keyPassword System.getenv('KEY_PASSWORD')
@@ -80,6 +94,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         buildConfigField('String', 'COMMIT_HASH', "\"${getCommitHash()}\"")
+        buildConfigField('String', 'GOOGLE_MAPS_API_KEY', isExistTokenProperties ? tokenProperties.getProperty('googleMapsApiKey') : System.getenv('GOOGLE_MAPS_API_KEY'))
     }
 
     buildTypes {
