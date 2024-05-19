@@ -12,6 +12,7 @@ import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/database.dart';
 import 'package:ekimemo_map/services/native.dart';
 import 'package:ekimemo_map/services/notification.dart';
+import 'package:ekimemo_map/services/assistant.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
 
@@ -298,6 +299,7 @@ class _SettingsViewState extends State<SettingsView> {
 
                       if (result != null) {
                         state.setDebugPackageName(result);
+                        AssistantFlow.init();
                       }
                     },
                   ),
