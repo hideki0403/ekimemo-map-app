@@ -138,9 +138,12 @@ class StationManager {
 
       // 最寄り駅が変更されたらアクセスログ等を更新
       final now = DateTime.now();
+      final lastAccess = AccessCacheManager.get(station.station.id);
+      final isCoolDown = getCoolDownTime(station.station.id) > 0 && (lastAccess != null && lastAccess.difference(now).inSeconds != 0);
+
       if (updated) {
         _lastUpdatedTime = now;
-        await AccessCacheManager.update(station.station.id, now);
+        if (!isCoolDown) await AccessCacheManager.update(station.station.id, now);
 
         // 優先表示される路線名を計算
         final lineIdCount = <int, int>{};
@@ -171,8 +174,6 @@ class StationManager {
 
       _stateNotifier.notify();
 
-      final lastAccess = AccessCacheManager.get(station.station.id);
-      final isCoolDown = getCoolDownTime(station.station.id) > 0 && lastAccess!.difference(now).inSeconds != 0;
       if (updated) {
         if (!isCoolDown) _handleStationUpdate(station);
         _scheduleNotification();
