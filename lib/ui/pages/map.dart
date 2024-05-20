@@ -73,7 +73,7 @@ class _MapViewState extends State<MapView> {
     final west = bounds.southwest.longitude;
 
     final margin = min(max(north - south, east - west) * 0.5, 0.5);
-    final stations = await StationManager.updateRectRegion(
+    final stations = await StationManager.updateRect(
       north + margin,
       east + margin,
       south - margin,

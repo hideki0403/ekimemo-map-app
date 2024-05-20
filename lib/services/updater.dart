@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:msgpack_dart/msgpack_dart.dart';
 import 'package:ekimemo_map/services/native.dart';
@@ -15,7 +14,7 @@ import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
 import 'package:ekimemo_map/models/tree_node.dart';
 import 'package:ekimemo_map/services/config.dart';
-import 'package:ekimemo_map/services/station.dart';
+import 'package:ekimemo_map/services/search.dart';
 
 class AssetUpdater {
   static final _dio = Dio();
@@ -167,8 +166,8 @@ class AssetUpdater {
     SystemState.setString('station_data_version', version);
 
     // TreeNodeを再構築する
-    StationManager.clear();
-    await StationManager.initialize();
+    StationSearchService.clear();
+    await StationSearchService.initialize();
 
     showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
       return AlertDialog(

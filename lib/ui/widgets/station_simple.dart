@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import 'package:ekimemo_map/services/station.dart';
+import 'package:ekimemo_map/services/search.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:go_router/go_router.dart';

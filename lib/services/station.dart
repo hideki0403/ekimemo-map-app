@@ -1,56 +1,35 @@
 import 'dart:async';
-import 'dart:math';
-import 'dart:collection';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/access_log.dart';
-import 'package:ekimemo_map/models/tree_node.dart';
-import 'package:ekimemo_map/repository/station.dart';
-import 'package:ekimemo_map/repository/tree_node.dart';
 import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'config.dart';
 import 'notification.dart';
 import 'utils.dart';
 import 'assistant.dart';
+import 'search.dart';
 
-final _stationRepository = StationRepository();
 final _lineRepository = LineRepository();
-final _treeNodeRepository = TreeNodeRepository();
 
-class Bounds {
-  final double north;
-  final double east;
-  final double south;
-  final double west;
-
-  Bounds({
-    required this.north,
-    required this.east,
-    required this.south,
-    required this.west,
-  });
-
-  bool isInsideRect(double lat, double lng) {
-    return lat >= south && lat <= north && lng >= west && lng <= east;
-  }
+enum ResultType {
+  success,
+  error
 }
 
-class StationData {
-  Station station;
-  double rawDistance;
-  String? distance;
-  String? lineName;
-  int? index;
+class AsyncResult<T> {
+  final ResultType type;
+  final T? value;
+  final dynamic err;
 
-  StationData(this.station, this.rawDistance, {this.distance, this.index});
-
-  factory StationData.create(Station station, double rawDistance) {
-    return StationData(station, rawDistance);
-  }
+  AsyncResult.success(this.value)
+      : type = ResultType.success,
+        err = null;
+  AsyncResult.error(this.err)
+      : type = ResultType.error,
+        value = null;
 }
 
 class AccessCacheManager {
@@ -88,94 +67,6 @@ class AccessCacheManager {
   }
 }
 
-class TreeNodeManager {
-  static final _cache = SplayTreeMap<int, TreeNode?>();
-
-  static Future<TreeNode?> get(int id) async {
-    if (_cache.containsKey(id)) return _cache[id];
-    final node = await _treeNodeRepository.get(id);
-    _cache[id] = node;
-    return node;
-  }
-
-  static void clear() {
-    _cache.clear();
-  }
-}
-
-class StationNode {
-  late final int depth;
-  late final Bounds region;
-  late final int code;
-  late final int? leftCode;
-  late final int? rightCode;
-
-  Station? station;
-  StationNode? left;
-  StationNode? right;
-
-  StationNode({required this.depth, required TreeNode node, required this.region}) {
-    code = node.code;
-    leftCode = node.left;
-    rightCode = node.right;
-  }
-
-  Future<StationNode> build() async {
-    station = await _stationRepository.get(code);
-    if (station == null) throw Exception('Station not found: $code');
-    if (!region.isInsideRect(station!.lat, station!.lng)) throw Exception('Station $code is out of region');
-    return this;
-  }
-
-  void clear() {
-    station = null;
-    left?.clear();
-    right?.clear();
-    left = null;
-    right = null;
-  }
-
-  Future<StationNode?> getLeft() async {
-    final isEven = depth % 2 == 0;
-
-    if (leftCode != null && left == null) {
-      final leftNode = await TreeNodeManager.get(leftCode!);
-      if (leftNode == null) throw Exception('Node $leftCode not found');
-
-      final leftNodeRegion = Bounds(
-        north: isEven ? region.north : station!.lat,
-        south: region.south,
-        east: isEven ? station!.lng : region.east,
-        west: region.west,
-      );
-
-      left = await StationNode(depth: depth + 1, node: leftNode, region: leftNodeRegion).build();
-    }
-
-    return left;
-  }
-
-  Future<StationNode?> getRight() async {
-    final isEven = depth % 2 == 0;
-
-    if (rightCode != null && right == null) {
-      final rightNode = await TreeNodeManager.get(rightCode!);
-      if (rightNode == null) throw Exception('Node $rightCode not found');
-
-      final rightNodeRegion = Bounds(
-        north: region.north,
-        south: isEven ? region.south : station!.lat,
-        east: region.east,
-        west: isEven ? station!.lng : region.west,
-      );
-
-      right = await StationNode(depth: depth + 1, node: rightNode, region: rightNodeRegion).build();
-    }
-
-    return right;
-  }
-}
-
 class StationStateNotifier extends ChangeNotifier {
   static final _instance = StationStateNotifier._internal();
 
@@ -193,203 +84,122 @@ class StationStateNotifier extends ChangeNotifier {
     StationManager.cleanup();
   }
 
-  List<StationData> get list => StationManager.searchList;
+  List<StationData> get list => StationManager.list;
 }
 
 class StationManager {
   static final StationStateNotifier _stateNotifier = StationStateNotifier();
-  static StationNode? _root;
-  static bool _locked = false;
-  
-  static double _lastPositionLat = 0;
-  static double _lastPositionLng = 0;
-  static bool _serviceAvailable = false;
-  static final List<StationData> _searchList = [];
+  static final Map<String, Future<AsyncResult>> _tasks = {};
+
   static DateTime? _lastUpdatedTime;
-  static StationData? _currentStation;
-  static int? _currentMasterLineId;
-  static List<int>? _currentLineIdRanking;
   static Timer? _notificationTimer;
 
-  static Future<void> initialize() async {
-    TreeNodeManager.clear();
-    AccessCacheManager.initialize();
-
-    if (await _treeNodeRepository.count() == 0) return;
-
-    final rootNodeId = int.parse(SystemState.treeNodeRoot);
-    final rootNode = await TreeNodeManager.get(rootNodeId);
-    if (rootNode == null) {
-      print('Root node not found: $rootNodeId, service: ${SystemState.serviceAvailable}');
-      return;
-    }
-
-    _root = await StationNode(depth: 0, node: rootNode, region: Bounds(north: 90, east: 180, south: -90, west: -180)).build();
-    _serviceAvailable = true;
-    print('StationManager initialized');
-  }
-
-  static void clear() {
-    _root?.clear();
-    _root = null;
-  }
+  static DateTime? get lastUpdatedTime => _lastUpdatedTime;
+  static bool get serviceAvailable => StationSearchService.serviceAvailable;
+  static List<StationData> get list => StationSearchService.list;
 
   static void cleanup() {
     _notificationTimer?.cancel();
   }
 
-  static Future<void> _search(StationNode node, double latitude, double longitude, int maxResults, {int maxDistance = 0}) async {
-    var value = 0.0;
-    var threshold = 0.0;
-
-    final s = node.station!;
-    final d = sqrt(pow(s.lat - latitude, 2) + pow(s.lng - longitude, 2));
-
-    var index = -1;
-    var size = _searchList.length;
-
-    if (size > 0 && d < _searchList[size - 1].rawDistance) {
-      index = size - 1;
-      while (index > 0) {
-        if (d >= _searchList[index - 1].rawDistance) break;
-        index--;
+  static Future<T> runSync<T>(String tag, Future<T> Function() task) async {
+    final running = _tasks[tag] ?? Future.value(AsyncResult.success(null));
+    final next = running.then((_) async {
+      try {
+        final result = await task();
+        return AsyncResult.success(result);
+      } catch (err) {
+        return AsyncResult.error(err);
       }
-    } else if(size == 0) {
-      index = 0;
+    });
+
+    _tasks[tag] = next;
+    final result = await next;
+    if (_tasks[tag] == next) {
+      _tasks.remove(tag);
     }
 
-    if (index >= 0) {
-      _searchList.insert(index, StationData.create(s, d));
-      if (size >= maxResults && _searchList[size].rawDistance > maxDistance) _searchList.removeLast();
+    if (result.type == ResultType.success) {
+      return result.value as T;
+    } else {
+      return Future.error(result.err);
     }
-
-    final isEven = node.depth % 2 == 0;
-    value = isEven ? longitude : latitude;
-    threshold = isEven ? s.lng : s.lat;
-
-    final next = value < threshold ? await node.getLeft() : await node.getRight();
-    if (next != null) await _search(next, latitude, longitude, maxResults, maxDistance: maxDistance);
-
-    final opposite = value < threshold ? await node.getRight() : await node.getLeft();
-
-    if (opposite != null && (value - threshold).abs() < max(_searchList.last.rawDistance, maxDistance)) {
-      await _search(opposite, latitude, longitude, maxResults, maxDistance: maxDistance);
-    }
-  }
-
-  static Future<void> _searchRect(StationNode node, Bounds bounds, List<Station> dist, int? maxResults) async {
-    final station = node.station!;
-    if (maxResults != null && dist.length >= maxResults) return;
-
-    if (bounds.isInsideRect(station.lat, station.lng)) {
-      dist.add(station);
-    }
-
-    final tasks = <Future<void>>[];
-
-    if (node.leftCode != null && ((node.depth % 2 == 0 && bounds.west < station.lng) || (node.depth % 2 == 1 && bounds.south < station.lat))) {
-      tasks.add(_searchRect((await node.getLeft())!, bounds, dist, maxResults));
-    }
-
-    if (node.rightCode != null && ((node.depth % 2 == 0 && bounds.east > station.lng) || (node.depth % 2 == 1 && bounds.north > station.lat))) {
-      tasks.add(_searchRect((await node.getRight())!, bounds, dist, maxResults));
-    }
-
-    await Future.wait(tasks);
   }
 
   static Future<void> updateLocation(double latitude, double longitude, {int maxDistance = 0}) async {
-    final maxResults = Config.maxResults;
-    if (maxResults <= 0) return;
-    if (_root == null) throw Exception('Root node is not initialized');
-    if (_locked) return;
-    if (_searchList.isNotEmpty && _fixedLatLng(_lastPositionLat) == _fixedLatLng(latitude) && _fixedLatLng(_lastPositionLng) == _fixedLatLng(longitude)) return;
+    return runSync<void>('updateLocation', () async {
+      final (updated, station) = await StationSearchService.updateLocation(latitude, longitude, maxDistance: maxDistance);
+      if (station == null) return;
 
-    final stopWatch = Stopwatch();
-    stopWatch.start();
+      final stationList = StationSearchService.list;
 
-    _locked = true;
-    _searchList.clear();
-    await _search(_root!, latitude, longitude, maxResults, maxDistance: maxDistance);
+      int? currentMasterLineId;
+      List<int>? currentLineIdRanking;
 
-    final currentStation = _searchList.first;
-    final isChanged = _currentStation?.station.code != currentStation.station.code;
-    _lastPositionLat = latitude;
-    _lastPositionLng = longitude;
+      // 最寄り駅が変更されたらアクセスログ等を更新
+      final now = DateTime.now();
+      if (updated) {
+        _lastUpdatedTime = now;
+        await AccessCacheManager.update(station.station.id, now);
 
-    // 最寄り駅が変更されたらアクセスログ等を更新
-    final now = DateTime.now();
-    if (isChanged) {
-      _lastUpdatedTime = now;
-      await AccessCacheManager.update(currentStation.station.id, now);
-
-      // 優先表示される路線名を計算
-      final lineIdCount = <int, int>{};
-      for (final stationData in _searchList) {
-        final lines = stationData.station.lines;
-        for (final line in lines) {
-          lineIdCount[line] = (lineIdCount[line] ?? 0) + 1;
+        // 優先表示される路線名を計算
+        final lineIdCount = <int, int>{};
+        for (final stationData in stationList) {
+          final lines = stationData.station.lines;
+          for (final line in lines) {
+            lineIdCount[line] = (lineIdCount[line] ?? 0) + 1;
+          }
         }
+
+        final lineIdCountList = lineIdCount.entries.toList();
+        lineIdCountList.sort((a, b) => b.value.compareTo(a.value));
+        final lineIdRanking = lineIdCountList.map((x) => x.key).toList();
+
+        // 付近駅の最頻出路線を元に、最寄り駅が属する路線を決定
+        currentMasterLineId = lineIdRanking.firstWhereOrNull((x) => stationList.first.station.lines.contains(x));
+        currentLineIdRanking = lineIdRanking;
       }
 
-      final lineIdCountList = lineIdCount.entries.toList();
-      lineIdCountList.sort((a, b) => b.value.compareTo(a.value));
-      final lineIdRanking = lineIdCountList.map((x) => x.key).toList();
+      // _searchListの中身を更新
+      await Future.wait(stationList.map((x) async {
+        final hasMasterLine = x.station.lines.contains(currentMasterLineId);
+        final lineId = (hasMasterLine ? currentMasterLineId : currentLineIdRanking?.firstWhereOrNull((line) => x.station.lines.contains(line))) ?? x.station.lines.first;
 
-      // 付近駅の最頻出路線を元に、最寄り駅が属する路線を決定
-      _currentMasterLineId = lineIdRanking.firstWhereOrNull((x) => _searchList.first.station.lines.contains(x));
-      _currentLineIdRanking = lineIdRanking;
-    }
+        x.lineName = (await _lineRepository.get(lineId))?.name ?? '不明';
+        x.distance = beautifyDistance(measure(latitude, longitude, x.station.lat, x.station.lng));
+      }));
 
-    // _searchListの中身を更新
-    await Future.wait(_searchList.map((x) async {
-      final hasMasterLine = x.station.lines.contains(_currentMasterLineId);
-      final lineId = (hasMasterLine ? _currentMasterLineId : _currentLineIdRanking?.firstWhereOrNull((line) => x.station.lines.contains(line))) ?? x.station.lines.first;
+      _stateNotifier.notify();
 
-      x.lineName = (await _lineRepository.get(lineId))?.name ?? '不明';
-      x.distance = beautifyDistance(measure(latitude, longitude, x.station.lat, x.station.lng));
-    }));
-
-    _currentStation = _searchList.first;
-    _locked = false;
-    _stateNotifier.notify();
-
-    final lastAccess = AccessCacheManager.get(_currentStation!.station.id);
-    final isCoolDown = getCoolDownTime(_currentStation!.station.id) > 0 && lastAccess!.difference(now).inSeconds != 0;
-    if (isChanged) {
-      if (!isCoolDown) _handleStationUpdate(_currentStation!);
-      _scheduleNotification();
-    }
-
-    print('[${DateFormat('HH:mm:ss').format(now)}] updateLocation: ${stopWatch.elapsedMilliseconds}ms');
+      final lastAccess = AccessCacheManager.get(station.station.id);
+      final isCoolDown = getCoolDownTime(station.station.id) > 0 && lastAccess!.difference(now).inSeconds != 0;
+      if (updated) {
+        if (!isCoolDown) _handleStationUpdate(station);
+        _scheduleNotification();
+      }
+    });
   }
 
-  static Future<List<Station>> updateRectRegion(double north, double east, double south, double west, {int? maxResults}) async {
-    if (_root == null) throw Exception('Root node is not initialized');
-    final dist = <Station>[];
-    final bounds = Bounds(north: north, east: east, south: south, west: west);
-    final stopWatch = Stopwatch();
-
-    stopWatch.start();
-    await _searchRect(_root!, bounds, dist, maxResults);
-
-    print('updateRectRegion: ${stopWatch.elapsedMilliseconds}ms');
-    return dist;
+  static Future<List<Station>> updateRect(double north, double east, double south, double west, {int maxResults = 0}) async {
+    return runSync<List<Station>>('updateRect', () async {
+      return await StationSearchService.updateRectRegion(north, east, south, west, maxResults: maxResults);
+    });
   }
 
   static void _scheduleNotification() {
-    if (_currentStation == null) return;
+    final currentStation = StationSearchService.list.firstOrNull;
+    if (currentStation == null) return;
     _notificationTimer?.cancel();
 
-    final coolDownTime = getCoolDownTime(_currentStation!.station.id);
+    final coolDownTime = getCoolDownTime(currentStation.station.id);
     if (coolDownTime <= 0) return;
 
     _notificationTimer = Timer(Duration(seconds: coolDownTime), () async {
-      _handleStationUpdate(_currentStation!, reNotify: true);
+      _handleStationUpdate(currentStation, reNotify: true);
 
-      final stationId = _currentStation?.station.id;
-      final accessLog = stationId != null ? AccessCacheManager.get(stationId) : null;
-      if (accessLog != null && stationId != null) {
+      final stationId = currentStation.station.id;
+      final accessLog = AccessCacheManager.get(stationId);
+      if (accessLog != null) {
         AccessCacheManager.update(stationId, DateTime.now(), updateOnly: true);
       }
 
@@ -402,13 +212,4 @@ class StationManager {
     NotificationManager.showNotification('${data.station.name} [${data.station.nameKana}]', body);
     AssistantFlow.run();
   }
-
-  static double _fixedLatLng(double value) {
-    return double.parse(value.toStringAsFixed(5));
-  }
-
-  static StationData? get currentStation => _currentStation;
-  static DateTime? get lastUpdatedTime => _lastUpdatedTime;
-  static bool get serviceAvailable => _serviceAvailable;
-  static List<StationData> get searchList => _searchList;
 }

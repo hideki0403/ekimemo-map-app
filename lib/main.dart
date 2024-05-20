@@ -8,6 +8,7 @@ import 'services/database.dart';
 import 'services/config.dart';
 import 'services/gps.dart';
 import 'services/station.dart';
+import 'services/search.dart';
 import 'services/notification.dart';
 
 import 'ui/pages/home.dart';
@@ -32,7 +33,7 @@ void main() async {
   Config.init(configProvider);
   SystemState.init(systemStateProvider);
   NotificationManager.initialize();
-  await StationManager.initialize();
+  await StationSearchService.initialize();
 
   runApp(
     MultiProvider(
