@@ -22,6 +22,7 @@ class ConfigProvider extends ChangeNotifier {
   int get cooldownTime => _config?.getInt('cooldown_time') ?? 300;
   bool get enableReminder => _config?.getBool('enable_reminder') ?? false;
   bool get enableNotification => _config?.getBool('enable_notification') ?? true;
+  bool get enableNotificationDuringCooldown => _config?.getBool('enable_notification_during_cooldown') ?? false;
   int get maxResults => _config?.getInt('max_results') ?? 12;
   double get updateFrequency => _config?.getDouble('update_frequency') ?? 3;
   int get maxAcceptableAccuracy => _config?.getInt('max_acceptable_accuracy') ?? 0;
@@ -46,6 +47,11 @@ class ConfigProvider extends ChangeNotifier {
 
   void setEnableNotification(bool value) {
     _config?.setBool('enable_notification', value);
+    notifyListeners();
+  }
+
+  void setEnableNotificationDuringCooldown(bool value) {
+    _config?.setBool('enable_notification_during_cooldown', value);
     notifyListeners();
   }
 
@@ -95,6 +101,7 @@ class Config {
   static int get cooldownTime => _configProvider?.cooldownTime ?? 300;
   static bool get enableReminder => _configProvider?.enableReminder ?? false;
   static bool get enableNotification => _configProvider?.enableNotification ?? true;
+  static bool get enableNotificationDuringCooldown => _configProvider?.enableNotificationDuringCooldown ?? false;
   static int get maxResults => _configProvider?.maxResults ?? 12;
   static int get maxAcceptableAccuracy => _configProvider?.maxAcceptableAccuracy ?? 0;
   static double get updateFrequency => _configProvider?.updateFrequency ?? 3;

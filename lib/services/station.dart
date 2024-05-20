@@ -174,7 +174,7 @@ class StationManager {
       _stateNotifier.notify();
 
       if (updated) {
-        _handleStationUpdate(station, silent: isCoolDown);
+        _handleStationUpdate(station, silent: isCoolDown && !Config.enableNotificationDuringCooldown);
         _scheduleNotification();
       }
     });

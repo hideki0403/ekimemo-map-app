@@ -166,6 +166,14 @@ class _SettingsViewState extends State<SettingsView> {
                   }
                 },
               ),
+              SwitchListTile(
+                title: const Text('クールダウン中でも通知を送信する'),
+                subtitle: const Text('次のリマインド通知が送信されるまでの間 (クールダウン中) でも通知を送信します。'),
+                value: config.enableNotificationDuringCooldown,
+                onChanged: (value) {
+                  config.setEnableNotificationDuringCooldown(value);
+                },
+              ),
               ListTile(
                 title: const Text('通知音'),
                 subtitle: Text(config.notificationSound.displayName),
