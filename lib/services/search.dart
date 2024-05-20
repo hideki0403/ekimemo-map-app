@@ -240,13 +240,15 @@ class StationSearchService {
     _searchList.clear();
     await _search(_root!, latitude, longitude, maxResults, maxDistance: maxDistance);
 
+    final isUpdated = _currentStation == null || _currentStation!.station.id != _searchList.first.station.id;
+
     _currentStation = _searchList.first;
     _lastPositionLat = latitude;
     _lastPositionLng = longitude;
 
     print('[${DateFormat('HH:mm:ss').format(DateTime.now())}] updateLocation: ${stopWatch.elapsedMilliseconds}ms');
 
-    return (true, _currentStation);
+    return (isUpdated, _currentStation);
   }
 
   static Future<List<Station>> updateRectRegion(double north, double east, double south, double west, {int? maxResults}) async {
