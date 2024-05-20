@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'services/database.dart';
 import 'services/config.dart';
 import 'services/gps.dart';
 import 'services/station.dart';
@@ -20,6 +21,7 @@ final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseHandler.init();
 
   final configProvider = ConfigProvider();
   await configProvider.init();

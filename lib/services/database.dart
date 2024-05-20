@@ -8,8 +8,8 @@ enum DatabaseType {
 }
 
 class DatabaseHandler {
-  final int _version = 1;
-  final Map<String, List<String>> _migration = {
+  static const int _version = 1;
+  static final Map<String, List<String>> _migration = {
     '1': [
       // create table
       'CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);',
@@ -26,7 +26,7 @@ class DatabaseHandler {
     ],
   };
 
-  void _migrate(Database db, int previousVersion, int oldVersion) async {
+  static Future<void> _migrate(Database db, int previousVersion, int oldVersion) async {
     for(int i = previousVersion + 1; i <= oldVersion; i++){
       List<String>? queries = _migration[i.toString()];
       if(queries == null) continue;
@@ -37,21 +37,26 @@ class DatabaseHandler {
     }
   }
 
-  Database? _db;
-  Future<Database> get db async {
-    _db ??= await openDatabase('database.db',
+  static Database? _db;
+
+  static Future<void> init() async {
+    _db = await openDatabase('database.db',
       version: _version,
       onCreate: (db, version) async {
-        _migrate(db, 0, version);
+        await _migrate(db, 0, version);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        _migrate(db, oldVersion, newVersion);
+        await _migrate(db, oldVersion, newVersion);
       },
     );
+  }
+
+  static Future<Database> get db async {
+    if (_db == null) await init();
     return _db!;
   }
 
-  Future<void> reset() async {
+  static Future<void> reset() async {
     await deleteDatabase('database.db');
     _db = null;
   }

@@ -269,7 +269,7 @@ class _SettingsViewState extends State<SettingsView> {
                     );
 
                     if (result == true) {
-                      DatabaseHandler().reset();
+                      DatabaseHandler.reset();
                     }
                   },
                 ),

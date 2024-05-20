@@ -15,7 +15,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
   }
 
   static _initialize() async {
-    _database = await DatabaseHandler().db;
+    _database = await DatabaseHandler.db;
   }
 
   Future<T?> get(dynamic key, {String? column}) async {
