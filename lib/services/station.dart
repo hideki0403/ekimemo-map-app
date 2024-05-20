@@ -138,8 +138,7 @@ class StationManager {
 
       // 最寄り駅が変更されたらアクセスログ等を更新
       final now = DateTime.now();
-      final lastAccess = AccessCacheManager.get(station.station.id);
-      final isCoolDown = getCoolDownTime(station.station.id) > 0 && (lastAccess != null && lastAccess.difference(now).inSeconds != 0);
+      final isCoolDown = getCoolDownTime(station.station.id) > 0;
 
       if (updated) {
         _lastUpdatedTime = now;
@@ -175,7 +174,7 @@ class StationManager {
       _stateNotifier.notify();
 
       if (updated) {
-        if (!isCoolDown) _handleStationUpdate(station);
+        _handleStationUpdate(station, silent: isCoolDown);
         _scheduleNotification();
       }
     });
@@ -208,9 +207,9 @@ class StationManager {
     });
   }
 
-  static void _handleStationUpdate(StationData data, { bool reNotify = false }) {
+  static void _handleStationUpdate(StationData data, { bool reNotify = false, bool silent = false }) {
     final body = !reNotify ? '${data.distance}で最寄り駅になりました' : '最後に通知してから${beautifySeconds(Config.cooldownTime)}が経過しました';
-    NotificationManager.showNotification('${data.station.name} [${data.station.nameKana}]', body);
+    NotificationManager.showNotification(data.station.name, body, silent: silent);
     AssistantFlow.run();
   }
 }

@@ -33,19 +33,23 @@ class NotificationManager {
     await _notification.initialize(const InitializationSettings(android: AndroidInitializationSettings('ic_launcher')));
   }
 
-  static Future<void> showNotification(String title, String body) async {
+  static Future<void> showNotification(String title, String body, { bool silent = false }) async {
     if (!Config.enableNotification) return;
-    const android = AndroidNotificationDetails('nearest_station', '最寄り駅通知',
+
+    final platform = NotificationDetails(android: AndroidNotificationDetails('nearest_station', '最寄り駅通知',
       importance: Importance.high,
       priority: Priority.high,
       playSound: false,
       enableVibration: false,
-    );
-    const platform = NotificationDetails(android: android);
+      silent: silent,
+    ));
+
     await _notification.show(0, title, body, platform);
 
-    _audioPlayer.setVolume(Config.notificationSoundVolume / 100);
-    _audioPlayer.play(AssetSource('sound/${Config.notificationSound.toString()}.mp3'));
-    if (Config.enableVibration) Vibration.vibrate(pattern: Config.vibrationPattern.pattern);
+    if (!silent) {
+      _audioPlayer.setVolume(Config.notificationSoundVolume / 100);
+      _audioPlayer.play(AssetSource('sound/${Config.notificationSound.toString()}.mp3'));
+      if (Config.enableVibration) Vibration.vibrate(pattern: Config.vibrationPattern.pattern);
+    }
   }
 }
