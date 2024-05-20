@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'package:ekimemo_map/models/line.dart';
+import 'package:ekimemo_map/services/utils.dart';
 
 class LineSimple extends StatelessWidget {
   final Line line;
@@ -20,6 +21,16 @@ class LineSimple extends StatelessWidget {
           padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12, right: 20),
           child: Row(
             children: [
+              Container(
+                width: 8,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: hexToColor(line.color),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2), width: 1),
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(line.name, textScaler: const TextScaler.linear(1.2)),
               ),
