@@ -94,7 +94,10 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         buildConfigField('String', 'COMMIT_HASH', "\"${getCommitHash()}\"")
-        buildConfigField('String', 'GOOGLE_MAPS_API_KEY', isExistTokenProperties ? tokenProperties.getProperty('googleMapsApiKey') : System.getenv('GOOGLE_MAPS_API_KEY'))
+        manifestPlaceholders = [
+            'applicationName': 'android.app.Application',
+            'GOOGLE_MAPS_API_KEY': isExistTokenProperties ? tokenProperties.getProperty('googleMapsApiKey') : System.getenv('GOOGLE_MAPS_API_KEY')
+        ]
     }
 
     buildTypes {
