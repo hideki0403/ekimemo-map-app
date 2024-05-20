@@ -8,7 +8,6 @@ import 'config.dart';
 import 'utils.dart';
 
 class GpsManager extends ChangeNotifier {
-  final _stationManager = StationManager();
   StreamSubscription? _locationListener;
   Position? _lastLocation;
 
@@ -74,8 +73,8 @@ class GpsManager extends ChangeNotifier {
 
   void _updateHandler(Position location) {
     _lastLocation = location;
-    if (!_stationManager.serviceAvailable) return;
+    if (!StationManager.serviceAvailable) return;
     if (Config.maxAcceptableAccuracy != 0 && Config.maxAcceptableAccuracy < location.accuracy) return;
-    _stationManager.updateLocation(location.latitude, location.longitude);
+    StationManager.updateLocation(location.latitude, location.longitude);
   }
 }

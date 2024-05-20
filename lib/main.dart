@@ -32,16 +32,14 @@ void main() async {
   Config.init(configProvider);
   SystemState.init(systemStateProvider);
   NotificationManager.initialize();
-
-  final stationManager = StationManager();
-  await stationManager.initialize();
+  await StationManager.initialize();
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => configProvider),
         ChangeNotifierProvider(create: (_) => systemStateProvider),
-        ChangeNotifierProvider(create: (_) => stationManager),
+        ChangeNotifierProvider(create: (_) => StationStateNotifier()),
         ChangeNotifierProvider(create: (_) => GpsManager()),
       ],
       child: const Root(),

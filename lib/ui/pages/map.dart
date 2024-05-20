@@ -24,8 +24,6 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   final _mapReadyCompleter = Completer<MaplibreMapController>();
-  final _stationManager = StationManager();
-
   final _hideCountThreshold = 2000;
   final _hideZoomThreshold = 10.0;
 
@@ -75,7 +73,7 @@ class _MapViewState extends State<MapView> {
     final west = bounds.southwest.longitude;
 
     final margin = min(max(north - south, east - west) * 0.5, 0.5);
-    final stations = await _stationManager.updateRectRegion(
+    final stations = await StationManager.updateRectRegion(
       north + margin,
       east + margin,
       south - margin,

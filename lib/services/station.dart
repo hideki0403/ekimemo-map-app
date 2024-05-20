@@ -176,29 +176,42 @@ class StationNode {
   }
 }
 
-class StationManager extends ChangeNotifier {
-  static final _instance = StationManager._internal();
+class StationStateNotifier extends ChangeNotifier {
+  static final _instance = StationStateNotifier._internal();
 
-  StationNode? _root;
-  bool _locked = false;
-  
-  double _lastPositionLat = 0;
-  double _lastPositionLng = 0;
-  bool _serviceAvailable = false;
-  final List<StationData> _searchList = [];
-  DateTime? _lastUpdatedTime;
-  StationData? _currentStation;
-  int? _currentMasterLineId;
-  List<int>? _currentLineIdRanking;
-  Timer? _notificationTimer;
-
-  factory StationManager() {
+  factory StationStateNotifier() {
     return _instance;
   }
 
-  StationManager._internal();
+  StationStateNotifier._internal();
 
-  Future<void> initialize() async {
+  void notify() {
+    notifyListeners();
+  }
+
+  void cleanup() {
+    StationManager.cleanup();
+  }
+
+  List<StationData> get list => StationManager.searchList;
+}
+
+class StationManager {
+  static final StationStateNotifier _stateNotifier = StationStateNotifier();
+  static StationNode? _root;
+  static bool _locked = false;
+  
+  static double _lastPositionLat = 0;
+  static double _lastPositionLng = 0;
+  static bool _serviceAvailable = false;
+  static final List<StationData> _searchList = [];
+  static DateTime? _lastUpdatedTime;
+  static StationData? _currentStation;
+  static int? _currentMasterLineId;
+  static List<int>? _currentLineIdRanking;
+  static Timer? _notificationTimer;
+
+  static Future<void> initialize() async {
     TreeNodeManager.clear();
     AccessCacheManager.initialize();
 
@@ -216,16 +229,16 @@ class StationManager extends ChangeNotifier {
     print('StationManager initialized');
   }
 
-  void clear() {
+  static void clear() {
     _root?.clear();
     _root = null;
   }
 
-  void cleanup() {
+  static void cleanup() {
     _notificationTimer?.cancel();
   }
 
-  Future<void> _search(StationNode node, double latitude, double longitude, int maxResults, {int maxDistance = 0}) async {
+  static Future<void> _search(StationNode node, double latitude, double longitude, int maxResults, {int maxDistance = 0}) async {
     var value = 0.0;
     var threshold = 0.0;
 
@@ -264,7 +277,7 @@ class StationManager extends ChangeNotifier {
     }
   }
 
-  Future<void> _searchRect(StationNode node, Bounds bounds, List<Station> dist, int? maxResults) async {
+  static Future<void> _searchRect(StationNode node, Bounds bounds, List<Station> dist, int? maxResults) async {
     final station = node.station!;
     if (maxResults != null && dist.length >= maxResults) return;
 
@@ -285,7 +298,7 @@ class StationManager extends ChangeNotifier {
     await Future.wait(tasks);
   }
 
-  Future<void> updateLocation(double latitude, double longitude, {int maxDistance = 0}) async {
+  static Future<void> updateLocation(double latitude, double longitude, {int maxDistance = 0}) async {
     final maxResults = Config.maxResults;
     if (maxResults <= 0) return;
     if (_root == null) throw Exception('Root node is not initialized');
@@ -339,7 +352,7 @@ class StationManager extends ChangeNotifier {
 
     _currentStation = _searchList.first;
     _locked = false;
-    notifyListeners();
+    _stateNotifier.notify();
 
     final lastAccess = AccessCacheManager.get(_currentStation!.station.id);
     final isCoolDown = getCoolDownTime(_currentStation!.station.id) > 0 && lastAccess!.difference(now).inSeconds != 0;
@@ -351,7 +364,7 @@ class StationManager extends ChangeNotifier {
     print('[${DateFormat('HH:mm:ss').format(now)}] updateLocation: ${stopWatch.elapsedMilliseconds}ms');
   }
 
-  Future<List<Station>> updateRectRegion(double north, double east, double south, double west, {int? maxResults}) async {
+  static Future<List<Station>> updateRectRegion(double north, double east, double south, double west, {int? maxResults}) async {
     if (_root == null) throw Exception('Root node is not initialized');
     final dist = <Station>[];
     final bounds = Bounds(north: north, east: east, south: south, west: west);
@@ -364,7 +377,7 @@ class StationManager extends ChangeNotifier {
     return dist;
   }
 
-  void _scheduleNotification() {
+  static void _scheduleNotification() {
     if (_currentStation == null) return;
     _notificationTimer?.cancel();
 
@@ -384,18 +397,18 @@ class StationManager extends ChangeNotifier {
     });
   }
 
-  void _handleStationUpdate(StationData data, { bool reNotify = false }) {
+  static void _handleStationUpdate(StationData data, { bool reNotify = false }) {
     final body = !reNotify ? '${data.distance}で最寄り駅になりました' : '最後に通知してから${beautifySeconds(Config.cooldownTime)}が経過しました';
     NotificationManager.showNotification('${data.station.name} [${data.station.nameKana}]', body);
     AssistantFlow.run();
   }
 
-  double _fixedLatLng(double value) {
+  static double _fixedLatLng(double value) {
     return double.parse(value.toStringAsFixed(5));
   }
 
-  StationData? get currentStation => _currentStation;
-  DateTime? get lastUpdatedTime => _lastUpdatedTime;
-  bool get serviceAvailable => _serviceAvailable;
-  List<StationData> get searchList => _searchList;
+  static StationData? get currentStation => _currentStation;
+  static DateTime? get lastUpdatedTime => _lastUpdatedTime;
+  static bool get serviceAvailable => _serviceAvailable;
+  static List<StationData> get searchList => _searchList;
 }

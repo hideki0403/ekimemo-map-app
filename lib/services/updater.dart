@@ -167,8 +167,8 @@ class AssetUpdater {
     SystemState.setString('station_data_version', version);
 
     // TreeNodeを再構築する
-    StationManager().clear();
-    await StationManager().initialize();
+    StationManager.clear();
+    await StationManager.initialize();
 
     showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
       return AlertDialog(

@@ -16,7 +16,7 @@ class HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     AssetUpdater.check(silent: true, first: true);
 
-    final stationManager = Provider.of<StationManager>(context);
+    final station = Provider.of<StationStateNotifier>(context);
     final gpsManager = Provider.of<GpsManager>(context);
     final state = Provider.of<SystemStateProvider>(context);
     return Scaffold(
@@ -61,7 +61,7 @@ class HomeView extends StatelessWidget {
                             AssistantFlow.init();
                             gpsManager.setGpsEnabled(value);
                             if (!value) {
-                              stationManager.cleanup();
+                              station.cleanup();
                             }
                           },
                         ),
@@ -78,9 +78,9 @@ class HomeView extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: stationManager.searchList.length,
+                itemCount: station.list.length,
                 itemBuilder: (context, index) {
-                  return StationSimple(stationData: stationManager.searchList[index], index: index);
+                  return StationSimple(stationData: station.list[index], index: index);
                 }
               )
             ] : [
