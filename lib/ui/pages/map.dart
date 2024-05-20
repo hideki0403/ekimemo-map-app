@@ -27,6 +27,30 @@ class _MapViewState extends State<MapView> {
   final _hideCountThreshold = 2000;
   final _hideZoomThreshold = 10.0;
 
+  bool _isRendering = false;
+
+  void showLoading() {
+    final snackBar = SnackBar(
+      content: const Row(
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(width: 16),
+          Text('計算中...'),
+        ],
+      ),
+      duration: const Duration(minutes: 1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: const EdgeInsets.only(left: 23, right: 23, bottom: 23),
+      behavior: SnackBarBehavior.floating,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void hideLoading() {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  }
+
   Map<String, dynamic> _buildVoronoi(List<Station> stations) {
     final List<Map<String, dynamic>> voronoi = [];
     for (var station in stations) {
@@ -61,6 +85,9 @@ class _MapViewState extends State<MapView> {
   }
 
   void _renderVoronoi() async {
+    if (_isRendering) return;
+    _isRendering = true;
+
     final controller = await _mapReadyCompleter.future;
 
     final zoom = controller.cameraPosition?.zoom;
@@ -73,6 +100,8 @@ class _MapViewState extends State<MapView> {
     final west = bounds.southwest.longitude;
 
     final margin = min(max(north - south, east - west) * 0.5, 0.5);
+
+    showLoading();
     final stations = await StationManager.updateRect(
       north + margin,
       east + margin,
@@ -84,13 +113,15 @@ class _MapViewState extends State<MapView> {
     if (stations.length >= _hideCountThreshold) {
       controller.setLayerVisibility('voronoi', false);
       controller.setLayerVisibility('point', false);
-      return;
+    } else {
+      controller.setGeoJsonSource('voronoi', _buildVoronoi(stations));
+      controller.setGeoJsonSource('point', _buildPoint(stations));
+      controller.setLayerVisibility('voronoi', true);
+      controller.setLayerVisibility('point', true);
     }
 
-    controller.setGeoJsonSource('voronoi', _buildVoronoi(stations));
-    controller.setGeoJsonSource('point', _buildPoint(stations));
-    controller.setLayerVisibility('voronoi', true);
-    controller.setLayerVisibility('point', true);
+    hideLoading();
+    _isRendering = false;
   }
 
   void _renderSingleStation() async {
@@ -123,80 +154,61 @@ class _MapViewState extends State<MapView> {
         title: const Text('マップ'),
       ),
       body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(child: MaplibreMap(
-              initialCameraPosition: const CameraPosition(target: LatLng(35.681236, 139.767125), zoom: 10.0),
-              onMapCreated: (controller) {
-                _mapReadyCompleter.complete(controller);
-              },
-              onStyleLoadedCallback: () async {
-                final controller = await _mapReadyCompleter.future;
-                final imageBuffer = await rootBundle.load('assets/icon/map-pin.png');
+        child: Expanded(child: MaplibreMap(
+          initialCameraPosition: const CameraPosition(target: LatLng(35.681236, 139.767125), zoom: 10.0),
+          onMapCreated: (controller) {
+            _mapReadyCompleter.complete(controller);
+          },
+          onStyleLoadedCallback: () async {
+            final controller = await _mapReadyCompleter.future;
+            final imageBuffer = await rootBundle.load('assets/icon/map-pin.png');
 
-                await controller.addImage('pin', imageBuffer.buffer.asUint8List(), true);
-                await controller.addGeoJsonSource('voronoi', _buildVoronoi([]));
-                await controller.addGeoJsonSource('point', _buildPoint([]));
+            await controller.addImage('pin', imageBuffer.buffer.asUint8List(), true);
+            await controller.addGeoJsonSource('voronoi', _buildVoronoi([]));
+            await controller.addGeoJsonSource('point', _buildPoint([]));
 
-                await controller.addLineLayer('voronoi', 'voronoi', const LineLayerProperties(
-                  lineColor: '#ff0000',
-                  lineWidth: 1.0,
-                ), minzoom: _hideZoomThreshold);
+            await controller.addLineLayer('voronoi', 'voronoi', const LineLayerProperties(
+              lineColor: '#ff0000',
+              lineWidth: 1.0,
+            ));
 
-                await controller.addSymbolLayer('point', 'point', const SymbolLayerProperties(
-                  textField: [Expressions.get, 'name'],
-                  textHaloWidth: 1,
-                  textSize: 14,
-                  textHaloColor: '#ffffff',
-                  textOffset: [
-                    Expressions.literal,
-                    [0, 2]
-                  ],
-                  iconImage: 'pin',
-                  iconSize: 0.4,
-                  iconColor: '#f7606d',
-                ), minzoom: 12);
+            await controller.addSymbolLayer('point', 'point', const SymbolLayerProperties(
+              textField: [Expressions.get, 'name'],
+              textHaloWidth: 1,
+              textSize: 14,
+              textHaloColor: '#ffffff',
+              textOffset: [
+                Expressions.literal,
+                [0, 2]
+              ],
+              iconImage: 'pin',
+              iconSize: 0.4,
+              iconColor: '#f7606d',
+            ), minzoom: 12);
 
-                if (widget.stationId != null) {
-                  _renderSingleStation();
-                  return;
-                }
+            if (widget.stationId != null) {
+              _renderSingleStation();
+              return;
+            }
 
-                if (widget.lineId != null) {
-                  _renderSingleLine();
-                  return;
-                }
+            if (widget.lineId != null) {
+              _renderSingleLine();
+              return;
+            }
 
-                final location = await Geolocator.getCurrentPosition();
-                controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
-                  target: LatLng(location.latitude, location.longitude),
-                  zoom: 12.0,
-                )));
-              },
-              onCameraIdle: () async {
-                if (widget.stationId != null || widget.lineId != null) return;
-                _renderVoronoi();
-              },
-              styleString: 'https://assets.yukineko.dev/map/style/google_maps_style.json',
-              // myLocationEnabled: true,
-            )),
-            Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 8),
-              child: RichText(
-                text: TextSpan(
-                  style: const TextStyle(color: Colors.black),
-                  children: [
-                    const TextSpan(text: '©'),
-                    TextSpan(text: 'OpenStreetMap', style: const TextStyle(color: Colors.blue), recognizer: TapGestureRecognizer()..onTap = () => launchUrlString('https://www.openstreetmap.org/copyright')),
-                    const TextSpan(text: ' contributors'),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        )
+            final location = await Geolocator.getCurrentPosition();
+            controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
+              target: LatLng(location.latitude, location.longitude),
+              zoom: 12.0,
+            )));
+          },
+          onCameraIdle: () async {
+            if (widget.stationId != null || widget.lineId != null) return;
+            _renderVoronoi();
+          },
+          styleString: 'https://assets.yukineko.dev/map/style/google_maps_style.json',
+          myLocationEnabled: true,
+        )),
       )
     );
   }
