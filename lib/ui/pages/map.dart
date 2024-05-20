@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/repository/station.dart';
