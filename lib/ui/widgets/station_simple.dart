@@ -41,9 +41,9 @@ class StationSimple extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(stationData.station.name, textScaler: const TextScaler.linear(1.2)),
+                    Text(stationData.station.name, textScaler: const TextScaler.linear(1.2), overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 4),
-                    Opacity(opacity: 0.8, child: Text(stationData.lineName ?? '')),
+                    Opacity(opacity: 0.8, child: Text(stationData.lineName ?? '', overflow: TextOverflow.ellipsis)),
                   ],
                 ),
               ),
