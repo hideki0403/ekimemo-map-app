@@ -24,10 +24,8 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   final _mapReadyCompleter = Completer<MaplibreMapController>();
-  final _hideCountThreshold = 2000;
-  final _hideZoomThreshold = 10.0;
-
   bool _isRendering = false;
+  bool _initialized = false;
 
   void showLoading() {
     final snackBar = SnackBar(
@@ -91,36 +89,32 @@ class _MapViewState extends State<MapView> {
     final controller = await _mapReadyCompleter.future;
 
     final zoom = controller.cameraPosition?.zoom;
-    if (zoom == null || zoom > _hideZoomThreshold) return;
+    if (zoom != null && zoom > 10.0) {
+      final bounds = await controller.getVisibleRegion();
+      final north = bounds.northeast.latitude;
+      final east = bounds.northeast.longitude;
+      final south = bounds.southwest.latitude;
+      final west = bounds.southwest.longitude;
 
-    final bounds = await controller.getVisibleRegion();
-    final north = bounds.northeast.latitude;
-    final east = bounds.northeast.longitude;
-    final south = bounds.southwest.latitude;
-    final west = bounds.southwest.longitude;
+      final margin = min(max(north - south, east - west) * 0.5, 0.5);
 
-    final margin = min(max(north - south, east - west) * 0.5, 0.5);
+      showLoading();
+      final stations = await StationManager.updateRect(
+        north + margin,
+        east + margin,
+        south - margin,
+        west - margin,
+        maxResults: 2000,
+      );
 
-    showLoading();
-    final stations = await StationManager.updateRect(
-      north + margin,
-      east + margin,
-      south - margin,
-      west - margin,
-      maxResults: _hideCountThreshold,
-    );
-
-    if (stations.length >= _hideCountThreshold) {
-      controller.setLayerVisibility('voronoi', false);
-      controller.setLayerVisibility('point', false);
-    } else {
       controller.setGeoJsonSource('voronoi', _buildVoronoi(stations));
       controller.setGeoJsonSource('point', _buildPoint(stations));
       controller.setLayerVisibility('voronoi', true);
       controller.setLayerVisibility('point', true);
+
+      hideLoading();
     }
 
-    hideLoading();
     _isRendering = false;
   }
 
@@ -156,6 +150,7 @@ class _MapViewState extends State<MapView> {
       body: SafeArea(
         child: Expanded(child: MaplibreMap(
           initialCameraPosition: const CameraPosition(target: LatLng(35.681236, 139.767125), zoom: 10.0),
+          trackCameraPosition: true,
           onMapCreated: (controller) {
             _mapReadyCompleter.complete(controller);
           },
@@ -196,6 +191,8 @@ class _MapViewState extends State<MapView> {
               return;
             }
 
+            _initialized = true;
+
             final location = await Geolocator.getCurrentPosition();
             controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
               target: LatLng(location.latitude, location.longitude),
@@ -203,7 +200,7 @@ class _MapViewState extends State<MapView> {
             )));
           },
           onCameraIdle: () async {
-            if (widget.stationId != null || widget.lineId != null) return;
+            if (widget.stationId != null || widget.lineId != null || !_initialized) return;
             _renderVoronoi();
           },
           styleString: 'https://assets.yukineko.dev/map/style/google_maps_style.json',
