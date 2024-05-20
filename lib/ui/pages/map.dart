@@ -26,21 +26,27 @@ class _MapViewState extends State<MapView> {
   bool _initialized = false;
 
   void showLoading() {
-    final snackBar = SnackBar(
-      content: const Row(
+    const snackBar = SnackBar(
+      content: Row(
         children: [
-          CircularProgressIndicator(),
-          SizedBox(width: 16),
-          Text('計算中...'),
+          SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(),
+          ),
+          SizedBox(width: 32),
+          Text('計算中...', style: TextStyle(fontSize: 18)),
         ],
       ),
-      duration: const Duration(minutes: 1),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: const EdgeInsets.only(left: 23, right: 23, bottom: 23),
+      duration: Duration(seconds: 30),
+      shape: StadiumBorder(),
+      margin: EdgeInsets.only(left: 23, right: 23, bottom: 23),
       behavior: SnackBarBehavior.floating,
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(snackBar);
   }
 
   void hideLoading() {
