@@ -152,64 +152,66 @@ class _MapViewState extends State<MapView> {
         title: const Text('マップ'),
       ),
       body: SafeArea(
-        child: Expanded(child: MaplibreMap(
-          initialCameraPosition: const CameraPosition(target: LatLng(35.681236, 139.767125), zoom: 10.0),
-          trackCameraPosition: true,
-          onMapCreated: (controller) {
-            _mapReadyCompleter.complete(controller);
-          },
-          onStyleLoadedCallback: () async {
-            final controller = await _mapReadyCompleter.future;
-            final imageBuffer = await rootBundle.load('assets/icon/map-pin.png');
+        child: Row(children: [
+          Expanded(child: MaplibreMap(
+            initialCameraPosition: const CameraPosition(target: LatLng(35.681236, 139.767125), zoom: 10.0),
+            trackCameraPosition: true,
+            onMapCreated: (controller) {
+              _mapReadyCompleter.complete(controller);
+            },
+            onStyleLoadedCallback: () async {
+              final controller = await _mapReadyCompleter.future;
+              final imageBuffer = await rootBundle.load('assets/icon/map-pin.png');
 
-            await controller.addImage('pin', imageBuffer.buffer.asUint8List(), true);
-            await controller.addGeoJsonSource('voronoi', _buildVoronoi([]));
-            await controller.addGeoJsonSource('point', _buildPoint([]));
+              await controller.addImage('pin', imageBuffer.buffer.asUint8List(), true);
+              await controller.addGeoJsonSource('voronoi', _buildVoronoi([]));
+              await controller.addGeoJsonSource('point', _buildPoint([]));
 
-            await controller.addLineLayer('voronoi', 'voronoi', const LineLayerProperties(
-              lineColor: '#ff0000',
-              lineWidth: 1.0,
-            ));
+              await controller.addLineLayer('voronoi', 'voronoi', const LineLayerProperties(
+                lineColor: '#ff0000',
+                lineWidth: 1.0,
+              ));
 
-            await controller.addSymbolLayer('point', 'point', const SymbolLayerProperties(
-              textField: [Expressions.get, 'name'],
-              textHaloWidth: 1,
-              textSize: 14,
-              textHaloColor: '#ffffff',
-              textOffset: [
-                Expressions.literal,
-                [0, 2]
-              ],
-              iconImage: 'pin',
-              iconSize: 0.4,
-              iconColor: '#f7606d',
-            ), minzoom: 12);
+              await controller.addSymbolLayer('point', 'point', const SymbolLayerProperties(
+                textField: [Expressions.get, 'name'],
+                textHaloWidth: 1,
+                textSize: 14,
+                textHaloColor: '#ffffff',
+                textOffset: [
+                  Expressions.literal,
+                  [0, 2]
+                ],
+                iconImage: 'pin',
+                iconSize: 0.4,
+                iconColor: '#f7606d',
+              ), minzoom: 12);
 
-            if (widget.stationId != null) {
-              _renderSingleStation();
-              return;
-            }
+              if (widget.stationId != null) {
+                _renderSingleStation();
+                return;
+              }
 
-            if (widget.lineId != null) {
-              _renderSingleLine();
-              return;
-            }
+              if (widget.lineId != null) {
+                _renderSingleLine();
+                return;
+              }
 
-            _initialized = true;
+              _initialized = true;
 
-            final location = await Geolocator.getCurrentPosition();
-            controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
-              target: LatLng(location.latitude, location.longitude),
-              zoom: 12.0,
-            )));
-          },
-          onCameraIdle: () async {
-            if (widget.stationId != null || widget.lineId != null || !_initialized) return;
-            _renderVoronoi();
-          },
-          styleString: 'https://assets.yukineko.dev/map/style/google_maps_style.json',
-          myLocationEnabled: true,
-        )),
+              final location = await Geolocator.getCurrentPosition();
+              controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
+                target: LatLng(location.latitude, location.longitude),
+                zoom: 12.0,
+              )));
+            },
+            onCameraIdle: () async {
+              if (widget.stationId != null || widget.lineId != null || !_initialized) return;
+              _renderVoronoi();
+            },
+            styleString: 'https://assets.yukineko.dev/map/style/google_maps_style.json',
+            myLocationEnabled: true,
+          )),
+        ]),
       )
     );
   }
