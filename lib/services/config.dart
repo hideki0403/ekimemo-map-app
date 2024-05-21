@@ -26,10 +26,12 @@ class ConfigProvider extends ChangeNotifier {
   int get maxResults => _config?.getInt('max_results') ?? 12;
   double get updateFrequency => _config?.getDouble('update_frequency') ?? 3;
   int get maxAcceptableAccuracy => _config?.getInt('max_acceptable_accuracy') ?? 0;
+  bool get enableNotificationSound => _config?.getBool('enable_notification_sound') ?? true;
   NotificationSound get notificationSound => NotificationSound.values.byName(_config?.getString('notification_sound') ?? NotificationSound.se1.name);
   VibrationPattern get vibrationPattern => VibrationPattern.values.byName(_config?.getString('vibration_pattern') ?? VibrationPattern.pattern1.name);
   int get notificationSoundVolume => _config?.getInt('notification_sound_volume') ?? 100;
   bool get enableVibration => _config?.getBool('enable_vibration') ?? true;
+  bool get enableTts => _config?.getBool('enable_tts') ?? false;
 
   void notify() {
     notifyListeners();
@@ -70,6 +72,11 @@ class ConfigProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setEnableNotificationSound(bool value) {
+    _config?.setBool('enable_notification_sound', value);
+    notifyListeners();
+  }
+
   void setNotificationSound(NotificationSound value) {
     _config?.setString('notification_sound', value.name);
     notifyListeners();
@@ -89,6 +96,11 @@ class ConfigProvider extends ChangeNotifier {
     _config?.setBool('enable_vibration', value);
     notifyListeners();
   }
+
+  void setEnableTts(bool value) {
+    _config?.setBool('enable_tts', value);
+    notifyListeners();
+  }
 }
 
 class Config {
@@ -105,10 +117,12 @@ class Config {
   static int get maxResults => _configProvider?.maxResults ?? 12;
   static int get maxAcceptableAccuracy => _configProvider?.maxAcceptableAccuracy ?? 0;
   static double get updateFrequency => _configProvider?.updateFrequency ?? 3;
+  static bool get enableNotificationSound => _configProvider?.enableNotificationSound ?? true;
   static NotificationSound get notificationSound => _configProvider?.notificationSound ?? NotificationSound.se1;
   static VibrationPattern get vibrationPattern => _configProvider?.vibrationPattern ?? VibrationPattern.pattern1;
   static int get notificationSoundVolume => _configProvider?.notificationSoundVolume ?? 100;
   static bool get enableVibration => _configProvider?.enableVibration ?? true;
+  static bool get enableTts => _configProvider?.enableTts ?? false;
 
   static String getString(String key, {String defaultValue = ''}) {
     return _configProvider?.config?.getString(key) ?? defaultValue;

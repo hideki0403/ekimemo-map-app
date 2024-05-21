@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:vibration/vibration.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'config.dart';
 
 enum NotificationSound {
@@ -26,12 +27,14 @@ enum VibrationPattern {
 class NotificationManager {
   static final _notification = FlutterLocalNotificationsPlugin();
   static final _audioPlayer = AudioPlayer();
+  static final _tts = FlutterTts();
 
   static Future<void> initialize() async {
     await _notification.initialize(const InitializationSettings(android: AndroidInitializationSettings('ic_launcher')));
+    await _tts.setLanguage('ja-JP');
   }
 
-  static Future<void> showNotification(String title, String body, { bool silent = false, String? icon }) async {
+  static Future<void> showNotification(String title, String body, { bool silent = false, String? icon, String? ttsText }) async {
     if (!Config.enableNotification) return;
 
     final platform = NotificationDetails(android: AndroidNotificationDetails('nearest_station', '最寄り駅通知',
@@ -46,17 +49,27 @@ class NotificationManager {
     await _notification.show(0, title, body, platform);
 
     if (!silent) {
-      playSound(Config.notificationSound);
       if (Config.enableVibration) playVibration(Config.vibrationPattern);
+      if (Config.enableNotificationSound) await playSound(Config.notificationSound);
+      if (Config.enableTts && ttsText != null) await playTTS(ttsText);
     }
   }
 
-  static void playSound(NotificationSound sound) {
-    _audioPlayer.setVolume(Config.notificationSoundVolume / 100);
-    _audioPlayer.play(AssetSource('sound/${sound.toString()}.mp3'));
+  static Future<void> playSound(NotificationSound sound) async {
+    await _audioPlayer.setVolume(Config.notificationSoundVolume / 100);
+    await _audioPlayer.setSource(AssetSource('sound/${sound.toString()}.mp3'));
+    final waitTime = await _audioPlayer.getDuration() ?? Duration.zero;
+    await _audioPlayer.resume();
+    await Future.delayed(Duration(milliseconds: waitTime.inMilliseconds + 500));
+    await _audioPlayer.stop();
   }
 
-  static void playVibration(VibrationPattern pattern) {
-    Vibration.vibrate(pattern: pattern.pattern);
+  static Future<void> playVibration(VibrationPattern pattern) async {
+    await Vibration.vibrate(pattern: pattern.pattern);
+  }
+
+  static Future<void> playTTS(String text) async {
+    await _tts.setVolume(Config.notificationSoundVolume / 100);
+    await _tts.speak(text);
   }
 }

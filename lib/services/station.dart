@@ -209,7 +209,8 @@ class StationManager {
 
   static void _handleStationUpdate(StationData data, { bool reNotify = false, bool silent = false }) {
     final body = !reNotify ? '${data.distance}で最寄り駅になりました' : '最後に通知してから${beautifySeconds(Config.cooldownTime)}が経過しました';
-    NotificationManager.showNotification(data.station.name, body, silent: silent, icon: reNotify ? 'ic_notification_remind' : 'ic_notification_new');
+    final ttsText = !reNotify ? '「${data.station.nameKana}」が、最寄り駅になりました' : '「${data.station.nameKana}」に、アクセスしてから、${beautifySeconds(Config.cooldownTime, jp: true)}が経過しました';
+    NotificationManager.showNotification(data.station.name, body, silent: silent, icon: reNotify ? 'ic_notification_remind' : 'ic_notification_new', ttsText: ttsText);
     AssistantFlow.run();
   }
 }

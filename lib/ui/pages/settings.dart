@@ -174,6 +174,14 @@ class _SettingsViewState extends State<SettingsView> {
                   config.setEnableNotificationDuringCooldown(value);
                 },
               ),
+              SwitchListTile(
+                title: const Text('通知音を再生する'),
+                subtitle: const Text('最寄り駅が変更された場合などに通知音を再生します。'),
+                value: config.enableNotificationSound,
+                onChanged: (value) {
+                  config.setEnableNotificationSound(value);
+                },
+              ),
               ListTile(
                 title: const Text('通知音'),
                 subtitle: Text(config.notificationSound.displayName),
@@ -238,6 +246,14 @@ class _SettingsViewState extends State<SettingsView> {
                   if (result != null) {
                     config.setVibrationPattern(VibrationPattern.values.byName(result));
                   }
+                },
+              ),
+              SwitchListTile(
+                title: const Text('駅名読み上げ'),
+                subtitle: const Text('通知時に駅名の読み上げを行います。'),
+                value: config.enableTts,
+                onChanged: (value) {
+                  config.setEnableTts(value);
                 },
               ),
               const SectionTitle(title: '駅データ'),
