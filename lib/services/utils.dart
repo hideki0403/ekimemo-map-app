@@ -5,9 +5,11 @@ import 'package:ekimemo_map/main.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/models/station.dart';
+import 'package:ekimemo_map/models/line.dart';
 import 'package:ekimemo_map/models/access_log.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
 import 'package:ekimemo_map/ui/widgets/select_dialog.dart';
+import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
 
 int measure(double plat1, double plng1, double plat2, double plng2) {
   final lng1 = pi * plng1 / 180;
@@ -80,6 +82,24 @@ Rect stringToRect(String str) {
 
 double randomInRange(double min, double max) {
   return min + Random().nextDouble() * (max - min);
+}
+
+maplibre.LatLngBounds? getBoundsFromLine(Line line) {
+  if (line.polylineList == null) return null;
+
+  final properties = line.polylineList?['properties'];
+  if (properties == null) return null;
+
+  final north = properties['north'];
+  final east = properties['east'];
+  final south = properties['south'];
+  final west = properties['west'];
+  if (north == null || east == null || south == null || west == null) return null;
+
+  return maplibre.LatLngBounds(
+    southwest: maplibre.LatLng(south, west),
+    northeast: maplibre.LatLng(north, east),
+  );
 }
 
 Future<void> showMessageDialog({String? title, String? message, Widget? content}) async {

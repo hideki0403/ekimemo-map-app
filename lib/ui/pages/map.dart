@@ -8,7 +8,9 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/repository/station.dart';
+import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/services/station.dart';
+import 'package:ekimemo_map/services/utils.dart';
 
 class MapView extends StatefulWidget {
   final String? stationId;
@@ -23,7 +25,8 @@ class MapView extends StatefulWidget {
 class _MapViewState extends State<MapView> {
   final _mapReadyCompleter = Completer<MaplibreMapController>();
   bool _isRendering = false;
-  bool _initialized = false;
+  bool _isNormalMode = false;
+  final StationRepository _stationRepository = StationRepository();
 
   void showLoading() {
     const snackBar = SnackBar(
@@ -113,8 +116,6 @@ class _MapViewState extends State<MapView> {
 
       controller.setGeoJsonSource('voronoi', _buildVoronoi(stations));
       controller.setGeoJsonSource('point', _buildPoint(stations));
-      controller.setLayerVisibility('voronoi', true);
-      controller.setLayerVisibility('point', true);
 
       hideLoading();
     }
@@ -125,7 +126,7 @@ class _MapViewState extends State<MapView> {
   void _renderSingleStation() async {
     final controller = await _mapReadyCompleter.future;
 
-    final station = await StationRepository().get(widget.stationId!);
+    final station = await _stationRepository.get(widget.stationId!, column: 'id');
     if (station == null) return;
 
     controller.setGeoJsonSource('voronoi', _buildVoronoi([station]));
@@ -137,7 +138,24 @@ class _MapViewState extends State<MapView> {
   }
 
   void _renderSingleLine() async {
-    // TODO: 路線の描画
+    final controller = await _mapReadyCompleter.future;
+
+    final line = await LineRepository().get(widget.lineId!, column: 'id');
+    if (line == null || line.polylineList == null) return;
+
+    final stations = await Future.wait(line.stationList.map((x) async {
+      final station = await _stationRepository.get(x, column: 'id');
+      if (station == null) throw Exception('Station not found');
+      return station;
+    }));
+
+    controller.setGeoJsonSource('voronoi', line.polylineList as Map<String, dynamic>);
+    controller.setGeoJsonSource('point', _buildPoint(stations));
+
+    final bounds = getBoundsFromLine(line);
+    if (bounds != null) {
+      controller.moveCamera(CameraUpdate.newLatLngBounds(bounds));
+    }
   }
 
   @override
@@ -149,7 +167,7 @@ class _MapViewState extends State<MapView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('マップ'),
+        title: Text(widget.stationId != null ? 'マップ (駅情報)' : widget.lineId != null ? 'マップ (路線情報)' : 'マップ'),
       ),
       body: SafeArea(
         child: Row(children: [
@@ -167,9 +185,9 @@ class _MapViewState extends State<MapView> {
               await controller.addGeoJsonSource('voronoi', _buildVoronoi([]));
               await controller.addGeoJsonSource('point', _buildPoint([]));
 
-              await controller.addLineLayer('voronoi', 'voronoi', const LineLayerProperties(
+              await controller.addLineLayer('voronoi', 'voronoi', LineLayerProperties(
                 lineColor: '#ff0000',
-                lineWidth: 1.0,
+                lineWidth: (widget.lineId != null || widget.stationId != null) ? 2.0 : 1.0,
               ));
 
               await controller.addSymbolLayer('point', 'point', const SymbolLayerProperties(
@@ -196,7 +214,7 @@ class _MapViewState extends State<MapView> {
                 return;
               }
 
-              _initialized = true;
+              _isNormalMode = true;
 
               final location = await Geolocator.getCurrentPosition();
               controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
@@ -205,7 +223,7 @@ class _MapViewState extends State<MapView> {
               )));
             },
             onCameraIdle: () async {
-              if (widget.stationId != null || widget.lineId != null || !_initialized) return;
+              if (!_isNormalMode) return;
               _renderVoronoi();
             },
             styleString: 'https://assets.yukineko.dev/map/style/google_maps_style.json',

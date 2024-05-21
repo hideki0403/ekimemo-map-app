@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'package:ekimemo_map/models/line.dart';
 import 'package:ekimemo_map/services/utils.dart';
+import 'package:go_router/go_router.dart';
 
 class LineSimple extends StatelessWidget {
   final Line line;
@@ -15,7 +16,7 @@ class LineSimple extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         onTap: () {
-          // TODO: 路線情報ページに飛べるようにする
+          context.push(Uri(path: '/line', queryParameters: {'id': line.id}).toString());
         },
         child: Padding(
           padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12, right: 20),

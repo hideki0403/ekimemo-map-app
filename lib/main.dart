@@ -15,6 +15,7 @@ import 'ui/pages/home.dart';
 import 'ui/pages/settings.dart';
 import 'ui/pages/map.dart';
 import 'ui/pages/station_detail.dart';
+import 'ui/pages/line_detail.dart';
 import 'ui/pages/assistant_flow.dart';
 import 'ui/pages/assistant_choose_rect.dart';
 
@@ -89,6 +90,12 @@ class Root extends StatelessWidget {
               path: '/station',
               builder: (context, state) {
                 return StationDetailView(stationId: state.uri.queryParameters['id']);
+              },
+            ),
+            GoRoute(
+              path: '/line',
+              builder: (context, state) {
+                return LineDetailView(lineId: state.uri.queryParameters['id']);
               },
             ),
           ],
