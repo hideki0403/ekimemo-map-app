@@ -179,13 +179,18 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: Text(config.notificationSound.displayName),
                 onTap: () async {
                   final result = await showSelectDialog(
-                      title: '通知音',
-                      data: Map.fromEntries(NotificationSound.values.map((e) => MapEntry(e.name, e.displayName))),
-                      defaultValue: config.notificationSound.name,
+                    title: '通知音',
+                    data: Map.fromEntries(NotificationSound.values.map((e) => MapEntry(e.name, e.displayName))),
+                    defaultValue: config.notificationSound.name,
+                    showOkButton: true,
+                    onChanged: (String? value) {
+                      if (value != null) {
+                        NotificationManager.playSound(NotificationSound.values.byName(value));
+                      }
+                    },
                   );
 
                   if (result != null) {
-                    // TODO: 通知音選択時に鳴らすように
                     config.setNotificationSound(NotificationSound.values.byName(result));
                   }
                 },
@@ -219,13 +224,18 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: Text(config.vibrationPattern.displayName),
                 onTap: () async {
                   final result = await showSelectDialog(
-                      title: 'バイブレーションパターン',
-                      data: Map.fromEntries(VibrationPattern.values.map((e) => MapEntry(e.name, e.displayName))),
-                      defaultValue: config.vibrationPattern.name,
+                    title: 'バイブレーションパターン',
+                    data: Map.fromEntries(VibrationPattern.values.map((e) => MapEntry(e.name, e.displayName))),
+                    defaultValue: config.vibrationPattern.name,
+                    showOkButton: true,
+                    onChanged: (String? value) {
+                      if (value != null) {
+                        NotificationManager.playVibration(VibrationPattern.values.byName(value));
+                      }
+                    },
                   );
 
                   if (result != null) {
-                    // TODO: パターン選択時に動かすように
                     config.setVibrationPattern(VibrationPattern.values.byName(result));
                   }
                 },
