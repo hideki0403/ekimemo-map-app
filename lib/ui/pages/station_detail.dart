@@ -19,7 +19,7 @@ class StationDetailView extends StatefulWidget {
   const StationDetailView({this.stationId, super.key});
 
   @override
-  _StationDetailViewState createState() => _StationDetailViewState();
+  State<StatefulWidget> createState() => _StationDetailViewState();
 }
 
 class _StationDetailViewState extends State<StationDetailView> {
@@ -77,7 +77,7 @@ class _StationDetailViewState extends State<StationDetailView> {
                       Text(prefectureCode[station!.prefecture]!),
                       const SizedBox(height: 4),
                       getAttrIcon(station!.attr),
-                      Text(station!.name, textScaler: const TextScaler.linear(1.5)),
+                      Text(station!.originalName, textScaler: const TextScaler.linear(1.5)),
                       Text(station!.nameKana),
                     ],
                   ),
