@@ -6,14 +6,24 @@ class SelectDialog extends StatefulWidget {
   final String? defaultValue;
   final String? caption;
   final bool? noRadio;
+  final bool? showOkButton;
+  final Function(String?)? onChanged;
 
-  const SelectDialog({super.key, required this.data, this.defaultValue, this.title, this.caption, this.noRadio });
+  const SelectDialog({super.key, required this.data, this.defaultValue, this.title, this.caption, this.noRadio, this.onChanged, this.showOkButton });
 
   @override
   State<SelectDialog> createState() => _SelectDialogState();
 }
 
 class _SelectDialogState extends State<SelectDialog> {
+  String? selectedValue;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedValue = widget.defaultValue;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -27,14 +37,27 @@ class _SelectDialogState extends State<SelectDialog> {
             widget.noRadio != true ? RadioListTile<String>(
               title: Text(widget.data[key]!),
               value: key,
-              groupValue: widget.defaultValue,
+              groupValue: selectedValue,
               onChanged: (value) {
-                Navigator.of(context).pop(value);
+                if (widget.onChanged != null) widget.onChanged!(value);
+                if (widget.showOkButton != true) {
+                  Navigator.of(context).pop(value);
+                } else {
+                  setState(() {
+                    selectedValue = value;
+                  });
+                }
               },
             ) : ListTile(
               title: Text(widget.data[key]!),
               onTap: () {
-                Navigator.of(context).pop(key);
+                if (widget.showOkButton != true) {
+                  Navigator.of(context).pop(key);
+                } else {
+                  setState(() {
+                    selectedValue = key;
+                  });
+                }
               },
             ),
         ],
@@ -45,7 +68,13 @@ class _SelectDialogState extends State<SelectDialog> {
             Navigator.of(context).pop();
           },
           child: const Text('キャンセル'),
-        )
+        ),
+        if (widget.showOkButton == true) TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(selectedValue);
+          },
+          child: const Text('OK'),
+        ),
       ],
     );
   }

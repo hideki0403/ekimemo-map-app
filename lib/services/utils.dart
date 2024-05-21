@@ -111,11 +111,19 @@ Future<String?> showEditorDialog({String? data, String? title, String? caption, 
   );
 }
 
-Future<String?> showSelectDialog({String? title, required Map<String, String> data, String? defaultValue, String? caption, bool? noRadio}) async {
+Future<String?> showSelectDialog({
+  required Map<String, String> data,
+  String? title,
+  String? defaultValue,
+  String? caption,
+  bool? noRadio,
+  bool? showOkButton,
+  Function(String?)? onChanged,
+}) async {
   return showDialog(
     context: navigatorKey.currentContext!,
     builder: (context) {
-      return SelectDialog(data: data, defaultValue: defaultValue, title: title, caption: caption, noRadio: noRadio);
+      return SelectDialog(data: data, defaultValue: defaultValue, title: title, caption: caption, noRadio: noRadio, showOkButton: showOkButton, onChanged: onChanged);
     },
   );
 }
