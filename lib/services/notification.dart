@@ -31,7 +31,7 @@ class NotificationManager {
     await _notification.initialize(const InitializationSettings(android: AndroidInitializationSettings('ic_launcher')));
   }
 
-  static Future<void> showNotification(String title, String body, { bool silent = false }) async {
+  static Future<void> showNotification(String title, String body, { bool silent = false, String? icon }) async {
     if (!Config.enableNotification) return;
 
     final platform = NotificationDetails(android: AndroidNotificationDetails('nearest_station', '最寄り駅通知',
@@ -40,6 +40,7 @@ class NotificationManager {
       playSound: false,
       enableVibration: false,
       silent: silent,
+      icon: icon != null ? '@drawable/$icon' : null
     ));
 
     await _notification.show(0, title, body, platform);

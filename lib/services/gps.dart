@@ -32,6 +32,8 @@ class GpsManager extends ChangeNotifier {
           notificationTitle: '駅メモマップ',
           notificationText: '最寄り駅を探索中',
           notificationChannelName: '最寄り駅探索サービス',
+          setOngoing: true,
+          notificationIcon: AndroidResource(name: 'ic_notification_place', defType: 'drawable'),
         ),
       );
 
