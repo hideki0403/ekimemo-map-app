@@ -533,29 +533,29 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: f27bcab94adb0d01882ac78cdbab646f3adb237b
-      resolved-ref: f27bcab94adb0d01882ac78cdbab646f3adb237b
+      ref: "87ad40085e0a166caf94e74e60db5d01b49fc963"
+      resolved-ref: "87ad40085e0a166caf94e74e60db5d01b49fc963"
       url: "https://github.com/maplibre/flutter-maplibre-gl.git"
     source: git
-    version: "0.18.0"
+    version: "0.19.0"
   maplibre_gl_platform_interface:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       path: maplibre_gl_platform_interface
-      ref: main
-      resolved-ref: f27bcab94adb0d01882ac78cdbab646f3adb237b
+      ref: "87ad40085e0a166caf94e74e60db5d01b49fc963"
+      resolved-ref: "87ad40085e0a166caf94e74e60db5d01b49fc963"
       url: "https://github.com/maplibre/flutter-maplibre-gl.git"
     source: git
-    version: "0.18.0"
+    version: "0.19.0"
   maplibre_gl_web:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       path: maplibre_gl_web
-      ref: main
-      resolved-ref: f27bcab94adb0d01882ac78cdbab646f3adb237b
+      ref: "87ad40085e0a166caf94e74e60db5d01b49fc963"
+      resolved-ref: "87ad40085e0a166caf94e74e60db5d01b49fc963"
       url: "https://github.com/maplibre/flutter-maplibre-gl.git"
     source: git
-    version: "0.18.0"
+    version: "0.19.0"
   matcher:
     dependency: transitive
     description:
