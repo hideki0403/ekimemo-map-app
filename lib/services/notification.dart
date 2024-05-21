@@ -45,9 +45,17 @@ class NotificationManager {
     await _notification.show(0, title, body, platform);
 
     if (!silent) {
-      _audioPlayer.setVolume(Config.notificationSoundVolume / 100);
-      _audioPlayer.play(AssetSource('sound/${Config.notificationSound.toString()}.mp3'));
-      if (Config.enableVibration) Vibration.vibrate(pattern: Config.vibrationPattern.pattern);
+      playSound(Config.notificationSound);
+      if (Config.enableVibration) playVibration(Config.vibrationPattern);
     }
+  }
+
+  static void playSound(NotificationSound sound) {
+    _audioPlayer.setVolume(Config.notificationSoundVolume / 100);
+    _audioPlayer.play(AssetSource('sound/${sound.toString()}.mp3'));
+  }
+
+  static void playVibration(VibrationPattern pattern) {
+    Vibration.vibrate(pattern: pattern.pattern);
   }
 }
