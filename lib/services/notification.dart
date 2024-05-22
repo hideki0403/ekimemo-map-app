@@ -30,7 +30,7 @@ class NotificationManager {
   static final _tts = FlutterTts();
 
   static Future<void> initialize() async {
-    await _notification.initialize(const InitializationSettings(android: AndroidInitializationSettings('ic_launcher')));
+    await _notification.initialize(const InitializationSettings(android: AndroidInitializationSettings('@mipmap/ic_launcher')));
     await _tts.setLanguage('ja-JP');
   }
 
@@ -43,7 +43,7 @@ class NotificationManager {
       playSound: false,
       enableVibration: false,
       silent: silent,
-      icon: icon != null ? '@drawable/$icon' : null
+      icon: icon,
     ));
 
     await _notification.show(0, title, body, platform);
