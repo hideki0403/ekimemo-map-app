@@ -6,6 +6,7 @@ import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/access_log.dart';
 import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
+import 'package:intl/intl.dart';
 import 'config.dart';
 import 'notification.dart';
 import 'utils.dart';
@@ -84,19 +85,17 @@ class StationStateNotifier extends ChangeNotifier {
     StationManager.cleanup();
   }
 
-  List<StationData> get list => StationManager.list;
+  List<StationData> get list => StationSearchService.list;
+  String get lastUpdate => StationSearchService.lastUpdatedTime != null ? DateFormat('HH:mm:ss').format(StationSearchService.lastUpdatedTime!) : '--:--:--';
+  String get latestProcessingTime => StationSearchService.latestProcessingTime;
 }
 
 class StationManager {
   static final StationStateNotifier _stateNotifier = StationStateNotifier();
   static final Map<String, Future<AsyncResult>> _tasks = {};
-
-  static DateTime? _lastUpdatedTime;
   static Timer? _notificationTimer;
 
-  static DateTime? get lastUpdatedTime => _lastUpdatedTime;
   static bool get serviceAvailable => StationSearchService.serviceAvailable;
-  static List<StationData> get list => StationSearchService.list;
 
   static void cleanup() {
     _notificationTimer?.cancel();
@@ -137,12 +136,10 @@ class StationManager {
       List<int>? currentLineIdRanking;
 
       // 最寄り駅が変更されたらアクセスログ等を更新
-      final now = DateTime.now();
       final isCoolDown = getCoolDownTime(station.station.id) > 0;
 
       if (updated) {
-        _lastUpdatedTime = now;
-        if (!isCoolDown) await AccessCacheManager.update(station.station.id, now);
+        if (!isCoolDown) await AccessCacheManager.update(station.station.id, DateTime.now());
 
         // 優先表示される路線名を計算
         final lineIdCount = <int, int>{};

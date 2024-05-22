@@ -138,10 +138,14 @@ class StationSearchService {
 
   static bool get serviceAvailable => _root != null;
   static List<StationData> get list => _searchList;
+  static String get latestProcessingTime => _latestProcessingTime;
+  static DateTime? get lastUpdatedTime => _lastUpdatedTime;
 
   static StationData? _currentStation;
   static double _lastPositionLat = 0;
   static double _lastPositionLng = 0;
+  static String _latestProcessingTime = '---';
+  static DateTime? _lastUpdatedTime;
 
   static Future<void> initialize() async {
     _TreeNodeManager.clear();
@@ -241,12 +245,15 @@ class StationSearchService {
     await _search(_root!, latitude, longitude, maxResults, maxDistance: maxDistance);
 
     final isUpdated = _currentStation == null || _currentStation!.station.id != _searchList.first.station.id;
+    final elapsed = (stopWatch.elapsedMicroseconds / 1000).toStringAsFixed(1);
 
     _currentStation = _searchList.first;
     _lastPositionLat = latitude;
     _lastPositionLng = longitude;
+    _latestProcessingTime = elapsed;
+    _lastUpdatedTime = DateTime.now();
 
-    print('[${DateFormat('HH:mm:ss').format(DateTime.now())}] updateLocation: ${stopWatch.elapsedMilliseconds}ms');
+    print('[${DateFormat('HH:mm:ss').format(DateTime.now())}] updateLocation: ${elapsed}ms');
 
     return (isUpdated, _currentStation);
   }
