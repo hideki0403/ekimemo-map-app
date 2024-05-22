@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:vibration/vibration.dart';
@@ -5,8 +6,17 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'config.dart';
 
 enum NotificationSound {
-  se1('notification_1', '通知音1'),
-  se2('notification_2', '通知音2'),;
+  sePb1('notification_pb_1', '通知音1'),
+  sePb2('notification_pb_2', '通知音2'),
+  sePb3('notification_pb_3', '通知音3'),
+  sePs1('notification_ps_1', '通知音4'),
+  sePs2('notification_ps_2', '通知音5'),
+  sePs3('notification_ps_3', '通知音6'),
+  sePs4('notification_ps_4', '通知音7'),
+  seSl1('notification_sl_1', '通知音8'),
+  seSl2('notification_sl_2', '通知音9'),
+  seSl3('notification_sl_3', '通知音10'),
+  seSl4('notification_sl_4', '通知音11');
 
   const NotificationSound(this.id, this.displayName);
   final String id;
@@ -14,6 +24,11 @@ enum NotificationSound {
 
   @override
   String toString() => id;
+
+  static NotificationSound? fromName(String? value) {
+    if (value == null) return null;
+    return NotificationSound.values.firstWhereOrNull((e) => e.name == value);
+  }
 }
 
 enum VibrationPattern {
@@ -22,6 +37,11 @@ enum VibrationPattern {
   const VibrationPattern(this.displayName, this.pattern);
   final List<int> pattern;
   final String displayName;
+
+  static VibrationPattern? byName(String? value) {
+    if (value == null) return null;
+    return VibrationPattern.values.firstWhereOrNull((e) => e.name == value);
+  }
 }
 
 class NotificationManager {

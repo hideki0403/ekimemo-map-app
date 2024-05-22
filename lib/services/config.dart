@@ -27,8 +27,8 @@ class ConfigProvider extends ChangeNotifier {
   double get updateFrequency => _config?.getDouble('update_frequency') ?? 3;
   int get maxAcceptableAccuracy => _config?.getInt('max_acceptable_accuracy') ?? 0;
   bool get enableNotificationSound => _config?.getBool('enable_notification_sound') ?? true;
-  NotificationSound get notificationSound => NotificationSound.values.byName(_config?.getString('notification_sound') ?? NotificationSound.se1.name);
-  VibrationPattern get vibrationPattern => VibrationPattern.values.byName(_config?.getString('vibration_pattern') ?? VibrationPattern.pattern1.name);
+  NotificationSound get notificationSound => NotificationSound.fromName(_config?.getString('notification_sound')) ?? NotificationSound.sePb1;
+  VibrationPattern get vibrationPattern => VibrationPattern.byName(_config?.getString('vibration_pattern')) ?? VibrationPattern.pattern1;
   int get notificationSoundVolume => _config?.getInt('notification_sound_volume') ?? 100;
   bool get enableVibration => _config?.getBool('enable_vibration') ?? true;
   bool get enableTts => _config?.getBool('enable_tts') ?? false;
@@ -118,7 +118,7 @@ class Config {
   static int get maxAcceptableAccuracy => _configProvider?.maxAcceptableAccuracy ?? 0;
   static double get updateFrequency => _configProvider?.updateFrequency ?? 3;
   static bool get enableNotificationSound => _configProvider?.enableNotificationSound ?? true;
-  static NotificationSound get notificationSound => _configProvider?.notificationSound ?? NotificationSound.se1;
+  static NotificationSound get notificationSound => _configProvider?.notificationSound ?? NotificationSound.sePb1;
   static VibrationPattern get vibrationPattern => _configProvider?.vibrationPattern ?? VibrationPattern.pattern1;
   static int get notificationSoundVolume => _configProvider?.notificationSoundVolume ?? 100;
   static bool get enableVibration => _configProvider?.enableVibration ?? true;
