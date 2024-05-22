@@ -72,12 +72,15 @@ class HomeView extends StatelessWidget {
           )
         ),
       ),
-      bottomSheet: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(children: [
-          Expanded(child: Text('最終更新: ${station.lastUpdate}')),
-          Text('${station.latestProcessingTime}ms'),
-        ]),
+      bottomNavigationBar: Container(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(children: [
+            Expanded(child: Text('最終更新: ${station.lastUpdate}')),
+            Text('${station.latestProcessingTime}ms'),
+          ]),
+        ),
       ),
       body: CustomScrollView(
         slivers: [
