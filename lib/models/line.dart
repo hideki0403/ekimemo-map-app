@@ -6,6 +6,7 @@ class Line extends AbstractModel {
   late final String id;
   late final String name;
   late final String nameKana;
+  late final String? nameFormal;
   late final int stationSize;
   late final int? companyCode;
   late final bool closed;
@@ -20,6 +21,7 @@ class Line extends AbstractModel {
     line.id = map['id'];
     line.name = map['name'];
     line.nameKana = map['name_kana'];
+    line.nameFormal = map['name_formal'];
     line.stationSize = map['station_size'];
     line.companyCode = map['company_code'];
     line.closed = map['closed'] == 1;
@@ -36,6 +38,7 @@ class Line extends AbstractModel {
     line.id = json['id'];
     line.name = json['name'];
     line.nameKana = json['name_kana'];
+    line.nameFormal = json['name_formal'];
     line.stationSize = json['station_size'];
     line.companyCode = json['company_code'];
     line.closed = json['closed'];
@@ -52,6 +55,7 @@ class Line extends AbstractModel {
       'id': id,
       'name': name,
       'name_kana': nameKana,
+      'name_formal': nameFormal,
       'station_size': stationSize,
       'company_code': companyCode,
       'closed': closed ? 1 : 0,

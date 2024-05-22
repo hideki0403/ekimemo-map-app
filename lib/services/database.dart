@@ -8,7 +8,7 @@ enum DatabaseType {
 }
 
 class DatabaseHandler {
-  static const int _version = 1;
+  static const int _version = 2;
   static final Map<String, List<String>> _migration = {
     '1': [
       // create table
@@ -24,6 +24,10 @@ class DatabaseHandler {
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_tree_node ON tree_node (id, code);',
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_access_log ON access_log (id);',
     ],
+    '2': [
+      // add 'name_formal' column to 'line' table
+      'ALTER TABLE line ADD COLUMN name_formal TEXT;',
+    ]
   };
 
   static Future<void> _migrate(Database db, int previousVersion, int oldVersion) async {
