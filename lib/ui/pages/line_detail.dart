@@ -5,7 +5,10 @@ import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
 import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/line.dart';
+import 'package:ekimemo_map/repository/access_log.dart';
+import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
+import 'package:ekimemo_map/ui/widgets/station_simple.dart';
 
 class LineDetailView extends StatefulWidget {
   final String? lineId;
@@ -18,8 +21,10 @@ class LineDetailView extends StatefulWidget {
 class _LineDetailViewState extends State<LineDetailView> {
   final LineRepository _lineRepository = LineRepository();
   final StationRepository _stationRepository = StationRepository();
+  final AccessLogRepository _accessLogRepository = AccessLogRepository();
   Line? line;
   List<Station> stations = [];
+  List<String> accessedStation = [];
 
   @override
   void initState() {
@@ -32,12 +37,18 @@ class _LineDetailViewState extends State<LineDetailView> {
         line = x;
       });
 
+      final List<Station> tmpStation = [];
+      final List<String> tmpAccessed = [];
+
       Future.wait(line!.stationList.map((x) async {
-        final station = await _stationRepository.get(x);
-        return station;
-      })).then((x) {
+        final station = await _stationRepository.get(x, column: 'id');
+        final accessLog = await _accessLogRepository.get(x);
+        if (accessLog != null) tmpAccessed.add(x);
+        if (station != null) tmpStation.add(station);
+      })).then((_) {
         setState(() {
-          stations = x.where((x) => x != null).map((x) => x!).toList();
+          stations = tmpStation;
+          accessedStation = tmpAccessed;
         });
       });
     });
@@ -49,46 +60,106 @@ class _LineDetailViewState extends State<LineDetailView> {
       appBar: AppBar(title: const Text('路線情報')),
       body: CustomScrollView(
         slivers: [
-          SliverList(
-            delegate: SliverChildListDelegate(line == null ? [
-              const Center(child: CircularProgressIndicator()),
-            ] : [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+          SliverPadding(
+            padding: const EdgeInsets.only(left: 12, right: 12),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate(line == null ? [
+                const Center(child: CircularProgressIndicator()),
+              ] : [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Text(line!.name, textScaler: const TextScaler.linear(1.5)),
+                        Text(line!.nameKana),
+                        const SizedBox(height: 16),
+                        CustomPaint(
+                          painter: _TrianglePainter(color: line?.color != null ? hexToColor(line?.color) : Theme.of(context).colorScheme.onSurface),
+                          child: const SizedBox(
+                            width: double.infinity,
+                            height: 12,
+                          ),
+                        ),
+                        if (line!.nameFormal != null) ...[
+                          const SizedBox(height: 16),
+                          Text(line!.nameFormal!),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.center,
+                  child: ElevatedButton(
+                    onPressed: line?.polylineList != null ? () {
+                      context.push(Uri(path: '/map', queryParameters: {'line-id': widget.lineId}).toString());
+                    } : null,
+                    child: const Text('マップで見る'),
+                  ),
+                ),
+                const SectionTitle(title: '路線情報'),
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 16),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(line!.name, textScaler: const TextScaler.linear(1.5)),
-                      Text(line!.nameKana),
+                      Text('駅数: ${line?.stationSize ?? 0}'),
+                      Text('アクセス済み駅数: ${accessedStation.length} (${(accessedStation.length / (line?.stationSize ?? 1) * 100).toStringAsFixed(1)}%)'),
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                        value: accessedStation.length / (line?.stationSize ?? 1),
+                      ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.center,
-                child: ElevatedButton(
-                  onPressed: line?.polylineList != null ? () {
-                    context.push(Uri(path: '/map', queryParameters: {'line-id': widget.lineId}).toString());
-                  } : null,
-                  child: const Text('マップで見る'),
-                ),
-              ),
-              const SectionTitle(title: '路線情報'),
-              // TODO: 駅情報を表示したい
-              // ListView.builder(
-              //     padding: EdgeInsets.zero,
-              //     shrinkWrap: true,
-              //     physics: const NeverScrollableScrollPhysics(),
-              //     itemCount: lines.length,
-              //     itemBuilder: (context, index) {
-              //       return LineSimple(line: lines[index]);
-              //     }
-              // )
-            ]),
+                const SectionTitle(title: '駅情報'),
+                ListView.builder(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: stations.length,
+                    itemBuilder: (context, index) {
+                      final station = stations[index];
+                      return StationSimple(
+                        station: station,
+                        isAccessed: accessedStation.contains(station.id),
+                      );
+                    }
+                )
+              ]),
+            ),
           ),
         ],
       ),
     );
+  }
+}
+
+class _TrianglePainter extends CustomPainter {
+  Color color;
+  _TrianglePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(0, size.height / 2)
+      ..lineTo(10, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width, size.height)
+      ..lineTo(10, size.height)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
   }
 }
