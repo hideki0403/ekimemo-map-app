@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:ekimemo_map/models/station.dart';
 
 class StationSimple extends StatelessWidget {
-  Station station;
-  bool isAccessed = false;
-  StationSimple({required this.station, this.isAccessed = false, super.key});
+  final Station station;
+  final bool isAccessed;
+  const StationSimple({required this.station, required this.isAccessed, super.key});
 
   @override
   Widget build(BuildContext context) {
