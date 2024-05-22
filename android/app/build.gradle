@@ -104,6 +104,7 @@ android {
         release {
             resValue('string', 'app_name', '駅メモマップ')
             signingConfig signingConfigs.release
+            shrinkResources false
         }
         debug {
             resValue('string', 'app_name', '駅メモマップ (Dev)')
