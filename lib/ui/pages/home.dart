@@ -46,8 +46,8 @@ class HomeView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('精度: ${gpsManager.lastLocation?.accuracy != null ? '${gpsManager.lastLocation!.accuracy!.toStringAsFixed(1)}m' : '不明'}'),
-                        Text('速度: ${gpsManager.lastLocation?.speed != null ? '${(gpsManager.lastLocation!.speed! * 3.6).toStringAsFixed(1)}km/h' : '不明'}'),
+                        Text('精度: ${gpsManager.lastLocation?.accuracy != null ? '${gpsManager.lastLocation!.accuracy.toStringAsFixed(1)}m' : '不明'}'),
+                        Text('速度: ${gpsManager.lastLocation?.speed != null ? '${(gpsManager.lastLocation!.speed * 3.6).toStringAsFixed(1)}km/h' : '不明'}'),
                       ],
                     )
                 ),
