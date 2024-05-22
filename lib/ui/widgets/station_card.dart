@@ -6,10 +6,10 @@ import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:go_router/go_router.dart';
 
-class StationSimple extends StatelessWidget {
+class StationCard extends StatelessWidget {
   final StationData stationData;
   final int index;
-  const StationSimple({required this.stationData, required this.index, Key? key}) : super(key: key);
+  const StationCard({required this.stationData, required this.index, super.key});
 
   @override
   Widget build(BuildContext context) {

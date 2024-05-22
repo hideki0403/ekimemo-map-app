@@ -7,7 +7,7 @@ import 'package:ekimemo_map/services/gps.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/updater.dart';
 import 'package:ekimemo_map/services/assistant.dart';
-import 'package:ekimemo_map/ui/widgets/station_simple.dart';
+import 'package:ekimemo_map/ui/widgets/station_card.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -91,7 +91,7 @@ class HomeView extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: station.list.length,
                     itemBuilder: (context, index) {
-                      return StationSimple(stationData: station.list[index], index: index);
+                      return StationCard(stationData: station.list[index], index: index);
                     }
                 )
               ] : [
