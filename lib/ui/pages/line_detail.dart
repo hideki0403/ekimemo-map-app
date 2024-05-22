@@ -61,7 +61,7 @@ class _LineDetailViewState extends State<LineDetailView> {
       body: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.only(left: 12, right: 12),
+            padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
             sliver: SliverList(
               delegate: SliverChildListDelegate(line == null ? [
                 const Center(child: CircularProgressIndicator()),

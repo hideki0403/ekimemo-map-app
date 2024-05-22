@@ -66,7 +66,7 @@ class _StationDetailViewState extends State<StationDetailView> {
       body: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.only(left: 12, right: 12),
+            padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
             sliver: SliverList(
               delegate: SliverChildListDelegate(station == null ? [
                 const Center(child: CircularProgressIndicator()),

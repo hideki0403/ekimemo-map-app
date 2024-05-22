@@ -82,7 +82,7 @@ class HomeView extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 16),
+            padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 64),
             sliver: SliverList(
               delegate: SliverChildListDelegate.fixed(state.stationDataVersion != '' ? [
                 ListView.builder(
