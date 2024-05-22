@@ -67,7 +67,7 @@ class _CooldownTimer extends StatefulWidget {
   final StationData stationData;
   final int index;
 
-  const _CooldownTimer({super.key, required this.stationData, required this.index});
+  const _CooldownTimer({required this.stationData, required this.index});
 
   @override
   _CooldownTimerState createState() => _CooldownTimerState();
