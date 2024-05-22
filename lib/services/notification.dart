@@ -32,7 +32,11 @@ enum NotificationSound {
 }
 
 enum VibrationPattern {
-  pattern1('パターン1', [0, 100, 200, 100, 100, 300, 150, 100, 200, 100, 100, 300]);
+  pattern1('パターン1', [0, 100, 100, 100, 100, 100, 300, 100, 100, 100, 100, 100]),
+  pattern2('パターン2', [0, 300, 200, 300, 200]),
+  pattern3('パターン3', [0, 500, 500, 500, 500]),
+  pattern4('パターン4', [0, 100, 100, 500, 300, 100, 100, 500]),
+  pattern5('パターン5', [0, 100, 200, 100, 100, 300, 200, 100, 200, 100, 100, 300]),;
 
   const VibrationPattern(this.displayName, this.pattern);
   final List<int> pattern;
