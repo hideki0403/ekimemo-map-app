@@ -23,7 +23,7 @@ class GpsStateNotifier extends ChangeNotifier {
 
 class GpsManager {
   static final GpsStateNotifier _stateNotifier = GpsStateNotifier();
-  static final List<Function(double latitude, double longitude, double? accuracy)> _listeners = [];
+  static final List<Function(double latitude, double longitude, double accuracy)> _listeners = [];
   static StreamSubscription? _locationListener;
   static Position? _lastLocation;
 
@@ -62,11 +62,11 @@ class GpsManager {
     _stateNotifier.notify();
   }
 
-  static void addLocationListener(Function(double latitude, double longitude, double? accuracy) listener) {
+  static void addLocationListener(Function(double latitude, double longitude, double accuracy) listener) {
     _listeners.add(listener);
   }
 
-  static void removeLocationListener(Function(double latitude, double longitude, double? accuracy) listener) {
+  static void removeLocationListener(Function(double latitude, double longitude, double accuracy) listener) {
     _listeners.remove(listener);
   }
 

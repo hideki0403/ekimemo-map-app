@@ -12,6 +12,7 @@ import 'notification.dart';
 import 'utils.dart';
 import 'assistant.dart';
 import 'search.dart';
+import 'gps.dart';
 
 final _lineRepository = LineRepository();
 
@@ -96,6 +97,16 @@ class StationManager {
   static Timer? _notificationTimer;
 
   static bool get serviceAvailable => StationSearchService.serviceAvailable;
+
+  static Future<void> initialize() async {
+    await StationSearchService.initialize();
+
+    GpsManager.addLocationListener((latitude, longitude, accuracy) {
+      if (!serviceAvailable) return;
+      if (Config.maxAcceptableAccuracy != 0 && Config.maxAcceptableAccuracy < accuracy) return;
+      updateLocation(latitude, longitude);
+    });
+  }
 
   static void cleanup() {
     _notificationTimer?.cancel();

@@ -33,7 +33,7 @@ void main() async {
   Config.init(configProvider);
   SystemState.init(systemStateProvider);
   NotificationManager.initialize();
-  await StationSearchService.initialize();
+  await StationManager.initialize();
 
   runApp(
     MultiProvider(
