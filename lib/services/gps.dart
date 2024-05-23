@@ -7,14 +7,30 @@ import 'station.dart';
 import 'config.dart';
 import 'utils.dart';
 
-class GpsManager extends ChangeNotifier {
-  StreamSubscription? _locationListener;
-  Position? _lastLocation;
+class GpsStateNotifier extends ChangeNotifier {
+  static final GpsStateNotifier _instance = GpsStateNotifier._internal();
 
-  bool get isEnabled => _locationListener != null;
-  Position? get lastLocation => _lastLocation;
+  factory GpsStateNotifier() => _instance;
+  GpsStateNotifier._internal();
 
-  Future<void> setGpsEnabled(bool value) async {
+  void notify() {
+    notifyListeners();
+  }
+
+  bool get isEnabled => GpsManager.isEnabled;
+  Position? get lastLocation => GpsManager.lastLocation;
+}
+
+class GpsManager {
+  static final GpsStateNotifier _stateNotifier = GpsStateNotifier();
+  static final List<Function(double latitude, double longitude, double? accuracy)> _listeners = [];
+  static StreamSubscription? _locationListener;
+  static Position? _lastLocation;
+
+  static bool get isEnabled => _locationListener != null;
+  static Position? get lastLocation => _lastLocation;
+
+  static Future<void> setGpsEnabled(bool value) async {
     if (value) {
       if (!(await NotificationPermissionsHandler.checkAndRequest())) {
         showMessageDialog(
@@ -43,10 +59,18 @@ class GpsManager extends ChangeNotifier {
       _locationListener = null;
     }
 
-    notifyListeners();
+    _stateNotifier.notify();
   }
 
-  Future<bool> _checkPermission() async {
+  static void addLocationListener(Function(double latitude, double longitude, double? accuracy) listener) {
+    _listeners.add(listener);
+  }
+
+  static void removeLocationListener(Function(double latitude, double longitude, double? accuracy) listener) {
+    _listeners.remove(listener);
+  }
+
+  static Future<bool> _checkPermission() async {
     LocationPermission permission;
 
     if (!await Geolocator.isLocationServiceEnabled()) {
@@ -73,7 +97,7 @@ class GpsManager extends ChangeNotifier {
     return true;
   }
 
-  void _updateHandler(Position location) {
+  static void _updateHandler(Position location) {
     _lastLocation = location;
     if (!StationManager.serviceAvailable) return;
     if (Config.maxAcceptableAccuracy != 0 && Config.maxAcceptableAccuracy < location.accuracy) return;

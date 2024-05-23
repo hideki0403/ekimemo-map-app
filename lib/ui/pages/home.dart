@@ -17,7 +17,7 @@ class HomeView extends StatelessWidget {
     AssetUpdater.check(silent: true, first: true);
 
     final station = Provider.of<StationStateNotifier>(context);
-    final gpsManager = Provider.of<GpsManager>(context);
+    final gps = Provider.of<GpsStateNotifier>(context);
     final state = Provider.of<SystemStateProvider>(context);
     return Scaffold(
       appBar: AppBar(
@@ -46,20 +46,20 @@ class HomeView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('精度: ${gpsManager.lastLocation?.accuracy != null ? '${gpsManager.lastLocation!.accuracy.toStringAsFixed(1)}m' : '不明'}'),
-                        Text('速度: ${gpsManager.lastLocation?.speed != null ? '${(gpsManager.lastLocation!.speed * 3.6).toStringAsFixed(1)}km/h' : '不明'}'),
+                        Text('精度: ${gps.lastLocation?.accuracy != null ? '${gps.lastLocation!.accuracy.toStringAsFixed(1)}m' : '不明'}'),
+                        Text('速度: ${gps.lastLocation?.speed != null ? '${(gps.lastLocation!.speed * 3.6).toStringAsFixed(1)}km/h' : '不明'}'),
                       ],
                     )
                 ),
                 Row(
                   children: [
-                    Text(gpsManager.isEnabled ? '探索 ON' : '探索 OFF'),
+                    Text(gps.isEnabled ? '探索 ON' : '探索 OFF'),
                     const SizedBox(width: 8),
                     Switch(
-                      value: gpsManager.isEnabled,
+                      value: gps.isEnabled,
                       onChanged: state.stationDataVersion == '' ? null : (value) {
                         AssistantFlow.init();
-                        gpsManager.setGpsEnabled(value);
+                        GpsManager.setGpsEnabled(value);
                         if (!value) {
                           station.cleanup();
                         }

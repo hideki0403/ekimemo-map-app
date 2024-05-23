@@ -8,7 +8,6 @@ import 'services/database.dart';
 import 'services/config.dart';
 import 'services/gps.dart';
 import 'services/station.dart';
-import 'services/search.dart';
 import 'services/notification.dart';
 
 import 'ui/pages/home.dart';
@@ -42,7 +41,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => configProvider),
         ChangeNotifierProvider(create: (_) => systemStateProvider),
         ChangeNotifierProvider(create: (_) => StationStateNotifier()),
-        ChangeNotifierProvider(create: (_) => GpsManager()),
+        ChangeNotifierProvider(create: (_) => GpsStateNotifier()),
       ],
       child: const Root(),
     ),
