@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ekimemo_map/repository/meta.dart';
+import 'package:ekimemo_map/ui/pages/map.dart';
 
 import 'notification.dart';
 
@@ -32,6 +33,7 @@ class ConfigProvider extends ChangeNotifier {
   int get notificationSoundVolume => _config?.getInt('notification_sound_volume') ?? 100;
   bool get enableVibration => _config?.getBool('enable_vibration') ?? true;
   bool get enableTts => _config?.getBool('enable_tts') ?? false;
+  MapStyle get mapStyle => MapStyle.byName(_config?.getString('map_style')) ?? MapStyle.defaultStyle;
 
   void notify() {
     notifyListeners();
@@ -101,6 +103,11 @@ class ConfigProvider extends ChangeNotifier {
     _config?.setBool('enable_tts', value);
     notifyListeners();
   }
+
+  void setMapStyle(MapStyle value) {
+    _config?.setString('map_style', value.name);
+    notifyListeners();
+  }
 }
 
 class Config {
@@ -123,6 +130,7 @@ class Config {
   static int get notificationSoundVolume => _configProvider?.notificationSoundVolume ?? 100;
   static bool get enableVibration => _configProvider?.enableVibration ?? true;
   static bool get enableTts => _configProvider?.enableTts ?? false;
+  static MapStyle get mapStyle => _configProvider?.mapStyle ?? MapStyle.defaultStyle;
 
   static String getString(String key, {String defaultValue = ''}) {
     return _configProvider?.config?.getString(key) ?? defaultValue;

@@ -15,6 +15,7 @@ import 'package:ekimemo_map/services/notification.dart';
 import 'package:ekimemo_map/services/assistant.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
+import 'package:ekimemo_map/ui/pages/map.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -254,6 +255,22 @@ class _SettingsViewState extends State<SettingsView> {
                 value: config.enableTts,
                 onChanged: (value) {
                   config.setEnableTts(value);
+                },
+              ),
+              const SectionTitle(title: 'その他'),
+              ListTile(
+                title: const Text('マップのスタイル'),
+                subtitle: Text(config.mapStyle.displayName),
+                onTap: () async {
+                  final result = await showSelectDialog(
+                    title: 'マップのスタイル',
+                    data: Map.fromEntries(MapStyle.values.map((e) => MapEntry(e.name, e.displayName))),
+                    defaultValue: config.mapStyle.name,
+                  );
+
+                  if (result != null) {
+                    config.setMapStyle(MapStyle.values.byName(result));
+                  }
                 },
               ),
               const SectionTitle(title: '駅データ'),

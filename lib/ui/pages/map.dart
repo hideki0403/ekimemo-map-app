@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
-
+import 'package:provider/provider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -11,6 +12,24 @@ import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/utils.dart';
+import 'package:ekimemo_map/services/config.dart';
+
+enum MapStyle {
+  defaultStyle('デフォルト', 'default'),
+  fiord('Fiord', 'fiord'),;
+
+  const MapStyle(this.displayName, this.filename);
+  final String displayName;
+  final String filename;
+
+  @override
+  String toString() => 'assets/map_style/$filename.json';
+
+  static MapStyle? byName(String? value) {
+    if (value == null) return null;
+    return MapStyle.values.firstWhereOrNull((e) => e.name == value);
+  }
+}
 
 class MapView extends StatefulWidget {
   final String? stationId;
@@ -169,6 +188,7 @@ class _MapViewState extends State<MapView> {
 
   @override
   Widget build(BuildContext context) {
+    final config = Provider.of<ConfigProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.stationId != null ? 'マップ (駅情報)' : widget.lineId != null ? 'マップ (路線情報)' : 'マップ'),
@@ -244,7 +264,7 @@ class _MapViewState extends State<MapView> {
                 _trackingMode = MyLocationTrackingMode.None;
               });
             },
-            styleString: 'https://assets.yukineko.dev/map/style/google_maps_style.json',
+            styleString: config.mapStyle.toString(),
             myLocationEnabled: true,
             myLocationTrackingMode: _trackingMode,
           )),
