@@ -16,6 +16,7 @@ import 'package:ekimemo_map/services/config.dart';
 
 enum MapStyle {
   defaultStyle('デフォルト', 'default'),
+  basic('ベーシック', 'basic'),
   fiord('Fiord', 'fiord'),;
 
   const MapStyle(this.displayName, this.filename);

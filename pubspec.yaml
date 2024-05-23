@@ -106,6 +106,7 @@ flutter:
   assets:
     - assets/icon/map-pin.png
     - assets/map_style/default.json
+    - assets/map_style/basic.json
     - assets/map_style/fiord.json
     - assets/sound/notification_pb_1.mp3
     - assets/sound/notification_pb_2.mp3
