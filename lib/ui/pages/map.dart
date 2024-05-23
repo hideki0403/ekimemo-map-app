@@ -26,6 +26,8 @@ class _MapViewState extends State<MapView> {
   final _mapReadyCompleter = Completer<MaplibreMapController>();
   bool _isRendering = false;
   bool _isNormalMode = false;
+  DateTime _lastRectUpdate = DateTime.now();
+  MyLocationTrackingMode _trackingMode = MyLocationTrackingMode.None;
   final StationRepository _stationRepository = StationRepository();
 
   void showLoading() {
@@ -90,7 +92,8 @@ class _MapViewState extends State<MapView> {
   }
 
   void _renderVoronoi() async {
-    if (_isRendering) return;
+    final isCooldown = _trackingMode != MyLocationTrackingMode.None && DateTime.now().difference(_lastRectUpdate).inMilliseconds < 1000;
+    if (_isRendering || isCooldown) return;
     _isRendering = true;
 
     final controller = await _mapReadyCompleter.future;
@@ -121,6 +124,7 @@ class _MapViewState extends State<MapView> {
     }
 
     _isRendering = false;
+    _lastRectUpdate = DateTime.now();
   }
 
   void _renderSingleStation() async {
@@ -168,6 +172,15 @@ class _MapViewState extends State<MapView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.stationId != null ? 'マップ (駅情報)' : widget.lineId != null ? 'マップ (路線情報)' : 'マップ'),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          setState(() {
+            _trackingMode = _trackingMode == MyLocationTrackingMode.None ? MyLocationTrackingMode.Tracking : MyLocationTrackingMode.None;
+          });
+        },
+        foregroundColor: _trackingMode != MyLocationTrackingMode.None ? Theme.of(context).colorScheme.primary : null,
+        child: Icon(_trackingMode != MyLocationTrackingMode.None ? Icons.gps_fixed : Icons.gps_not_fixed),
       ),
       body: SafeArea(
         child: Row(children: [
@@ -226,8 +239,14 @@ class _MapViewState extends State<MapView> {
               if (!_isNormalMode) return;
               _renderVoronoi();
             },
+            onCameraTrackingDismissed: () {
+              setState(() {
+                _trackingMode = MyLocationTrackingMode.None;
+              });
+            },
             styleString: 'https://assets.yukineko.dev/map/style/google_maps_style.json',
             myLocationEnabled: true,
+            myLocationTrackingMode: _trackingMode,
           )),
         ]),
       )
