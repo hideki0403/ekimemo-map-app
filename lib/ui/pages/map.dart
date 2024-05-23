@@ -226,9 +226,11 @@ class _MapViewState extends State<MapView> {
 
               await controller.addSymbolLayer('point', 'point', const SymbolLayerProperties(
                 textField: [Expressions.get, 'name'],
-                textHaloWidth: 1,
+                textHaloWidth: 2,
                 textSize: 14,
+                textColor: '#444',
                 textHaloColor: '#ffffff',
+                textFont: ['migu2m-regular'],
                 textOffset: [
                   Expressions.literal,
                   [0, 2]
