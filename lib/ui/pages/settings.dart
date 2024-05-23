@@ -297,7 +297,7 @@ class _SettingsViewState extends State<SettingsView> {
                 title: const Text('バージョン'),
                 subtitle: Text('v$_version'),
                 trailing: ElevatedButton(
-                  onPressed: _isDebug ? null : () {
+                  onPressed: kDebugMode ? null : () {
                     AppUpdater.check();
                   },
                   child: const Text('更新を確認'),
