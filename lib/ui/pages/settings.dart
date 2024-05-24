@@ -63,9 +63,10 @@ class _SettingsViewState extends State<SettingsView> {
               PopupMenuButton(
                 itemBuilder: (BuildContext context) {
                   return [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'enableDebug',
-                      child: Text('デバッグ項目を有効化'),
+                      enabled: !_isDebug,
+                      child: Text(_isDebug ? 'デバッグモードが有効になっています' : 'デバッグモードを有効化'),
                     ),
                   ];
                 },
