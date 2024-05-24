@@ -326,6 +326,12 @@ class _SettingsViewState extends State<SettingsView> {
                   },
                 ),
                 ListTile(
+                  title: const Text('Log Viewer'),
+                  onTap: () {
+                    context.push('/log');
+                  },
+                ),
+                ListTile(
                   title: const Text('Tree node root'),
                   subtitle: Text(state.treeNodeRoot),
                 ),

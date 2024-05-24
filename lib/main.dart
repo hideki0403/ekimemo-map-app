@@ -18,6 +18,7 @@ import 'ui/pages/station_detail.dart';
 import 'ui/pages/line_detail.dart';
 import 'ui/pages/assistant_flow.dart';
 import 'ui/pages/assistant_choose_rect.dart';
+import 'ui/pages/log.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final logger = Logger('Main');
@@ -46,6 +47,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => systemStateProvider),
         ChangeNotifierProvider(create: (_) => StationStateNotifier()),
         ChangeNotifierProvider(create: (_) => GpsStateNotifier()),
+        ChangeNotifierProvider(create: (_) => LogStateNotifier()),
       ],
       child: const Root(),
     ),
@@ -81,6 +83,10 @@ class Root extends StatelessWidget {
             GoRoute(
               path: '/assistant-choose-rect',
               builder: (context, state) => const AssistantChooseRectView(),
+            ),
+            GoRoute(
+              path: '/log',
+              builder: (context, state) => const LogView(),
             ),
             GoRoute(
               path: '/map',
