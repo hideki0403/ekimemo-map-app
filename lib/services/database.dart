@@ -1,4 +1,7 @@
 import 'package:sqflite/sqflite.dart';
+import 'log.dart';
+
+final logger = Logger('DatabaseHandler');
 
 enum DatabaseType {
   station,
@@ -48,11 +51,15 @@ class DatabaseHandler {
       version: _version,
       onCreate: (db, version) async {
         await _migrate(db, 0, version);
+        logger.info('Database created');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         await _migrate(db, oldVersion, newVersion);
+        logger.info('Database upgraded: $oldVersion -> $newVersion');
       },
     );
+
+    logger.info('Database initialized');
   }
 
   static Future<Database> get db async {

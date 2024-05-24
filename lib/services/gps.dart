@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'permission.dart';
-import 'station.dart';
 import 'config.dart';
 import 'utils.dart';
+import 'log.dart';
+
+final logger = Logger('GpsManager');
 
 class GpsStateNotifier extends ChangeNotifier {
   static final GpsStateNotifier _instance = GpsStateNotifier._internal();
@@ -58,6 +60,8 @@ class GpsManager {
       _locationListener?.cancel();
       _locationListener = null;
     }
+
+    logger.info('GPS ${value ? 'enabled' : 'disabled'}');
 
     _stateNotifier.notify();
   }

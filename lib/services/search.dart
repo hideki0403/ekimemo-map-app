@@ -235,7 +235,7 @@ class StationSearchService {
     if (!serviceAvailable) throw Exception('StationSearchService not initialized');
 
     if (list.isNotEmpty && _fixedLatLng(_lastPositionLat) == _fixedLatLng(latitude) && _fixedLatLng(_lastPositionLng) == _fixedLatLng(longitude)) {
-      logger.info('Skip updateLocation: same position');
+      logger.debug('Skip updateLocation: same position');
       return (false, _currentStation);
     }
 
@@ -254,7 +254,8 @@ class StationSearchService {
     _latestProcessingTime = elapsed;
     _lastUpdatedTime = DateTime.now();
 
-    logger.debug('updateLocation: ${elapsed}ms');
+    logger.debug('Update location: ${elapsed}ms');
+    if (isUpdated) logger.info('Nearest station changed: ${_currentStation!.station.name} (${_currentStation!.station.id})');
 
     return (isUpdated, _currentStation);
   }
@@ -268,7 +269,7 @@ class StationSearchService {
     stopWatch.start();
     await _searchRect(_root!, bounds, dist, maxResults);
 
-    logger.debug('updateRectRegion: ${stopWatch.elapsedMilliseconds}ms');
+    logger.debug('Update rect region: ${stopWatch.elapsedMilliseconds}ms');
     return dist;
   }
 

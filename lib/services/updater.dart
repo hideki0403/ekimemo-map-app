@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:msgpack_dart/msgpack_dart.dart';
-import 'package:ekimemo_map/services/native.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:install_plugin/install_plugin.dart';
@@ -15,6 +14,10 @@ import 'package:ekimemo_map/models/line.dart';
 import 'package:ekimemo_map/models/tree_node.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/services/search.dart';
+import 'package:ekimemo_map/services/native.dart';
+import 'package:ekimemo_map/services/log.dart';
+
+final logger = Logger('Updater');
 
 class AssetUpdater {
   static final _dio = Dio();
@@ -29,6 +32,8 @@ class AssetUpdater {
       _isInitialized = true;
     }
 
+    logger.debug('Checking for station-database updates');
+
     _isChecking = true;
     final response = await _dio.get('https://api.github.com/repos/hideki0403/ekimemo-map-database/releases/latest');
     _isChecking = false;
@@ -39,6 +44,8 @@ class AssetUpdater {
     final latestVersion = release['tag_name'].toString();
     final size = release['assets'].firstWhere((x) => x['name'] == 'station_database.msgpack')?['size'] ?? 0;
     if (SystemState.getString('station_data_version') != latestVersion) updateAvailable = true;
+
+    logger.debug('Latest version: $latestVersion, Current version: ${SystemState.getString('station_data_version')}');
 
     if (force) return _update(size, latestVersion);
     if (!updateAvailable && silent) return;
@@ -109,12 +116,15 @@ class AssetUpdater {
       );
     });
 
+    logger.debug('Downloading station-database.msgpack');
+
     _dio.get('https://github.com/hideki0403/ekimemo-map-database/releases/download/$version/station_database.msgpack', onReceiveProgress: (current, _) {
       streamController.add(current / size);
     }, options: Options(responseType: ResponseType.bytes)).then((response) {
       isCanPop = true;
       popContext(null);
       if (response.statusCode != 200 || response.data == null) throw Exception('Failed to download asset');
+      logger.debug('Downloaded station-database.msgpack');
       _apply(deserialize(response.data).cast<String, dynamic>(), version);
     });
   }
@@ -144,6 +154,8 @@ class AssetUpdater {
       );
     });
 
+    logger.debug('Applying latest station database');
+
     final stationsRepository = StationRepository();
     final linesRepository = LineRepository();
     final treeNodesRepository = TreeNodeRepository();
@@ -169,6 +181,8 @@ class AssetUpdater {
     StationSearchService.clear();
     await StationSearchService.initialize();
 
+    logger.debug('Applied latest station database');
+
     showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
       return AlertDialog(
         title: const Text('駅データ更新'),
@@ -192,6 +206,9 @@ class AppUpdater {
 
   static void check({silent = false}) async {
     if (_isChecking) return;
+
+    logger.debug('Checking for app updates');
+
     _isChecking = true;
     final response = await _dio.get('https://pages.yukineko.me/ekimemo-map-app/version.json');
     _isChecking = false;
@@ -202,6 +219,9 @@ class AppUpdater {
     final releaseCommitHash = info['commit'].toString();
     final appCommitHash = await NativeMethods.getCommitHash();
     if (appCommitHash != releaseCommitHash) updateAvailable = true;
+
+    logger.debug('Latest version: v${info['version']} ($releaseCommitHash), Current version: v${info['version']} ($appCommitHash)');
+
     if (!updateAvailable && silent) return;
 
     showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
@@ -270,6 +290,8 @@ class AppUpdater {
       );
     });
 
+    logger.debug('Downloading app-release.apk');
+
     final downloadPath = '${(await getTemporaryDirectory()).path}/app-release.apk';
     final response = await _dio.download(assetUrl, downloadPath, onReceiveProgress: (current, _) {
       streamController.add(current / size);
@@ -279,6 +301,8 @@ class AppUpdater {
     isCanPop = true;
     popContext(null);
     if (response.statusCode != 200) throw Exception('Failed to download artifact');
+
+    logger.debug('Downloaded app-release.apk');
 
     InstallPlugin.installApk(downloadPath);
   }
