@@ -58,19 +58,19 @@ class Logger {
 
   Logger(this.tag);
 
-  void debug(String message) {
-    LogManager.push(LogObject(LogType.debug, tag, message));
+  void debug(dynamic object) {
+    LogManager.push(LogObject(LogType.debug, tag, object));
   }
 
-  void info(String message) {
-    LogManager.push(LogObject(LogType.info, tag, message));
+  void info(dynamic object) {
+    LogManager.push(LogObject(LogType.info, tag, object));
   }
 
-  void warning(String message) {
-    LogManager.push(LogObject(LogType.warning, tag, message));
+  void warning(dynamic object) {
+    LogManager.push(LogObject(LogType.warning, tag, object));
   }
 
-  void error(String message) {
-    LogManager.push(LogObject(LogType.error, tag, message));
+  void error(dynamic object) {
+    LogManager.push(LogObject(LogType.error, tag, object));
   }
 }
