@@ -30,7 +30,10 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.caption != null) Text(widget.caption!),
+          if (widget.caption != null) ...[
+            Text(widget.caption!),
+            const SizedBox(height: 8),
+          ],
           for (final key in selectedValue.keys)
             CheckboxListTile(
               title: Text(key),

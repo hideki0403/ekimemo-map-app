@@ -32,7 +32,10 @@ class _SelectDialogState extends State<SelectDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.caption != null) Text(widget.caption!),
+          if (widget.caption != null) ...[
+            Text(widget.caption!),
+            const SizedBox(height: 8),
+          ],
           for (final key in widget.data.keys)
             widget.noRadio != true ? RadioListTile<String>(
               title: Text(widget.data[key]!),
