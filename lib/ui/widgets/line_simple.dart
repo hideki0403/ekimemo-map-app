@@ -46,7 +46,7 @@ class LineSimple extends StatelessWidget {
 
 class _AccessProgress extends StatefulWidget {
   final List<String> stationList;
-  const _AccessProgress({required this.stationList, Key? key}) : super(key: key);
+  const _AccessProgress({required this.stationList});
 
   @override
   _AccessProgressState createState() => _AccessProgressState();

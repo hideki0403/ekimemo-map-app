@@ -14,7 +14,7 @@ class EditorDialog extends StatefulWidget {
   final String? suffix;
   final EditorDialogType? type;
 
-  const EditorDialog({Key? key, required this.data, this.title, this.caption, this.suffix, this.type}) : super(key: key);
+  const EditorDialog({super.key, required this.data, this.title, this.caption, this.suffix, this.type});
 
   @override
   State<EditorDialog> createState() => _EditorDialogState();
