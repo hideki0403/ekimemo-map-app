@@ -4,8 +4,11 @@ import 'dart:ui';
 import 'config.dart';
 import 'utils.dart';
 import 'native.dart';
+import 'log.dart';
 
 class AssistantFlow {
+  static final logger = Logger('AssistantFlow');
+
   static List<AssistantFlowItem> get() {
     final data = SystemState.assistantFlow;
     return AssistantFlowUtils.parse(data);
@@ -24,7 +27,7 @@ class AssistantFlow {
     if (!(await NativeMethods.hasPermission())) return;
     final items = get();
     for (final item in items) {
-      print('AssistantFlow: Next ${item.type}, ${item.content}');
+      logger.debug('AssistantFlow: Next ${item.type}, ${item.content}');
       switch (item.type) {
         case 'tap':
           final tapItem = item as TapItem;
@@ -45,7 +48,7 @@ class AssistantFlow {
       }
     }
 
-    print('AssistantFlow: Done');
+    logger.debug('AssistantFlow: Done');
   }
 }
 

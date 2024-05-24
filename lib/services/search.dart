@@ -6,9 +6,10 @@ import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/tree_node.dart';
 import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/tree_node.dart';
-import 'package:intl/intl.dart';
 import 'config.dart';
+import 'log.dart';
 
+final logger = Logger('StationSearchService');
 final _stationRepository = StationRepository();
 final _treeNodeRepository = TreeNodeRepository();
 
@@ -155,12 +156,12 @@ class StationSearchService {
     final rootNodeId = int.parse(SystemState.treeNodeRoot);
     final rootNode = await _TreeNodeManager.get(rootNodeId);
     if (rootNode == null) {
-      print('Root node not found: $rootNodeId, service: ${SystemState.serviceAvailable}');
+      logger.error('Root node not found: $rootNodeId, service: ${SystemState.serviceAvailable}');
       return;
     }
 
     _root = await StationNode(depth: 0, node: rootNode, region: Bounds(north: 90, east: 180, south: -90, west: -180)).build();
-    print('StationSearchService initialized');
+    logger.info('StationSearchService initialized');
   }
 
   static void clear() {
@@ -234,7 +235,7 @@ class StationSearchService {
     if (!serviceAvailable) throw Exception('StationSearchService not initialized');
 
     if (list.isNotEmpty && _fixedLatLng(_lastPositionLat) == _fixedLatLng(latitude) && _fixedLatLng(_lastPositionLng) == _fixedLatLng(longitude)) {
-      print('Skip updateLocation: same position');
+      logger.info('Skip updateLocation: same position');
       return (false, _currentStation);
     }
 
@@ -253,7 +254,7 @@ class StationSearchService {
     _latestProcessingTime = elapsed;
     _lastUpdatedTime = DateTime.now();
 
-    print('[${DateFormat('HH:mm:ss').format(DateTime.now())}] updateLocation: ${elapsed}ms');
+    logger.debug('updateLocation: ${elapsed}ms');
 
     return (isUpdated, _currentStation);
   }
@@ -267,7 +268,7 @@ class StationSearchService {
     stopWatch.start();
     await _searchRect(_root!, bounds, dist, maxResults);
 
-    print('updateRectRegion: ${stopWatch.elapsedMilliseconds}ms');
+    logger.debug('updateRectRegion: ${stopWatch.elapsedMilliseconds}ms');
     return dist;
   }
 

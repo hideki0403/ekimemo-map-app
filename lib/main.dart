@@ -9,6 +9,7 @@ import 'services/config.dart';
 import 'services/gps.dart';
 import 'services/station.dart';
 import 'services/notification.dart';
+import 'services/log.dart';
 
 import 'ui/pages/home.dart';
 import 'ui/pages/settings.dart';
@@ -19,6 +20,7 @@ import 'ui/pages/assistant_flow.dart';
 import 'ui/pages/assistant_choose_rect.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
+final logger = Logger('Main');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +36,8 @@ void main() async {
   SystemState.init(systemStateProvider);
   NotificationManager.initialize();
   await StationManager.initialize();
+
+  logger.info('App initialized');
 
   runApp(
     MultiProvider(

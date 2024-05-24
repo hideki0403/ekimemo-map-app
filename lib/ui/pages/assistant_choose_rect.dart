@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:ekimemo_map/services/log.dart';
+
 class AssistantChooseRectView extends StatefulWidget {
   const AssistantChooseRectView({super.key});
 
@@ -15,6 +17,7 @@ class AssistantChooseRectView extends StatefulWidget {
 
 class _AssistantChooseRectViewState extends State<AssistantChooseRectView> {
   final CropController _controller = CropController();
+  final logger = Logger('AssistantChooseRectView');
 
   Uint8List? _image;
 
@@ -53,7 +56,7 @@ class _AssistantChooseRectViewState extends State<AssistantChooseRectView> {
             onCropped: (result) {
               List<double> rawRect = utf8.decode(result).split(',').map((e) => double.parse(e)).toList();
               final rect = Rect.fromLTRB(rawRect[0], rawRect[1], rawRect[2], rawRect[3]);
-              print(rect);
+              logger.debug('Cropped Rect: $rect');
               Navigator.of(context).pop(rect);
             },
             imageCropper: const ImageCropperHandler(),
