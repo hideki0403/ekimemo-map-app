@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -81,25 +82,22 @@ class _LogViewState extends State<LogView> {
       ),
       body: CustomScrollView(
         slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.all(12),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate.fixed([
-                ListView.separated(
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  reverse: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: logs.length,
-                  itemBuilder: (context, index) {
-                    return _LogObject(log: logs[index]);
-                  },
-                  separatorBuilder: (BuildContext context, int index) {
-                    return const Divider();
-                  },
-                ),
-              ]),
-            ),
+          SliverList(
+            delegate: SliverChildListDelegate.fixed([
+              ListView.separated(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                reverse: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: logs.length,
+                itemBuilder: (context, index) {
+                  return _LogObject(log: logs[index]);
+                },
+                separatorBuilder: (context, index) {
+                  return const Divider(height: 8);
+                },
+              ),
+            ]),
           ),
         ],
       ),
@@ -114,20 +112,32 @@ class _LogObject extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return InkWell(
+      customBorder: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      onLongPress: () {
+        Clipboard.setData(ClipboardData(text: log.object.toString()));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copied to clipboard')));
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 12, top: 6, bottom: 6, right: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(log.type.name.toUpperCase(), style: TextStyle(color: log.type.color), textScaler: const TextScaler.linear(0.9)),
-            const SizedBox(width: 8),
-            Expanded(child: Text(log.tag, textScaler: const TextScaler.linear(0.9))),
-            Text(_dateFormat.format(log.time), style: const TextStyle(color: Colors.grey), textScaler: const TextScaler.linear(0.9)),
+            Row(
+              children: [
+                Text(log.type.name.toUpperCase(), style: TextStyle(color: log.type.color), textScaler: const TextScaler.linear(0.9)),
+                const SizedBox(width: 8),
+                Expanded(child: Text(log.tag, textScaler: const TextScaler.linear(0.9))),
+                Text(_dateFormat.format(log.time), style: const TextStyle(color: Colors.grey), textScaler: const TextScaler.linear(0.9)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(log.object.toString()),
           ],
         ),
-        const SizedBox(height: 4),
-        Text(log.object.toString()),
-      ],
+      ),
     );
   }
 }
