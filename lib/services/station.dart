@@ -99,6 +99,7 @@ class StationManager {
   static bool get serviceAvailable => StationSearchService.serviceAvailable;
 
   static Future<void> initialize() async {
+    await AccessCacheManager.initialize();
     await StationSearchService.initialize();
 
     GpsManager.addLocationListener((latitude, longitude, accuracy) {
