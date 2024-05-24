@@ -99,8 +99,8 @@ class GpsManager {
 
   static void _updateHandler(Position location) {
     _lastLocation = location;
-    if (!StationManager.serviceAvailable) return;
-    if (Config.maxAcceptableAccuracy != 0 && Config.maxAcceptableAccuracy < location.accuracy) return;
-    StationManager.updateLocation(location.latitude, location.longitude);
+    for (var listener in _listeners) {
+      listener(location.latitude, location.longitude, location.accuracy);
+    }
   }
 }
