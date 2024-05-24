@@ -46,6 +46,7 @@ class _MapViewState extends State<MapView> {
   final _mapReadyCompleter = Completer<MaplibreMapController>();
   bool _isRendering = false;
   bool _isNormalMode = false;
+  bool _hidePoints = false;
   DateTime _lastRectUpdate = DateTime.now();
   MyLocationTrackingMode _trackingMode = MyLocationTrackingMode.None;
   final StationRepository _stationRepository = StationRepository();
@@ -79,14 +80,16 @@ class _MapViewState extends State<MapView> {
   }
 
   Map<String, dynamic> _buildVoronoi(List<Station> stations) {
-    final List<Map<String, dynamic>> voronoi = [];
+    final List<Map<String, dynamic>> features = [];
     for (var station in stations) {
-      voronoi.add(station.voronoi);
+      final voronoi = station.voronoi;
+      voronoi['properties']['accessed'] = AccessCacheManager.get(station.id) != null;
+      features.add(voronoi);
     }
 
     return {
       'type': 'FeatureCollection',
-      'features': voronoi,
+      'features': features,
     };
   }
 
@@ -101,6 +104,7 @@ class _MapViewState extends State<MapView> {
         },
         'properties': {
           'name': station.name,
+          'accessed': AccessCacheManager.get(station.id) != null,
         },
       });
     }
@@ -183,11 +187,6 @@ class _MapViewState extends State<MapView> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final config = Provider.of<ConfigProvider>(context);
     return Scaffold(
@@ -204,8 +203,8 @@ class _MapViewState extends State<MapView> {
         child: Icon(_trackingMode != MyLocationTrackingMode.None ? Icons.gps_fixed : Icons.gps_not_fixed),
       ),
       body: SafeArea(
-        child: Row(children: [
-          Expanded(child: MaplibreMap(
+        child: Stack(children: [
+          MaplibreMap(
             initialCameraPosition: const CameraPosition(target: LatLng(35.681236, 139.767125), zoom: 10.0),
             trackCameraPosition: true,
             onMapCreated: (controller) {
@@ -213,18 +212,33 @@ class _MapViewState extends State<MapView> {
             },
             onStyleLoadedCallback: () async {
               final controller = await _mapReadyCompleter.future;
-              final imageBuffer = await rootBundle.load('assets/icon/map-pin.png');
+              final imageBuffer = await rootBundle.load('assets/icon/location.png');
 
               await controller.addImage('pin', imageBuffer.buffer.asUint8List(), true);
               await controller.addGeoJsonSource('voronoi', _buildVoronoi([]));
               await controller.addGeoJsonSource('point', _buildPoint([]));
 
-              await controller.addLineLayer('voronoi', 'voronoi', LineLayerProperties(
-                lineColor: '#ff0000',
+              await controller.addFillLayer('voronoi', 'fill', FillLayerProperties(
+                fillColor: [
+                  'case',
+                  ['get', 'accessed'],
+                  Colors.red.toHexStringRGB(),
+                  '#fff',
+                ],
+                fillOpacity: [
+                  'case',
+                  ['get', 'accessed'],
+                  0.3,
+                  0.0,
+                ],
+              ));
+
+              await controller.addLineLayer('voronoi', 'line', LineLayerProperties(
+                lineColor: Colors.red.toHexStringRGB(),
                 lineWidth: (widget.lineId != null || widget.stationId != null) ? 2.0 : 1.0,
               ));
 
-              await controller.addSymbolLayer('point', 'point', const SymbolLayerProperties(
+              await controller.addSymbolLayer('point', 'point', SymbolLayerProperties(
                 textField: [Expressions.get, 'name'],
                 textHaloWidth: 2,
                 textSize: 14,
@@ -236,8 +250,8 @@ class _MapViewState extends State<MapView> {
                   [0, 2]
                 ],
                 iconImage: 'pin',
-                iconSize: 0.4,
-                iconColor: '#f7606d',
+                iconSize: 0.2,
+                iconColor: Colors.red.toHexStringRGB(),
               ), minzoom: 12);
 
               if (widget.stationId != null) {
@@ -270,7 +284,27 @@ class _MapViewState extends State<MapView> {
             styleString: config.mapStyle.toString(),
             myLocationEnabled: true,
             myLocationTrackingMode: _trackingMode,
-          )),
+            compassViewPosition: CompassViewPosition.TopLeft,
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              child: IconButton.filledTonal(
+                icon: Icon(_hidePoints ? Icons.layers : Icons.layers_clear),
+                onPressed: () {
+                  setState(() {
+                    _hidePoints = !_hidePoints;
+                    _mapReadyCompleter.future.then((value) {
+                      value.setLayerVisibility('point', !_hidePoints);
+                      value.setLayerVisibility('fill', !_hidePoints);
+                    });
+                  });
+                },
+              ),
+            ),
+          ),
         ]),
       )
     );
