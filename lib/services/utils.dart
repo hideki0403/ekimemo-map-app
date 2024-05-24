@@ -9,6 +9,7 @@ import 'package:ekimemo_map/models/line.dart';
 import 'package:ekimemo_map/models/access_log.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
 import 'package:ekimemo_map/ui/widgets/select_dialog.dart';
+import 'package:ekimemo_map/ui/widgets/checkbox_dialog.dart';
 import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
 
 int measure(double plat1, double plng1, double plat2, double plng2) {
@@ -144,6 +145,15 @@ Future<String?> showSelectDialog({
     context: navigatorKey.currentContext!,
     builder: (context) {
       return SelectDialog(data: data, defaultValue: defaultValue, title: title, caption: caption, noRadio: noRadio, showOkButton: showOkButton, onChanged: onChanged);
+    },
+  );
+}
+
+Future<Map<String, bool>?> showCheckboxDialog({required Map<String, bool> data, String? title, String? caption}) async {
+  return showDialog(
+    context: navigatorKey.currentContext!,
+    builder: (context) {
+      return CheckboxDialog(data: data, title: title, caption: caption);
     },
   );
 }
