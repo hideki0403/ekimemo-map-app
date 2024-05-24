@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:go_router/go_router.dart';
@@ -21,10 +23,20 @@ import 'ui/pages/assistant_choose_rect.dart';
 import 'ui/pages/log.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
-final logger = Logger('Main');
+final logger = Logger('App');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  FlutterError.onError = (details) {
+    logger.error('FlutterError: ${details.exceptionAsString()}');
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    logger.error('PlatformError: $error, $stack');
+    return false;
+  };
+
   await DatabaseHandler.init();
 
   final configProvider = ConfigProvider();
