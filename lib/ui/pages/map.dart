@@ -46,10 +46,14 @@ class _MapViewState extends State<MapView> {
   final _mapReadyCompleter = Completer<MaplibreMapController>();
   bool _isRendering = false;
   bool _isNormalMode = false;
+  bool _isOutOfRange = false;
   bool _hidePoints = false;
+  bool _showAttr = false;
   DateTime _lastRectUpdate = DateTime.now();
   MyLocationTrackingMode _trackingMode = MyLocationTrackingMode.None;
   final StationRepository _stationRepository = StationRepository();
+
+  static const renderThreshold = 10.0;
 
   void showLoading() {
     const snackBar = SnackBar(
@@ -83,7 +87,10 @@ class _MapViewState extends State<MapView> {
     final List<Map<String, dynamic>> features = [];
     for (var station in stations) {
       final voronoi = station.voronoi;
-      voronoi['properties']['accessed'] = AccessCacheManager.get(station.id) != null;
+      voronoi['properties'] = {
+        'color': _showAttr ? getAttrIcon(station.attr).color?.toHexStringRGB() : Colors.red.toHexStringRGB(),
+        'accessed': AccessCacheManager.get(station.id) != null,
+      };
       features.add(voronoi);
     }
 
@@ -105,6 +112,8 @@ class _MapViewState extends State<MapView> {
         'properties': {
           'name': station.name,
           'accessed': AccessCacheManager.get(station.id) != null,
+          'color': _showAttr ? getAttrIcon(station.attr).color?.toHexStringRGB() : Colors.red.toHexStringRGB(),
+          'icon': _showAttr ? station.attr.name : 'pin',
         },
       });
     }
@@ -115,15 +124,13 @@ class _MapViewState extends State<MapView> {
     };
   }
 
-  void _renderVoronoi() async {
+  void _renderVoronoi({ bool force = false }) async {
     final isCooldown = _trackingMode != MyLocationTrackingMode.None && DateTime.now().difference(_lastRectUpdate).inMilliseconds < 1000;
-    if (_isRendering || isCooldown) return;
+    if (_isRendering || (isCooldown && !force)) return;
     _isRendering = true;
 
     final controller = await _mapReadyCompleter.future;
-
-    final zoom = controller.cameraPosition?.zoom;
-    if (zoom != null && zoom > 10.0) {
+    if (!_isOutOfRange) {
       final bounds = await controller.getVisibleRegion();
       final north = bounds.northeast.latitude;
       final east = bounds.northeast.longitude;
@@ -212,19 +219,17 @@ class _MapViewState extends State<MapView> {
             },
             onStyleLoadedCallback: () async {
               final controller = await _mapReadyCompleter.future;
-              final imageBuffer = await rootBundle.load('assets/icon/location.png');
 
-              await controller.addImage('pin', imageBuffer.buffer.asUint8List(), true);
+              await controller.addImage('pin', (await rootBundle.load('assets/icon/location.png')).buffer.asUint8List(), true);
+              await controller.addImage('heat', (await rootBundle.load('assets/icon/heat.png')).buffer.asUint8List(), true);
+              await controller.addImage('cool', (await rootBundle.load('assets/icon/cool.png')).buffer.asUint8List(), true);
+              await controller.addImage('eco', (await rootBundle.load('assets/icon/eco.png')).buffer.asUint8List(), true);
+              await controller.addImage('unknown', (await rootBundle.load('assets/icon/unknown.png')).buffer.asUint8List(), true);
               await controller.addGeoJsonSource('voronoi', _buildVoronoi([]));
               await controller.addGeoJsonSource('point', _buildPoint([]));
 
-              await controller.addFillLayer('voronoi', 'fill', FillLayerProperties(
-                fillColor: [
-                  'case',
-                  ['get', 'accessed'],
-                  Colors.red.toHexStringRGB(),
-                  '#fff',
-                ],
+              await controller.addFillLayer('voronoi', 'fill', const FillLayerProperties(
+                fillColor: ['get', 'color'],
                 fillOpacity: [
                   'case',
                   ['get', 'accessed'],
@@ -234,11 +239,11 @@ class _MapViewState extends State<MapView> {
               ));
 
               await controller.addLineLayer('voronoi', 'line', LineLayerProperties(
-                lineColor: Colors.red.toHexStringRGB(),
+                lineColor: ['get', 'color'],
                 lineWidth: (widget.lineId != null || widget.stationId != null) ? 2.0 : 1.0,
               ));
 
-              await controller.addSymbolLayer('point', 'point', SymbolLayerProperties(
+              await controller.addSymbolLayer('point', 'point', const SymbolLayerProperties(
                 textField: [Expressions.get, 'name'],
                 textHaloWidth: 2,
                 textSize: 14,
@@ -249,9 +254,9 @@ class _MapViewState extends State<MapView> {
                   Expressions.literal,
                   [0, 2]
                 ],
-                iconImage: 'pin',
+                iconImage: ['get', 'icon'],
                 iconSize: 0.2,
-                iconColor: Colors.red.toHexStringRGB(),
+                iconColor: ['get', 'color'],
               ), minzoom: 12);
 
               if (widget.stationId != null) {
@@ -274,6 +279,13 @@ class _MapViewState extends State<MapView> {
             },
             onCameraIdle: () async {
               if (!_isNormalMode) return;
+              final controller = await _mapReadyCompleter.future;
+              final zoom = controller.cameraPosition?.zoom;
+
+              setState(() {
+                _isOutOfRange = zoom == null || zoom < renderThreshold;
+              });
+
               _renderVoronoi();
             },
             onCameraTrackingDismissed: () {
@@ -284,25 +296,38 @@ class _MapViewState extends State<MapView> {
             styleString: config.mapStyle.toString(),
             myLocationEnabled: true,
             myLocationTrackingMode: _trackingMode,
-            compassViewPosition: CompassViewPosition.TopLeft,
           ),
-          Positioned(
-            top: 0,
-            right: 0,
+          if (_isNormalMode) Positioned(
+            bottom: 0,
+            left: 0,
             child: Container(
               padding: const EdgeInsets.all(8),
-              child: IconButton.filledTonal(
-                icon: Icon(_hidePoints ? Icons.layers_clear : Icons.layers),
-                onPressed: () {
-                  setState(() {
-                    _hidePoints = !_hidePoints;
-                    _mapReadyCompleter.future.then((value) {
-                      value.setLayerVisibility('point', !_hidePoints);
-                      value.setLayerVisibility('fill', !_hidePoints);
-                    });
-                  });
-                },
-              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ElevatedButton(
+                    onPressed: _isOutOfRange ? null : () {
+                      setState(() {
+                        _showAttr = !_showAttr;
+                        _renderVoronoi(force: true);
+                      });
+                    },
+                    child: Text('属性表示: ${_showAttr ? 'ON' : 'OFF'}'),
+                  ),
+                  ElevatedButton(
+                    child: Text('レイヤー表示: ${_hidePoints ? 'OFF' : 'ON'}'),
+                    onPressed: () {
+                      setState(() {
+                        _hidePoints = !_hidePoints;
+                        _mapReadyCompleter.future.then((value) {
+                          value.setLayerVisibility('point', !_hidePoints);
+                          value.setLayerVisibility('fill', !_hidePoints);
+                        });
+                      });
+                    },
+                  ),
+                ],
+              )
             ),
           ),
         ]),
