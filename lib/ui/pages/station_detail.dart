@@ -78,7 +78,7 @@ class _StationDetailViewState extends State<StationDetailView> {
                       children: [
                         Text(prefectureCode[station!.prefecture]!),
                         const SizedBox(height: 4),
-                        getAttrIcon(station!.attr),
+                        getAttrIcon(station!.attr, context: context),
                         Text(station!.originalName, textScaler: const TextScaler.linear(1.5)),
                         Text(station!.nameKana),
                       ],

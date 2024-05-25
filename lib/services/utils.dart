@@ -38,18 +38,27 @@ String beautifySeconds(int seconds, {bool jp = false}) {
   }
 }
 
-// TODO: テーマに合わせてアイコン色を調整する
-Icon getAttrIcon(StationAttr attr) {
+Icon getAttrIcon(StationAttr attr, { BuildContext? context }) {
   const scale = 20.0;
+
+  var isDark = false;
+  if (context != null) {
+    if (Config.themeMode == ThemeMode.system) {
+      isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    } else {
+      isDark = Config.themeMode == ThemeMode.dark;
+    }
+  }
+
   switch (attr) {
     case StationAttr.eco:
-      return Icon(Icons.energy_savings_leaf, color: Colors.green.shade300, size: scale);
+      return Icon(Icons.energy_savings_leaf, color: !isDark ? Colors.green.shade400 : Colors.green.shade300, size: scale);
     case StationAttr.heat:
-      return Icon(Icons.whatshot, color: Colors.red.shade300, size: scale);
+      return Icon(Icons.whatshot, color: !isDark ? Colors.red.shade400 : Colors.red.shade300, size: scale);
     case StationAttr.cool:
-      return Icon(Icons.water_drop, color: Colors.blue.shade300, size: scale);
+      return Icon(Icons.water_drop, color: !isDark ? Colors.blue.shade400 : Colors.blue.shade300, size: scale);
     default:
-      return const Icon(Icons.adjust, color: Colors.grey, size: scale);
+      return Icon(Icons.adjust, color: !isDark ? Colors.grey.shade600 : Colors.grey.shade400, size: scale);
   }
 }
 

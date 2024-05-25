@@ -33,7 +33,7 @@ class StationCard extends StatelessWidget {
                 children: [
                   Text('${index + 1}'),
                   const SizedBox(height: 4),
-                  getAttrIcon(stationData.station.attr),
+                  getAttrIcon(stationData.station.attr, context: context),
                 ],
               ),
               const SizedBox(width: 20),
