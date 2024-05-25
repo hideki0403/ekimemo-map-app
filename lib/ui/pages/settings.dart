@@ -17,6 +17,12 @@ import 'package:ekimemo_map/ui/widgets/section_title.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
 import 'package:ekimemo_map/ui/pages/map.dart';
 
+final _themeMode = {
+  ThemeMode.system: 'システム設定に従う',
+  ThemeMode.light: 'ライト',
+  ThemeMode.dark: 'ダーク',
+};
+
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
 
@@ -259,6 +265,21 @@ class _SettingsViewState extends State<SettingsView> {
                 },
               ),
               const SectionTitle(title: 'その他'),
+              ListTile(
+                title: const Text('テーマ'),
+                subtitle: Text(_themeMode[config.themeMode] ?? '不明'),
+                onTap: () async {
+                  final result = await showSelectDialog(
+                    title: 'テーマ',
+                    data: _themeMode.map((key, value) => MapEntry(key.name, value)),
+                    defaultValue: config.themeMode.name,
+                  );
+
+                  if (result != null) {
+                    config.setThemeMode(ThemeMode.values.byName(result));
+                  }
+                },
+              ),
               ListTile(
                 title: const Text('マップのスタイル'),
                 subtitle: Text(config.mapStyle.displayName),

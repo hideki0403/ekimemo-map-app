@@ -61,66 +61,68 @@ void main() async {
         ChangeNotifierProvider(create: (_) => GpsStateNotifier()),
         ChangeNotifierProvider(create: (_) => LogStateNotifier()),
       ],
-      child: const Root(),
+      child: Root(),
     ),
   );
 }
 
 class Root extends StatelessWidget {
-  const Root({super.key});
+  Root({super.key});
+
+  final router = GoRouter(
+    navigatorKey: navigatorKey,
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const HomeView(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsView(),
+      ),
+      GoRoute(
+        path: '/assistant-flow',
+        builder: (context, state) => const AssistantFlowView(),
+      ),
+      GoRoute(
+        path: '/assistant-choose-rect',
+        builder: (context, state) => const AssistantChooseRectView(),
+      ),
+      GoRoute(
+        path: '/log',
+        builder: (context, state) => const LogView(),
+      ),
+      GoRoute(
+        path: '/map',
+        builder: (context, state) {
+          final params = state.uri.queryParameters;
+          return MapView(stationId: params['station-id'], lineId: params['line-id']);
+        },
+      ),
+      GoRoute(
+        path: '/station',
+        builder: (context, state) {
+          return StationDetailView(stationId: state.uri.queryParameters['id']);
+        },
+      ),
+      GoRoute(
+        path: '/line',
+        builder: (context, state) {
+          return LineDetailView(lineId: state.uri.queryParameters['id']);
+        },
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
+    final config = Provider.of<ConfigProvider>(context);
     return DynamicColorBuilder(
-      // TODO: テーマを変えられるように
       builder: (lightColorScheme, darkColorScheme) => MaterialApp.router(
         theme: _buildTheme(Brightness.light, lightColorScheme),
         darkTheme: _buildTheme(Brightness.dark, darkColorScheme),
-        routerConfig: GoRouter(
-          navigatorKey: navigatorKey,
-          initialLocation: '/',
-          routes: [
-            GoRoute(
-              path: '/',
-              builder: (context, state) => const HomeView(),
-            ),
-            GoRoute(
-              path: '/settings',
-              builder: (context, state) => const SettingsView(),
-            ),
-            GoRoute(
-              path: '/assistant-flow',
-              builder: (context, state) => const AssistantFlowView(),
-            ),
-            GoRoute(
-              path: '/assistant-choose-rect',
-              builder: (context, state) => const AssistantChooseRectView(),
-            ),
-            GoRoute(
-              path: '/log',
-              builder: (context, state) => const LogView(),
-            ),
-            GoRoute(
-              path: '/map',
-              builder: (context, state) {
-                final params = state.uri.queryParameters;
-                return MapView(stationId: params['station-id'], lineId: params['line-id']);
-              },
-            ),
-            GoRoute(
-              path: '/station',
-              builder: (context, state) {
-                return StationDetailView(stationId: state.uri.queryParameters['id']);
-              },
-            ),
-            GoRoute(
-              path: '/line',
-              builder: (context, state) {
-                return LineDetailView(lineId: state.uri.queryParameters['id']);
-              },
-            ),
-          ],
-        ),
+        themeMode: config.themeMode,
+        routerConfig: router,
       ),
     );
   }

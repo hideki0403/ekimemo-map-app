@@ -34,6 +34,7 @@ class ConfigProvider extends ChangeNotifier {
   bool get enableVibration => _config?.getBool('enable_vibration') ?? true;
   bool get enableTts => _config?.getBool('enable_tts') ?? false;
   MapStyle get mapStyle => MapStyle.byName(_config?.getString('map_style')) ?? MapStyle.defaultStyle;
+  ThemeMode get themeMode => ThemeMode.values.firstWhere((e) => e.name == _config?.getString('theme_mode'), orElse: () => ThemeMode.system);
 
   void notify() {
     notifyListeners();
@@ -108,6 +109,11 @@ class ConfigProvider extends ChangeNotifier {
     _config?.setString('map_style', value.name);
     notifyListeners();
   }
+
+  void setThemeMode(ThemeMode value) {
+    _config?.setString('theme_mode', value.name);
+    notifyListeners();
+  }
 }
 
 class Config {
@@ -131,6 +137,7 @@ class Config {
   static bool get enableVibration => _configProvider?.enableVibration ?? true;
   static bool get enableTts => _configProvider?.enableTts ?? false;
   static MapStyle get mapStyle => _configProvider?.mapStyle ?? MapStyle.defaultStyle;
+  static ThemeMode get themeMode => _configProvider?.themeMode ?? ThemeMode.system;
 
   static String getString(String key, {String defaultValue = ''}) {
     return _configProvider?.config?.getString(key) ?? defaultValue;
