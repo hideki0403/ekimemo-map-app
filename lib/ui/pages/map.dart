@@ -44,6 +44,7 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   final _mapReadyCompleter = Completer<MaplibreMapController>();
+  final StationRepository _stationRepository = StationRepository();
   bool _isRendering = false;
   bool _isNormalMode = false;
   bool _isOutOfRange = false;
@@ -51,13 +52,13 @@ class _MapViewState extends State<MapView> {
   bool _showAttr = false;
   DateTime _lastRectUpdate = DateTime.now();
   MyLocationTrackingMode _trackingMode = MyLocationTrackingMode.None;
-  final StationRepository _stationRepository = StationRepository();
+  Widget? _overlayWidget;
 
   static const renderThreshold = 10.0;
 
   void showLoading() {
-    const snackBar = SnackBar(
-      content: Row(
+    setState(() {
+      _overlayWidget = const Row(
         children: [
           SizedBox(
             width: 24,
@@ -67,20 +68,14 @@ class _MapViewState extends State<MapView> {
           SizedBox(width: 32),
           Text('計算中...', style: TextStyle(fontSize: 18)),
         ],
-      ),
-      duration: Duration(seconds: 30),
-      shape: StadiumBorder(),
-      margin: EdgeInsets.only(left: 23, right: 23, bottom: 23),
-      behavior: SnackBarBehavior.floating,
-    );
-
-    ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(snackBar);
+      );
+    });
   }
 
-  void hideLoading() {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  void hideOverlay() {
+    setState(() {
+      _overlayWidget = null;
+    });
   }
 
   Map<String, dynamic> _buildVoronoi(List<Station> stations) {
@@ -151,7 +146,9 @@ class _MapViewState extends State<MapView> {
       controller.setGeoJsonSource('voronoi', _buildVoronoi(stations));
       controller.setGeoJsonSource('point', _buildPoint(stations));
 
-      hideLoading();
+      hideOverlay();
+    } else {
+      _overlayWidget = const Text('縮尺が小さいため、メッシュは更新されません');
     }
 
     _isRendering = false;
@@ -328,6 +325,46 @@ class _MapViewState extends State<MapView> {
                   ),
                 ],
               )
+            ),
+          ),
+          Positioned(
+            top: 32,
+            left: 32,
+            right: 32,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 100),
+              transitionBuilder: (child, animation) {
+                final scaleTween = Tween<double>(begin: 0.95, end: 1.0);
+                final curvedAnimation = CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeInOut,
+                );
+
+                return FadeTransition(
+                  opacity: curvedAnimation,
+                  child: ScaleTransition(
+                    scale: curvedAnimation.drive(scaleTween),
+                    child: child,
+                  ),
+                );
+              },
+              child: _overlayWidget == null ? null : Container(
+                padding: const EdgeInsets.all(16),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      spreadRadius: 4,
+                      blurRadius: 8,
+                      offset: const Offset(0, 0),
+                    ),
+                  ],
+                ),
+                child: _overlayWidget,
+              ),
             ),
           ),
         ]),
