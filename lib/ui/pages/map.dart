@@ -292,7 +292,7 @@ class _MapViewState extends State<MapView> {
             child: Container(
               padding: const EdgeInsets.all(8),
               child: IconButton.filledTonal(
-                icon: Icon(_hidePoints ? Icons.layers : Icons.layers_clear),
+                icon: Icon(_hidePoints ? Icons.layers_clear : Icons.layers),
                 onPressed: () {
                   setState(() {
                     _hidePoints = !_hidePoints;
