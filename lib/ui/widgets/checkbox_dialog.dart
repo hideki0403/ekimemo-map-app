@@ -26,18 +26,23 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: widget.title != null ? Text(widget.title!) : null,
+      contentPadding: const EdgeInsets.fromLTRB(0, 16, 0, 24),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (widget.caption != null) ...[
-            Text(widget.caption!),
-            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(widget.caption!),
+            ),
+            const SizedBox(height: 16),
           ],
           for (final key in selectedValue.keys)
             CheckboxListTile(
               title: Text(key),
               value: selectedValue[key] ?? false,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
               onChanged: (value) {
                 if (value == null) return;
                 setState(() {

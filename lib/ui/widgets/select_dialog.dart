@@ -28,19 +28,24 @@ class _SelectDialogState extends State<SelectDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: widget.title != null ? Text(widget.title!) : null,
+      contentPadding: const EdgeInsets.fromLTRB(0, 16, 0, 24),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (widget.caption != null) ...[
-            Text(widget.caption!),
-            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(widget.caption!),
+            ),
+            const SizedBox(height: 16),
           ],
           for (final key in widget.data.keys)
             widget.noRadio != true ? RadioListTile<String>(
               title: Text(widget.data[key]!),
               value: key,
               groupValue: selectedValue,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
               onChanged: (value) {
                 if (widget.onChanged != null) widget.onChanged!(value);
                 if (widget.showOkButton != true) {
@@ -53,6 +58,7 @@ class _SelectDialogState extends State<SelectDialog> {
               },
             ) : ListTile(
               title: Text(widget.data[key]!),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
               onTap: () {
                 if (widget.showOkButton != true) {
                   Navigator.of(context).pop(key);
