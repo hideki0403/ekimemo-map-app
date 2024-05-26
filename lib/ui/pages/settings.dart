@@ -295,6 +295,23 @@ class _SettingsViewState extends State<SettingsView> {
                   }
                 },
               ),
+              ListTile(
+                title: const Text('マップの描画駅数上限'),
+                subtitle: Text('${config.mapRenderingLimit}駅'),
+                onTap: () async {
+                  final result = await showEditorDialog(
+                      title: 'マップの描画駅数上限',
+                      caption: '描画する最大駅数を指定できます。上限を上げすぎるとパフォーマンスが低下する可能性があります。',
+                      data: config.mapRenderingLimit.toString(),
+                      suffix: '駅',
+                      type: EditorDialogType.integer
+                  );
+
+                  if (result != null) {
+                    config.setMapRenderingLimit(max(1, int.parse(result)));
+                  }
+                },
+              ),
               const SectionTitle(title: '駅データ'),
               ListTile(
                 title: const Text('バージョン'),

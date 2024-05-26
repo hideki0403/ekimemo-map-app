@@ -53,8 +53,6 @@ class _MapViewState extends State<MapView> {
   MyLocationTrackingMode _trackingMode = MyLocationTrackingMode.None;
   Widget? _overlayWidget;
 
-  static const renderingLimit = 1000;
-
   void showLoading() {
     setState(() {
       _overlayWidget = const Row(
@@ -118,7 +116,7 @@ class _MapViewState extends State<MapView> {
     };
   }
 
-  void _renderVoronoi({ bool force = false }) async {
+  void _renderVoronoi(int renderingLimit, { bool force = false }) async {
     final isCooldown = _trackingMode != MyLocationTrackingMode.None && DateTime.now().difference(_lastRectUpdate).inMilliseconds < 1000;
     if (_isRendering || (isCooldown && !force)) return;
     _isRendering = true;
@@ -276,7 +274,7 @@ class _MapViewState extends State<MapView> {
             },
             onCameraIdle: () async {
               if (!_isNormalMode) return;
-              _renderVoronoi();
+              _renderVoronoi(config.mapRenderingLimit);
             },
             onCameraTrackingDismissed: () {
               setState(() {
@@ -299,7 +297,7 @@ class _MapViewState extends State<MapView> {
                     onPressed: () {
                       setState(() {
                         _showAttr = !_showAttr;
-                        _renderVoronoi(force: true);
+                        _renderVoronoi(config.mapRenderingLimit, force: true);
                       });
                     },
                     child: Text('属性表示: ${_showAttr ? 'ON' : 'OFF'}'),

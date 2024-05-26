@@ -34,6 +34,7 @@ class ConfigProvider extends ChangeNotifier {
   bool get enableVibration => _config?.getBool('enable_vibration') ?? true;
   bool get enableTts => _config?.getBool('enable_tts') ?? false;
   MapStyle get mapStyle => MapStyle.byName(_config?.getString('map_style')) ?? MapStyle.defaultStyle;
+  int get mapRenderingLimit => _config?.getInt('map_rendering_limit') ?? 750;
   ThemeMode get themeMode => ThemeMode.values.firstWhere((e) => e.name == _config?.getString('theme_mode'), orElse: () => ThemeMode.system);
 
   void notify() {
@@ -114,6 +115,11 @@ class ConfigProvider extends ChangeNotifier {
     _config?.setString('theme_mode', value.name);
     notifyListeners();
   }
+
+  void setMapRenderingLimit(int value) {
+    _config?.setInt('map_rendering_limit', value);
+    notifyListeners();
+  }
 }
 
 class Config {
@@ -138,6 +144,7 @@ class Config {
   static bool get enableTts => _configProvider?.enableTts ?? false;
   static MapStyle get mapStyle => _configProvider?.mapStyle ?? MapStyle.defaultStyle;
   static ThemeMode get themeMode => _configProvider?.themeMode ?? ThemeMode.system;
+  static int get mapRenderingLimit => _configProvider?.mapRenderingLimit ?? 750;
 
   static String getString(String key, {String defaultValue = ''}) {
     return _configProvider?.config?.getString(key) ?? defaultValue;
