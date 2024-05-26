@@ -55,7 +55,7 @@ class AccessCacheManager {
       record.id = id;
       record.firstAccess = lastAccess;
       record.lastAccess = lastAccess;
-      record.accessCount = 1;
+      record.accessCount = updateOnly ? 0 : 1;
       _repository.insertModel(record);
     } else {
       accessLog.lastAccess = lastAccess;

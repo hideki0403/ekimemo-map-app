@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:ekimemo_map/models/station.dart';
+import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/search.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/config.dart';
-import 'package:go_router/go_router.dart';
 
 class StationCard extends StatelessWidget {
   final StationData stationData;
   final int index;
-  const StationCard({required this.stationData, required this.index, super.key});
+  final _cooldownTimerState = GlobalKey<_CooldownTimerState>();
+  StationCard({required this.stationData, required this.index, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +24,11 @@ class StationCard extends StatelessWidget {
         onTap: () {
           context.push(Uri(path: '/station', queryParameters: {'id': stationData.station.id}).toString());
         },
-        onLongPress: () {
-          // TODO: アクセス済みの駅にできるなどの機能を追加
+        onLongPress: () async {
+          final rebuild = await showDialog(context: context, builder: (context) => _StationMenu(station: stationData.station, index: index)) as bool?;
+          if (rebuild == true) {
+            _cooldownTimerState.currentState?.rebuildTimer();
+          }
         },
         child: Padding(
           padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12, right: 20),
@@ -51,7 +57,7 @@ class StationCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(stationData.distance ?? '', textScaler: const TextScaler.linear(1.2)),
-                  Opacity(opacity: 0.8, child: _CooldownTimer(stationData: stationData, index: index)),
+                  Opacity(opacity: 0.8, child: _CooldownTimer(stationData: stationData, index: index, key: _cooldownTimerState)),
                 ],
               ),
             ],
@@ -67,7 +73,7 @@ class _CooldownTimer extends StatefulWidget {
   final StationData stationData;
   final int index;
 
-  const _CooldownTimer({required this.stationData, required this.index});
+  const _CooldownTimer({required this.stationData, required this.index, super.key});
 
   @override
   _CooldownTimerState createState() => _CooldownTimerState();
@@ -99,7 +105,11 @@ class _CooldownTimerState extends State<_CooldownTimer> {
   }
 
   void rebuildTimer() {
-    _coolDown = getCoolDownTime(widget.stationData.station.id);
+    setState(() {
+      _coolDown = getCoolDownTime(widget.stationData.station.id);
+    });
+
+    _timer?.cancel();
     if (_coolDown == 0) return;
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -117,5 +127,33 @@ class _CooldownTimerState extends State<_CooldownTimer> {
   @override
   Widget build(BuildContext context) {
     return _coolDown != 0 ? Text(beautifySeconds(_coolDown)) : const SizedBox();
+  }
+}
+
+// 駅部分を長押しした時に表示されるメニュー
+class _StationMenu extends StatelessWidget {
+  const _StationMenu({required this.station, required this.index});
+  final Station station;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    final cooldown = getCoolDownTime(station.id);
+    return SimpleDialog(
+      title: Text(station.name),
+      children: [
+        if (index == 0) const SimpleDialogOption(
+          child: Text('この駅は操作を行えません'),
+        ),
+        if (index != 0) SimpleDialogOption(
+          onPressed: () async {
+            final time = cooldown == 0 ? DateTime.now() : DateTime.now().subtract(Duration(seconds: cooldown));
+            await AccessCacheManager.update(station.id, time, updateOnly: true);
+            if (context.mounted) Navigator.of(context).pop(true);
+          },
+          child: Text(cooldown == 0 ? !Config.enableReminder ? 'アクセス済みにする' : 'タイマーをセットする' : 'タイマーをリセットする'),
+        ),
+      ],
+    );
   }
 }
