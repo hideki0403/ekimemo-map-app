@@ -47,14 +47,13 @@ class _MapViewState extends State<MapView> {
   final StationRepository _stationRepository = StationRepository();
   bool _isRendering = false;
   bool _isNormalMode = false;
-  bool _isOutOfRange = false;
   bool _hidePoints = false;
   bool _showAttr = false;
   DateTime _lastRectUpdate = DateTime.now();
   MyLocationTrackingMode _trackingMode = MyLocationTrackingMode.None;
   Widget? _overlayWidget;
 
-  static const renderThreshold = 10.0;
+  static const renderingLimit = 1000;
 
   void showLoading() {
     setState(() {
@@ -125,30 +124,31 @@ class _MapViewState extends State<MapView> {
     _isRendering = true;
 
     final controller = await _mapReadyCompleter.future;
-    if (!_isOutOfRange) {
-      final bounds = await controller.getVisibleRegion();
-      final north = bounds.northeast.latitude;
-      final east = bounds.northeast.longitude;
-      final south = bounds.southwest.latitude;
-      final west = bounds.southwest.longitude;
+    final bounds = await controller.getVisibleRegion();
+    final north = bounds.northeast.latitude;
+    final east = bounds.northeast.longitude;
+    final south = bounds.southwest.latitude;
+    final west = bounds.southwest.longitude;
 
-      final margin = min(max(north - south, east - west) * 0.5, 0.5);
+    final margin = min(max(north - south, east - west) * 0.5, 0.5);
 
-      showLoading();
-      final stations = await StationManager.updateRect(
-        north + margin,
-        east + margin,
-        south - margin,
-        west - margin,
-        maxResults: 2000,
-      );
+    showLoading();
+    final stations = await StationManager.updateRect(
+      north + margin,
+      east + margin,
+      south - margin,
+      west - margin,
+      maxResults: renderingLimit,
+    );
 
+    if (stations.length < renderingLimit) {
       controller.setGeoJsonSource('voronoi', _buildVoronoi(stations));
       controller.setGeoJsonSource('point', _buildPoint(stations));
-
       hideOverlay();
     } else {
-      _overlayWidget = const Text('縮尺が小さいため、メッシュは更新されません');
+      setState(() {
+        _overlayWidget = const Text('画面範囲内の駅数が多すぎるため、メッシュを描画できませんでした。地図を拡大してください。');
+      });
     }
 
     _isRendering = false;
@@ -276,13 +276,6 @@ class _MapViewState extends State<MapView> {
             },
             onCameraIdle: () async {
               if (!_isNormalMode) return;
-              final controller = await _mapReadyCompleter.future;
-              final zoom = controller.cameraPosition?.zoom;
-
-              setState(() {
-                _isOutOfRange = zoom == null || zoom < renderThreshold;
-              });
-
               _renderVoronoi();
             },
             onCameraTrackingDismissed: () {
@@ -303,7 +296,7 @@ class _MapViewState extends State<MapView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ElevatedButton(
-                    onPressed: _isOutOfRange ? null : () {
+                    onPressed: () {
                       setState(() {
                         _showAttr = !_showAttr;
                         _renderVoronoi(force: true);
