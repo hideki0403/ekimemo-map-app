@@ -47,7 +47,7 @@ class AccessCacheManager {
     }
   }
 
-  static Future<void> update(String id, DateTime lastAccess, { updateOnly = false }) async {
+  static Future<void> update(String id, DateTime lastAccess, { updateOnly = false, bool? accessed }) async {
     accessCache[id] = lastAccess;
     final accessLog = await _repository.get(id);
     if (accessLog == null) {
@@ -56,10 +56,12 @@ class AccessCacheManager {
       record.firstAccess = lastAccess;
       record.lastAccess = lastAccess;
       record.accessCount = updateOnly ? 0 : 1;
+      record.accessed = accessed ?? updateOnly ? false : true;
       _repository.insertModel(record);
     } else {
       accessLog.lastAccess = lastAccess;
       if (!updateOnly) accessLog.accessCount++;
+      if (accessed != null) accessLog.accessed = accessed;
       _repository.update(accessLog);
     }
   }
