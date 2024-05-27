@@ -139,20 +139,32 @@ class _StationMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cooldown = getCoolDownTime(station.id);
+    final accessLog = AccessCacheManager.get(station.id);
+    final isAccessed = accessLog != null && accessLog.accessed;
+
     return SimpleDialog(
       title: Text(station.name),
       children: [
         if (index == 0) const SimpleDialogOption(
           child: Text('この駅は操作を行えません'),
         ),
-        if (index != 0) SimpleDialogOption(
-          onPressed: () async {
-            final time = cooldown == 0 ? DateTime.now() : DateTime.now().subtract(Duration(seconds: cooldown));
-            await AccessCacheManager.update(station.id, time, updateOnly: true);
-            if (context.mounted) Navigator.of(context).pop(true);
-          },
-          child: Text(cooldown == 0 ? !Config.enableReminder ? 'アクセス済みにする' : 'タイマーをセットする' : 'タイマーをリセットする'),
-        ),
+        if (index != 0) ...[
+          SimpleDialogOption(
+            onPressed: () async {
+              await AccessCacheManager.update(station.id, DateTime.now(), accessed: !isAccessed);
+              if (context.mounted) Navigator.of(context).pop(true);
+            },
+            child: Text(isAccessed ? '未アクセスにする' : 'アクセス済みにする'),
+          ),
+          if (Config.enableReminder) SimpleDialogOption(
+            onPressed: () async {
+              final time = cooldown == 0 ? DateTime.now() : DateTime.now().subtract(Duration(seconds: cooldown));
+              await AccessCacheManager.update(station.id, time, updateOnly: true);
+              if (context.mounted) Navigator.of(context).pop(true);
+            },
+            child: Text(cooldown == 0 ? 'タイマーをセットする' : 'タイマーをリセットする'),
+          )
+        ],
       ],
     );
   }
