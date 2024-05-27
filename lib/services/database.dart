@@ -11,7 +11,7 @@ enum DatabaseType {
 }
 
 class DatabaseHandler {
-  static const int _version = 2;
+  static const int _version = 3;
   static final Map<String, List<String>> _migration = {
     '1': [
       // create table
@@ -30,7 +30,11 @@ class DatabaseHandler {
     '2': [
       // add 'name_formal' column to 'line' table
       'ALTER TABLE line ADD COLUMN name_formal TEXT;',
-    ]
+    ],
+    '3': [
+      // add 'accessed' column to 'access_log' table
+      'ALTER TABLE access_log ADD COLUMN accessed INTEGER;',
+    ],
   };
 
   static Future<void> _migrate(Database db, int previousVersion, int oldVersion) async {

@@ -5,6 +5,7 @@ class AccessLog extends AbstractModel {
   late DateTime firstAccess;
   late DateTime lastAccess;
   late int accessCount;
+  late bool accessed;
 
   @override
   AccessLog fromMap(Map<String, dynamic> map) {
@@ -13,6 +14,7 @@ class AccessLog extends AbstractModel {
     accessLog.firstAccess = DateTime.parse(map['first_access']);
     accessLog.lastAccess = DateTime.parse(map['last_access']);
     accessLog.accessCount = map['access_count'];
+    accessLog.accessed = map['accessed'] == 1; // 1: true, 0: false
     return accessLog;
   }
 
@@ -23,6 +25,7 @@ class AccessLog extends AbstractModel {
     accessLog.firstAccess = DateTime.parse(json['first_access']);
     accessLog.lastAccess = DateTime.parse(json['last_access']);
     accessLog.accessCount = json['access_count'];
+    accessLog.accessed = json['accessed'];
     return accessLog;
   }
 
@@ -33,6 +36,7 @@ class AccessLog extends AbstractModel {
       'first_access': firstAccess.toIso8601String(),
       'last_access': lastAccess.toIso8601String(),
       'access_count': accessCount,
+      'accessed': accessed ? 1 : 0, // 1: true, 0: false
     };
   }
 }
