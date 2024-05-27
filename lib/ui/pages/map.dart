@@ -10,6 +10,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/line.dart';
+import 'package:ekimemo_map/repository/access_log.dart';
+import 'package:ekimemo_map/services/search.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/config.dart';
@@ -46,6 +48,7 @@ class _MapViewState extends State<MapView> {
   final _mapReadyCompleter = Completer<MaplibreMapController>();
   final StationRepository _stationRepository = StationRepository();
   bool _isRendering = false;
+  bool _isSearchingStation = false;
   bool _isNormalMode = false;
   bool _hidePoints = false;
   bool _showAttr = false;
@@ -79,9 +82,10 @@ class _MapViewState extends State<MapView> {
     final List<Map<String, dynamic>> features = [];
     for (var station in stations) {
       final voronoi = station.voronoi;
+      final accessLog = AccessCacheManager.get(station.id);
       voronoi['properties'] = {
         'color': _showAttr ? getAttrIcon(station.attr).color?.toHexStringRGB() : Colors.red.toHexStringRGB(),
-        'accessed': AccessCacheManager.get(station.id) != null,
+        'accessed': accessLog != null && accessLog.accessed,
       };
       features.add(voronoi);
     }
@@ -95,6 +99,7 @@ class _MapViewState extends State<MapView> {
   Map<String, dynamic> _buildPoint(List<Station> stations) {
     final List<Map<String, dynamic>> point = [];
     for (var station in stations) {
+      final accessLog = AccessCacheManager.get(station.id);
       point.add({
         'type': 'Feature',
         'geometry': {
@@ -103,7 +108,7 @@ class _MapViewState extends State<MapView> {
         },
         'properties': {
           'name': station.name,
-          'accessed': AccessCacheManager.get(station.id) != null,
+          'accessed': accessLog != null && accessLog.accessed,
           'color': _showAttr ? getAttrIcon(station.attr).color?.toHexStringRGB() : Colors.red.toHexStringRGB(),
           'icon': _showAttr ? station.attr.name : 'pin',
         },
@@ -116,7 +121,7 @@ class _MapViewState extends State<MapView> {
     };
   }
 
-  void _renderVoronoi(int renderingLimit, { bool force = false }) async {
+  Future<void> _renderVoronoi(int renderingLimit, { bool force = false }) async {
     final isCooldown = _trackingMode != MyLocationTrackingMode.None && DateTime.now().difference(_lastRectUpdate).inMilliseconds < 1000;
     if (_isRendering || (isCooldown && !force)) return;
     _isRendering = true;
@@ -153,7 +158,7 @@ class _MapViewState extends State<MapView> {
     _lastRectUpdate = DateTime.now();
   }
 
-  void _renderSingleStation() async {
+  Future<void> _renderSingleStation() async {
     final controller = await _mapReadyCompleter.future;
 
     final station = await _stationRepository.get(widget.stationId!, column: 'id');
@@ -167,7 +172,7 @@ class _MapViewState extends State<MapView> {
     )));
   }
 
-  void _renderSingleLine() async {
+  Future<void> _renderSingleLine() async {
     final controller = await _mapReadyCompleter.future;
 
     final line = await LineRepository().get(widget.lineId!, column: 'id');
@@ -280,6 +285,37 @@ class _MapViewState extends State<MapView> {
               setState(() {
                 _trackingMode = MyLocationTrackingMode.None;
               });
+            },
+            onMapLongClick: (point, latLng) async {
+              if (_isSearchingStation) return;
+              _isSearchingStation = true;
+
+              setState(() {
+                _overlayWidget = const Text('駅情報を取得中...');
+              });
+
+              final data = await StationSearchService.getNearestStation(latLng.latitude, latLng.longitude);
+
+              if (_hidePoints) {
+                setState(() {
+                  _overlayWidget = Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        getAttrIcon(data.station.attr, context: context),
+                        const SizedBox(width: 4),
+                        Text(data.station.name),
+                      ]
+                  );
+                });
+              } else {
+                final accessLog = AccessCacheManager.get(data.station.id);
+                final accessed = accessLog != null && accessLog.accessed;
+                await AccessCacheManager.update(data.station.id, DateTime.now(), updateOnly: true, accessed: !accessed);
+                await _renderVoronoi(config.mapRenderingLimit, force: true);
+                _overlayWidget = Text('${data.station.name}を${accessed ? '未アクセス' : 'アクセス済み'}にしました');
+              }
+
+              _isSearchingStation = false;
             },
             styleString: config.mapStyle.toString(),
             myLocationEnabled: true,
