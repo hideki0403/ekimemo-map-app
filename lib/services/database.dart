@@ -33,7 +33,7 @@ class DatabaseHandler {
     ],
     '3': [
       // add 'accessed' column to 'access_log' table
-      'ALTER TABLE access_log ADD COLUMN accessed INTEGER;',
+      'ALTER TABLE access_log ADD COLUMN accessed INTEGER DEFAULT 1;',
     ],
   };
 
