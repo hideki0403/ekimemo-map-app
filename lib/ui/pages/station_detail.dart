@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -13,7 +14,6 @@ import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/ui/widgets/line_simple.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
 
-// TODO
 class StationDetailView extends StatefulWidget {
   final String? stationId;
   const StationDetailView({this.stationId, super.key});
@@ -95,12 +95,28 @@ class _StationDetailViewState extends State<StationDetailView> {
                     child: const Text('マップで見る'),
                   ),
                 ),
+                if (kDebugMode) ...[
+                  const SectionTitle(title: 'Debug'),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('ID: ${station?.id}'),
+                        Text('Code: ${station?.code}'),
+                        Text('Latitude: ${station?.lat}'),
+                        Text('Longitude: ${station?.lng}'),
+                      ],
+                    ),
+                  ),
+                ],
                 const SectionTitle(title: 'アクセス情報'),
                 Padding(
                   padding: const EdgeInsets.only(left: 16, right: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(accessLog?.accessed != true ? '未アクセス' : 'アクセス済み'),
                       Text('アクセス回数: ${accessLog?.accessCount ?? 0}回'),
                       Text('最終アクセス: ${accessLog?.lastAccess != null ? DateFormat('yyyy/MM/dd HH:mm:ss').format(accessLog!.lastAccess) : '未アクセス'}'),
                       Text('初回アクセス: ${accessLog?.firstAccess != null ? DateFormat('yyyy/MM/dd HH:mm:ss').format(accessLog!.firstAccess) : '未アクセス'}'),
