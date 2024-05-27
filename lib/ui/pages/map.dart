@@ -10,7 +10,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/line.dart';
-import 'package:ekimemo_map/repository/access_log.dart';
 import 'package:ekimemo_map/services/search.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/utils.dart';
@@ -50,7 +49,8 @@ class _MapViewState extends State<MapView> {
   bool _isRendering = false;
   bool _isSearchingStation = false;
   bool _isNormalMode = false;
-  bool _hidePoints = false;
+  bool _hideFillLayer = false;
+  bool _hidePointLayer = false;
   bool _showAttr = false;
   DateTime _lastRectUpdate = DateTime.now();
   MyLocationTrackingMode _trackingMode = MyLocationTrackingMode.None;
@@ -257,7 +257,7 @@ class _MapViewState extends State<MapView> {
                 iconImage: ['get', 'icon'],
                 iconSize: 0.2,
                 iconColor: ['get', 'color'],
-              ), minzoom: 12);
+              ));
 
               if (widget.stationId != null) {
                 _renderSingleStation();
@@ -296,7 +296,7 @@ class _MapViewState extends State<MapView> {
 
               final data = await StationSearchService.getNearestStation(latLng.latitude, latLng.longitude);
 
-              if (_hidePoints) {
+              if (_hideFillLayer) {
                 setState(() {
                   _overlayWidget = Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -339,16 +339,26 @@ class _MapViewState extends State<MapView> {
                     child: Text('属性表示: ${_showAttr ? 'ON' : 'OFF'}'),
                   ),
                   ElevatedButton(
-                    child: Text('レイヤー表示: ${_hidePoints ? 'OFF' : 'ON'}'),
                     onPressed: () {
                       setState(() {
-                        _hidePoints = !_hidePoints;
+                        _hidePointLayer = !_hidePointLayer;
                         _mapReadyCompleter.future.then((value) {
-                          value.setLayerVisibility('point', !_hidePoints);
-                          value.setLayerVisibility('fill', !_hidePoints);
+                          value.setLayerVisibility('point', !_hidePointLayer);
                         });
                       });
                     },
+                    child: Text('駅アイコン表示: ${_hidePointLayer ? 'OFF' : 'ON'}'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _hideFillLayer = !_hideFillLayer;
+                        _mapReadyCompleter.future.then((value) {
+                          value.setLayerVisibility('fill', !_hideFillLayer);
+                        });
+                      });
+                    },
+                    child: Text('アクセス状態表示: ${_hideFillLayer ? 'OFF' : 'ON'}'),
                   ),
                 ],
               )
