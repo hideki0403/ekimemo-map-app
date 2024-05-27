@@ -34,8 +34,15 @@ class AsyncResult<T> {
         value = null;
 }
 
+class AccessCacheItem {
+  DateTime time;
+  bool accessed;
+
+  AccessCacheItem(this.time, this.accessed);
+}
+
 class AccessCacheManager {
-  static final accessCache = <String, DateTime>{};
+  static final accessCache = <String, AccessCacheItem>{};
   static final _repository = AccessLogRepository();
 
   static Future<void> initialize() async {
@@ -43,30 +50,44 @@ class AccessCacheManager {
 
     final accessLogs = await _repository.getAll();
     for (final accessLog in accessLogs) {
-      accessCache[accessLog.id] = accessLog.lastAccess;
+      accessCache[accessLog.id] = AccessCacheItem(accessLog.lastAccess, accessLog.accessed);
     }
   }
 
-  static Future<void> update(String id, DateTime lastAccess, { updateOnly = false, bool? accessed }) async {
-    accessCache[id] = lastAccess;
+  static Future<void> update(String id, DateTime lastAccess, { bool updateOnly = false, bool? accessed }) async {
     final accessLog = await _repository.get(id);
+    var isAccessed = false;
+
     if (accessLog == null) {
       final record = AccessLog();
       record.id = id;
       record.firstAccess = lastAccess;
       record.lastAccess = lastAccess;
       record.accessCount = updateOnly ? 0 : 1;
-      record.accessed = accessed ?? updateOnly ? false : true;
-      _repository.insertModel(record);
+      record.accessed = accessed ?? (updateOnly ? false : true);
+      await _repository.insertModel(record);
+
+      isAccessed = record.accessed;
     } else {
       accessLog.lastAccess = lastAccess;
       if (!updateOnly) accessLog.accessCount++;
       if (accessed != null) accessLog.accessed = accessed;
-      _repository.update(accessLog);
+      await _repository.update(accessLog);
+
+      isAccessed = accessLog.accessed;
     }
+
+    accessCache[id] = AccessCacheItem(lastAccess, isAccessed);
   }
 
-  static DateTime? get(String id) {
+  static bool has(String id) => accessCache.containsKey(id);
+
+  static DateTime? getTime(String id) {
+    final item = accessCache[id];
+    return item?.time;
+  }
+
+  static AccessCacheItem? get(String id) {
     return accessCache[id];
   }
 }
@@ -209,8 +230,8 @@ class StationManager {
       _handleStationUpdate(currentStation, reNotify: true);
 
       final stationId = currentStation.station.id;
-      final accessLog = AccessCacheManager.get(stationId);
-      if (accessLog != null) {
+      final accessLog = AccessCacheManager.has(stationId);
+      if (accessLog) {
         AccessCacheManager.update(stationId, DateTime.now(), updateOnly: true);
       }
 
