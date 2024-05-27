@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ekimemo_map/repository/meta.dart';
@@ -36,6 +37,11 @@ class ConfigProvider extends ChangeNotifier {
   MapStyle get mapStyle => MapStyle.byName(_config?.getString('map_style')) ?? MapStyle.defaultStyle;
   int get mapRenderingLimit => _config?.getInt('map_rendering_limit') ?? 750;
   ThemeMode get themeMode => ThemeMode.values.firstWhere((e) => e.name == _config?.getString('theme_mode'), orElse: () => ThemeMode.system);
+  String? get fontFamily {
+    final font = _config?.getString('font_family');
+    if (font == null || font == '') return GoogleFonts.notoSansJp().fontFamily;
+    return font;
+  }
 
   void notify() {
     notifyListeners();
@@ -120,6 +126,11 @@ class ConfigProvider extends ChangeNotifier {
     _config?.setInt('map_rendering_limit', value);
     notifyListeners();
   }
+
+  void setFontFamily(String? value) {
+    _config?.setString('font_family', value ?? '');
+    notifyListeners();
+  }
 }
 
 class Config {
@@ -145,6 +156,7 @@ class Config {
   static MapStyle get mapStyle => _configProvider?.mapStyle ?? MapStyle.defaultStyle;
   static ThemeMode get themeMode => _configProvider?.themeMode ?? ThemeMode.system;
   static int get mapRenderingLimit => _configProvider?.mapRenderingLimit ?? 750;
+  static String? get fontFamily => _configProvider?.fontFamily;
 
   static String getString(String key, {String defaultValue = ''}) {
     return _configProvider?.config?.getString(key) ?? defaultValue;

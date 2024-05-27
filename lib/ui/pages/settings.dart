@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -21,6 +22,15 @@ final _themeMode = {
   ThemeMode.system: 'システム設定に従う',
   ThemeMode.light: 'ライト',
   ThemeMode.dark: 'ダーク',
+};
+
+final _fontFamily = {
+  GoogleFonts.notoSansJp().fontFamily: 'Noto Sans JP',
+  GoogleFonts.mPlus1p().fontFamily: 'M PLUS 1p',
+  GoogleFonts.mPlusRounded1c().fontFamily: 'M PLUS Rounded 1c',
+  GoogleFonts.bizUDGothic().fontFamily: 'Biz UDゴシック',
+  GoogleFonts.kosugiMaru().fontFamily: '小杉丸',
+  GoogleFonts.zenMaruGothic().fontFamily: 'ZEN丸ゴシック',
 };
 
 class SettingsView extends StatefulWidget {
@@ -277,6 +287,21 @@ class _SettingsViewState extends State<SettingsView> {
 
                   if (result != null) {
                     config.setThemeMode(ThemeMode.values.byName(result));
+                  }
+                },
+              ),
+              ListTile(
+                title: const Text('フォント'),
+                subtitle: Text(_fontFamily[config.fontFamily] ?? '不明'),
+                onTap: () async {
+                  final result = await showSelectDialog(
+                    title: 'フォント',
+                    data: _fontFamily.map((key, value) => MapEntry(key!, value)),
+                    defaultValue: config.fontFamily,
+                  );
+
+                  if (result != null) {
+                    config.setFontFamily(result);
                   }
                 },
               ),
