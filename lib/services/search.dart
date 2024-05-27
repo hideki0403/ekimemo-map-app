@@ -135,10 +135,10 @@ class StationNode {
 
 class StationSearchService {
   static StationNode? _root;
-  static final List<StationData> _searchList = [];
+  static List<StationData> _searchCache = [];
 
   static bool get serviceAvailable => _root != null;
-  static List<StationData> get list => _searchList;
+  static List<StationData> get list => _searchCache;
   static String get latestProcessingTime => _latestProcessingTime;
   static DateTime? get lastUpdatedTime => _lastUpdatedTime;
 
@@ -169,7 +169,7 @@ class StationSearchService {
     _root = null;
   }
 
-  static Future<void> _search(StationNode node, double latitude, double longitude, int maxResults, {int maxDistance = 0}) async {
+  static Future<void> _search(StationNode node, double latitude, double longitude, List<StationData> dist, {int maxResults = 0, int maxDistance = 0}) async {
     var value = 0.0;
     var threshold = 0.0;
 
@@ -177,12 +177,12 @@ class StationSearchService {
     final d = sqrt(pow(s.lat - latitude, 2) + pow(s.lng - longitude, 2));
 
     var index = -1;
-    var size = _searchList.length;
+    var size = dist.length;
 
-    if (size > 0 && d < _searchList[size - 1].rawDistance) {
+    if (size > 0 && d < dist[size - 1].rawDistance) {
       index = size - 1;
       while (index > 0) {
-        if (d >= _searchList[index - 1].rawDistance) break;
+        if (d >= dist[index - 1].rawDistance) break;
         index--;
       }
     } else if(size == 0) {
@@ -190,8 +190,8 @@ class StationSearchService {
     }
 
     if (index >= 0) {
-      _searchList.insert(index, StationData.create(s, d));
-      if (size >= maxResults && _searchList[size].rawDistance > maxDistance) _searchList.removeLast();
+      dist.insert(index, StationData.create(s, d));
+      if (size >= maxResults && dist[size].rawDistance > maxDistance) dist.removeLast();
     }
 
     final isEven = node.depth % 2 == 0;
@@ -199,12 +199,12 @@ class StationSearchService {
     threshold = isEven ? s.lng : s.lat;
 
     final next = value < threshold ? await node.getLeft() : await node.getRight();
-    if (next != null) await _search(next, latitude, longitude, maxResults, maxDistance: maxDistance);
+    if (next != null) await _search(next, latitude, longitude, dist, maxResults: maxResults, maxDistance: maxDistance);
 
     final opposite = value < threshold ? await node.getRight() : await node.getLeft();
 
-    if (opposite != null && (value - threshold).abs() < max(_searchList.last.rawDistance, maxDistance)) {
-      await _search(opposite, latitude, longitude, maxResults, maxDistance: maxDistance);
+    if (opposite != null && (value - threshold).abs() < max(dist.last.rawDistance, maxDistance)) {
+      await _search(opposite, latitude, longitude, dist, maxResults: maxResults, maxDistance: maxDistance);
     }
   }
 
@@ -234,7 +234,7 @@ class StationSearchService {
     if (maxResults <= 0) return (false, null);
     if (!serviceAvailable) throw Exception('StationSearchService not initialized');
 
-    if (list.isNotEmpty && _fixedLatLng(_lastPositionLat) == _fixedLatLng(latitude) && _fixedLatLng(_lastPositionLng) == _fixedLatLng(longitude)) {
+    if (_searchCache.isNotEmpty && _fixedLatLng(_lastPositionLat) == _fixedLatLng(latitude) && _fixedLatLng(_lastPositionLng) == _fixedLatLng(longitude)) {
       logger.debug('Skip updateLocation: same position');
       return (false, _currentStation);
     }
@@ -242,13 +242,14 @@ class StationSearchService {
     final stopWatch = Stopwatch();
     stopWatch.start();
 
-    _searchList.clear();
-    await _search(_root!, latitude, longitude, maxResults, maxDistance: maxDistance);
+    final dist = <StationData>[];
+    await _search(_root!, latitude, longitude, dist, maxResults: maxResults, maxDistance: maxDistance);
+    _searchCache = dist;
 
-    final isUpdated = _currentStation == null || _currentStation!.station.id != _searchList.first.station.id;
+    final isUpdated = _currentStation == null || _currentStation!.station.id != _searchCache.first.station.id;
     final elapsed = (stopWatch.elapsedMicroseconds / 1000).toStringAsFixed(1);
 
-    _currentStation = _searchList.first;
+    _currentStation = _searchCache.first;
     _lastPositionLat = latitude;
     _lastPositionLng = longitude;
     _latestProcessingTime = elapsed;
