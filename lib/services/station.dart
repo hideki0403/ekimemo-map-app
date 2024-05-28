@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/access_log.dart';
-import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'package:intl/intl.dart';
 import 'config.dart';
@@ -13,8 +12,7 @@ import 'utils.dart';
 import 'assistant.dart';
 import 'search.dart';
 import 'gps.dart';
-
-final _lineRepository = LineRepository();
+import 'cache.dart';
 
 enum ResultType {
   success,
@@ -199,7 +197,7 @@ class StationManager {
         final hasMasterLine = x.station.lines.contains(currentMasterLineId);
         final lineId = (hasMasterLine ? currentMasterLineId : currentLineIdRanking?.firstWhereOrNull((line) => x.station.lines.contains(line))) ?? x.station.lines.first;
 
-        x.lineName = (await _lineRepository.get(lineId))?.name ?? '不明';
+        x.lineName = (await LineCache.get(lineId))?.name ?? '不明';
         x.distance = beautifyDistance(measure(latitude, longitude, x.station.lat, x.station.lng));
       }));
 

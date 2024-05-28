@@ -22,7 +22,7 @@ class StationCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         onTap: () {
-          context.push(Uri(path: '/station', queryParameters: {'id': stationData.station.id}).toString());
+          context.push(Uri(path: '/station', queryParameters: {'id': stationData.station.code.toString()}).toString());
         },
         onLongPress: () async {
           final rebuild = await showDialog(context: context, builder: (context) => _StationMenu(station: stationData.station, index: index)) as bool?;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'package:ekimemo_map/models/line.dart';
 import 'package:ekimemo_map/services/utils.dart';
+import 'package:ekimemo_map/services/cache.dart';
 import 'package:go_router/go_router.dart';
 
 class LineSimple extends StatelessWidget {
@@ -16,7 +17,7 @@ class LineSimple extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         onTap: () {
-          context.push(Uri(path: '/line', queryParameters: {'id': line.id}).toString());
+          context.push(Uri(path: '/line', queryParameters: {'id': line.code.toString()}).toString());
         },
         child: Padding(
           padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12, right: 20),
@@ -45,7 +46,7 @@ class LineSimple extends StatelessWidget {
 }
 
 class _AccessProgress extends StatefulWidget {
-  final List<String> stationList;
+  final List<int> stationList;
   const _AccessProgress({required this.stationList});
 
   @override
@@ -54,7 +55,7 @@ class _AccessProgress extends StatefulWidget {
 
 class _AccessProgressState extends State<_AccessProgress> {
   final AccessLogRepository _accessLogRepository = AccessLogRepository();
-  List<String> accessedStation = [];
+  List<int> accessedStation = [];
   bool isComplete = false;
 
   @override
@@ -70,11 +71,12 @@ class _AccessProgressState extends State<_AccessProgress> {
   }
 
   Future<void> rebuild() async {
-    final stations = <String>[];
+    final stations = <int>[];
     await Future.wait(widget.stationList.map((stationId) async {
-      final x = await _accessLogRepository.get(stationId);
+      final station = await StationCache.get(stationId);
+      final x = await _accessLogRepository.get(station?.id);
       if (x == null) return;
-      stations.add(x.id);
+      stations.add(StationCache.convert(x.id));
     }));
     setState(() {
       accessedStation = stations;

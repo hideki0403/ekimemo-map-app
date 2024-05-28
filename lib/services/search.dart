@@ -1,17 +1,13 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:collection';
 
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/tree_node.dart';
-import 'package:ekimemo_map/repository/station.dart';
-import 'package:ekimemo_map/repository/tree_node.dart';
+import 'cache.dart';
 import 'config.dart';
 import 'log.dart';
 
 final logger = Logger('StationSearchService');
-final _stationRepository = StationRepository();
-final _treeNodeRepository = TreeNodeRepository();
 
 class Bounds {
   final double north;
@@ -45,21 +41,6 @@ class StationData {
   }
 }
 
-class _TreeNodeManager {
-  static final _cache = SplayTreeMap<int, TreeNode?>();
-
-  static Future<TreeNode?> get(int id) async {
-    if (_cache.containsKey(id)) return _cache[id];
-    final node = await _treeNodeRepository.get(id);
-    _cache[id] = node;
-    return node;
-  }
-
-  static void clear() {
-    _cache.clear();
-  }
-}
-
 class StationNode {
   late final int depth;
   late final Bounds region;
@@ -78,7 +59,7 @@ class StationNode {
   }
 
   Future<StationNode> build() async {
-    station = await _stationRepository.get(code);
+    station = await StationCache.get(code);
     if (station == null) throw Exception('Station not found: $code');
     if (!region.isInsideRect(station!.lat, station!.lng)) throw Exception('Station $code is out of region');
     return this;
@@ -96,7 +77,7 @@ class StationNode {
     final isEven = depth % 2 == 0;
 
     if (leftCode != null && left == null) {
-      final leftNode = await _TreeNodeManager.get(leftCode!);
+      final leftNode = await TreeNodeCache.get(leftCode!);
       if (leftNode == null) throw Exception('Node $leftCode not found');
 
       final leftNodeRegion = Bounds(
@@ -116,7 +97,7 @@ class StationNode {
     final isEven = depth % 2 == 0;
 
     if (rightCode != null && right == null) {
-      final rightNode = await _TreeNodeManager.get(rightCode!);
+      final rightNode = await TreeNodeCache.get(rightCode!);
       if (rightNode == null) throw Exception('Node $rightCode not found');
 
       final rightNodeRegion = Bounds(
@@ -149,12 +130,10 @@ class StationSearchService {
   static DateTime? _lastUpdatedTime;
 
   static Future<void> initialize() async {
-    _TreeNodeManager.clear();
-
-    if (await _treeNodeRepository.count() == 0) return;
+    if (TreeNodeCache.count() == 0) return;
 
     final rootNodeId = int.parse(SystemState.treeNodeRoot);
-    final rootNode = await _TreeNodeManager.get(rootNodeId);
+    final rootNode = await TreeNodeCache.get(rootNodeId);
     if (rootNode == null) {
       logger.error('Root node not found: $rootNodeId, service: ${SystemState.serviceAvailable}');
       return;

@@ -16,6 +16,7 @@ import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/services/search.dart';
 import 'package:ekimemo_map/services/native.dart';
 import 'package:ekimemo_map/services/log.dart';
+import 'package:ekimemo_map/services/cache.dart';
 
 final logger = Logger('Updater');
 
@@ -176,6 +177,9 @@ class AssetUpdater {
     popContext(null);
 
     SystemState.setString('station_data_version', version);
+
+    // データベースのキャッシュを再構築
+    await CacheManager.initialize();
 
     // TreeNodeを再構築する
     StationSearchService.clear();

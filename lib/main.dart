@@ -11,6 +11,7 @@ import 'services/gps.dart';
 import 'services/station.dart';
 import 'services/notification.dart';
 import 'services/log.dart';
+import 'services/cache.dart';
 
 import 'ui/pages/home.dart';
 import 'ui/pages/settings.dart';
@@ -28,7 +29,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   FlutterError.onError = (details) {
-    logger.error('FlutterError: ${details.exceptionAsString()}');
+    logger.error('FlutterError: ${details.exceptionAsString()}, stack: ${details.stack}');
+
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
@@ -37,6 +39,7 @@ void main() async {
   };
 
   await DatabaseHandler.init();
+  await CacheManager.initialize();
 
   final configProvider = ConfigProvider();
   await configProvider.init();

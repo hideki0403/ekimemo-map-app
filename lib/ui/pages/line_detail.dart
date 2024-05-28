@@ -3,10 +3,9 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
-import 'package:ekimemo_map/repository/station.dart';
-import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'package:ekimemo_map/services/utils.dart';
+import 'package:ekimemo_map/services/cache.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
 import 'package:ekimemo_map/ui/widgets/station_simple.dart';
 
@@ -19,30 +18,28 @@ class LineDetailView extends StatefulWidget {
 }
 
 class _LineDetailViewState extends State<LineDetailView> {
-  final LineRepository _lineRepository = LineRepository();
-  final StationRepository _stationRepository = StationRepository();
   final AccessLogRepository _accessLogRepository = AccessLogRepository();
   Line? line;
   List<Station> stations = [];
-  List<String> accessedStation = [];
+  List<int> accessedStation = [];
 
   @override
   void initState() {
     super.initState();
     if (widget.lineId == null) return;
 
-    _lineRepository.get(widget.lineId!, column: 'id').then((x) {
+    LineCache.get(int.parse(widget.lineId!)).then((x) {
       if (x == null) return;
       setState(() {
         line = x;
       });
 
       final List<Station> tmpStation = [];
-      final List<String> tmpAccessed = [];
+      final List<int> tmpAccessed = [];
 
       Future.wait(line!.stationList.map((x) async {
-        final station = await _stationRepository.get(x, column: 'id');
-        final accessLog = await _accessLogRepository.get(x);
+        final station = await StationCache.get(x);
+        final accessLog = await _accessLogRepository.get(station?.id);
         if (accessLog != null) tmpAccessed.add(x);
         if (station != null) tmpStation.add(station);
       })).then((_) {
@@ -124,7 +121,7 @@ class _LineDetailViewState extends State<LineDetailView> {
                       final station = stations[index];
                       return StationSimple(
                         station: station,
-                        isAccessed: accessedStation.contains(station.id),
+                        isAccessed: accessedStation.contains(station.code),
                       );
                     }
                 )

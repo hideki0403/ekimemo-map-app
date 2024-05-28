@@ -8,12 +8,11 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:ekimemo_map/models/station.dart';
-import 'package:ekimemo_map/repository/station.dart';
-import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/services/search.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/config.dart';
+import 'package:ekimemo_map/services/cache.dart';
 
 enum MapStyle {
   defaultStyle('デフォルト', 'default'),
@@ -45,7 +44,6 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   final _mapReadyCompleter = Completer<MaplibreMapController>();
-  final StationRepository _stationRepository = StationRepository();
   bool _isRendering = false;
   bool _isSearchingStation = false;
   bool _isNormalMode = false;
@@ -161,7 +159,7 @@ class _MapViewState extends State<MapView> {
   Future<void> _renderSingleStation() async {
     final controller = await _mapReadyCompleter.future;
 
-    final station = await _stationRepository.get(widget.stationId!, column: 'id');
+    final station = await StationCache.get(int.parse(widget.stationId!));
     if (station == null) return;
 
     controller.setGeoJsonSource('voronoi', _buildVoronoi([station]));
@@ -175,11 +173,11 @@ class _MapViewState extends State<MapView> {
   Future<void> _renderSingleLine() async {
     final controller = await _mapReadyCompleter.future;
 
-    final line = await LineRepository().get(widget.lineId!, column: 'id');
+    final line = await LineCache.get(int.parse(widget.lineId!));
     if (line == null || line.polylineList == null) return;
 
     final stations = await Future.wait(line.stationList.map((x) async {
-      final station = await _stationRepository.get(x, column: 'id');
+      final station = await StationCache.get(x);
       if (station == null) throw Exception('Station not found');
       return station;
     }));
