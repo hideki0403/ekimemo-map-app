@@ -337,6 +337,15 @@ class _SettingsViewState extends State<SettingsView> {
                   }
                 },
               ),
+              const SectionTitle(title: '高度な設定'),
+              SwitchListTile(
+                title: const Text('駅データのメモリキャッシュを無効化'),
+                subtitle: const Text('駅データのメモリキャッシュを無効にします。メモリ使用量を削減できますが、駅探索のパフォーマンスが大幅に低下する場合があります。この設定は再起動後から有効になります。'),
+                value: config.disableDbCache,
+                onChanged: (value) {
+                  config.setDisableDbCache(value);
+                },
+              ),
               const SectionTitle(title: '駅データ'),
               ListTile(
                 title: const Text('バージョン'),

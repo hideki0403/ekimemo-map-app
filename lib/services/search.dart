@@ -130,7 +130,7 @@ class StationSearchService {
   static DateTime? _lastUpdatedTime;
 
   static Future<void> initialize() async {
-    if (TreeNodeCache.count() == 0) return;
+    if (await TreeNodeCache.count() == 0) return;
 
     final rootNodeId = int.parse(SystemState.treeNodeRoot);
     final rootNode = await TreeNodeCache.get(rootNodeId);

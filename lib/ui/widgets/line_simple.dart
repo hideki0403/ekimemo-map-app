@@ -76,7 +76,7 @@ class _AccessProgressState extends State<_AccessProgress> {
       final station = await StationCache.get(stationId);
       final x = await _accessLogRepository.get(station?.id);
       if (x == null) return;
-      stations.add(StationCache.convert(x.id));
+      stations.add(await StationCache.convert(x.id));
     }));
     setState(() {
       accessedStation = stations;

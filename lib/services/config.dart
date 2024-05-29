@@ -42,6 +42,7 @@ class ConfigProvider extends ChangeNotifier {
     if (font == null || font == '') return GoogleFonts.notoSansJp().fontFamily;
     return font;
   }
+  bool get disableDbCache => _config?.getBool('disable_db_cache') ?? false;
 
   void notify() {
     notifyListeners();
@@ -131,6 +132,11 @@ class ConfigProvider extends ChangeNotifier {
     _config?.setString('font_family', value ?? '');
     notifyListeners();
   }
+
+  void setDisableDbCache(bool value) {
+    _config?.setBool('disable_db_cache', value);
+    notifyListeners();
+  }
 }
 
 class Config {
@@ -156,7 +162,8 @@ class Config {
   static MapStyle get mapStyle => _configProvider?.mapStyle ?? MapStyle.defaultStyle;
   static ThemeMode get themeMode => _configProvider?.themeMode ?? ThemeMode.system;
   static int get mapRenderingLimit => _configProvider?.mapRenderingLimit ?? 750;
-  static String? get fontFamily => _configProvider?.fontFamily;
+  static String? get fontFamily => _configProvider?.fontFamily ?? GoogleFonts.notoSansJp().fontFamily;
+  static bool get disableDbCache => _configProvider?.disableDbCache ?? false;
 
   static String getString(String key, {String defaultValue = ''}) {
     return _configProvider?.config?.getString(key) ?? defaultValue;

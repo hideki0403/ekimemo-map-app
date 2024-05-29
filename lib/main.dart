@@ -39,7 +39,6 @@ void main() async {
   };
 
   await DatabaseHandler.init();
-  await CacheManager.initialize();
 
   final configProvider = ConfigProvider();
   await configProvider.init();
@@ -48,6 +47,8 @@ void main() async {
   await systemStateProvider.init();
 
   Config.init(configProvider);
+  await CacheManager.initialize();
+
   SystemState.init(systemStateProvider);
   NotificationManager.initialize();
   await StationManager.initialize();
