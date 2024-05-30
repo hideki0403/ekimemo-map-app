@@ -1,5 +1,8 @@
 name: Build
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [ master ]
@@ -53,13 +56,13 @@ jobs:
       - name: Prepare deploy
         run: |
           mkdir dist
-          cp build/app/outputs/flutter-apk/app-release.apk dist/
-          echo '{"version": "${{ steps.flutter_version.outputs.version_number }}", "build": "${{ steps.commit_count.outputs.number }}", "datetime": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'", "commit": "'$(git rev-parse --short HEAD)'", "size": '$(stat -c%s dist/app-release.apk)'}' > dist/version.json
+          cp ./build/app/outputs/flutter-apk/app-release.apk ./
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Release
+        uses: softprops/action-gh-release@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
+          name: ${{ steps.flutter_version.outputs.version_number }}+${{ steps.commit_count.outputs.number }}
+          tag_name: ${{ steps.flutter_version.outputs.version_number }}+${{ steps.commit_count.outputs.number }}
+          files: app-release.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: true
