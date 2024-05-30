@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:msgpack_dart/msgpack_dart.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:install_plugin/install_plugin.dart';
 
@@ -14,7 +15,6 @@ import 'package:ekimemo_map/models/line.dart';
 import 'package:ekimemo_map/models/tree_node.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/services/search.dart';
-import 'package:ekimemo_map/services/native.dart';
 import 'package:ekimemo_map/services/log.dart';
 import 'package:ekimemo_map/services/cache.dart';
 
@@ -43,12 +43,14 @@ class AssetUpdater {
 
     final release = response.data;
     final latestVersion = release['tag_name'].toString();
-    final size = release['assets'].firstWhere((x) => x['name'] == 'station_database.msgpack')?['size'] ?? 0;
+    final asset = release['assets'].firstWhere((x) => x['name'] == 'station_database.msgpack');
+    final size = asset['size'];
+    final downloadUrl = asset['browser_download_url'];
     if (SystemState.getString('station_data_version') != latestVersion) updateAvailable = true;
 
     logger.debug('Latest version: $latestVersion, Current version: ${SystemState.getString('station_data_version')}');
 
-    if (force) return _update(size, latestVersion);
+    if (force) return _update(downloadUrl, size, latestVersion);
     if (!updateAvailable && silent) return;
 
     showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
@@ -65,7 +67,7 @@ class AssetUpdater {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              _update(size, latestVersion);
+              _update(downloadUrl, size, latestVersion);
             },
             child: const Text('更新'),
           ),
@@ -85,7 +87,7 @@ class AssetUpdater {
     });
   }
 
-  static void _update(int size, String version) {
+  static void _update(String assetUrl, int size, String version) {
     final streamController = StreamController<double>();
     BuildContext? internalContext;
     bool isCanPop = false;
@@ -119,7 +121,7 @@ class AssetUpdater {
 
     logger.debug('Downloading station-database.msgpack');
 
-    _dio.get('https://github.com/hideki0403/ekimemo-map-database/releases/download/$version/station_database.msgpack', onReceiveProgress: (current, _) {
+    _dio.get(assetUrl, onReceiveProgress: (current, _) {
       streamController.add(current / size);
     }, options: Options(responseType: ResponseType.bytes)).then((response) {
       isCanPop = true;
@@ -214,24 +216,28 @@ class AppUpdater {
     logger.debug('Checking for app updates');
 
     _isChecking = true;
-    final response = await _dio.get('https://pages.yukineko.me/ekimemo-map-app/version.json');
+    final response = await _dio.get('https://api.github.com/repos/hideki0403/ekimemo-map-app/releases/latest');
     _isChecking = false;
     var updateAvailable = false;
     if (response.statusCode != 200) throw Exception('Failed to get latest info');
 
     final info = response.data;
-    final releaseCommitHash = info['commit'].toString();
-    final appCommitHash = await NativeMethods.getCommitHash();
-    if (appCommitHash != releaseCommitHash) updateAvailable = true;
+    final releaseVersion = info['tag_name'].toString();
+    final packageInfo = await PackageInfo.fromPlatform();
+    final currentVersion = 'v${packageInfo.version}+${packageInfo.buildNumber}';
 
-    logger.debug('Latest version: v${info['version']} ($releaseCommitHash), Current version: v${info['version']} ($appCommitHash)');
+    if (currentVersion != releaseVersion) updateAvailable = true;
+
+    logger.debug('Latest version: $releaseVersion, Current version: $currentVersion');
 
     if (!updateAvailable && silent) return;
+
+    final asset = info['assets'].firstWhere((x) => x['name'] == 'app-release.apk');
 
     showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
       return updateAvailable ? AlertDialog(
         title: const Text('アプリ更新'),
-        content: Text('新しいバージョン v${info['version']} ($releaseCommitHash) が利用可能です。更新しますか？'),
+        content: Text('新しいバージョン $releaseVersion が利用可能です。更新しますか？'),
         actions: [
           TextButton(
             onPressed: () {
@@ -242,7 +248,7 @@ class AppUpdater {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              _update('https://pages.yukineko.me/ekimemo-map-app/app-release.apk', info['size']!);
+              _update(asset['browser_download_url'], asset['size']);
             },
             child: const Text('更新'),
           ),
