@@ -22,6 +22,7 @@ import 'ui/pages/assistant_flow.dart';
 import 'ui/pages/assistant_choose_rect.dart';
 import 'ui/pages/log.dart';
 import 'ui/pages/tools.dart';
+import 'ui/pages/route_search.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final logger = Logger('App');
@@ -99,6 +100,10 @@ class Root extends StatelessWidget {
       GoRoute(
         path: '/tools',
         builder: (context, state) => const ToolsView(),
+      ),
+      GoRoute(
+        path: '/route-search',
+        builder: (context, state) => const RouteSearchView(),
       ),
       GoRoute(
         path: '/map',
