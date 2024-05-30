@@ -24,6 +24,12 @@ class HomeView extends StatelessWidget {
         title: const Text('駅メモマップ'),
         actions: [
           IconButton(
+            onPressed: () {
+              context.push('/tools');
+            },
+            icon: const Icon(Icons.build),
+          ),
+          IconButton(
             onPressed: state.stationDataVersion == '' ? null : () {
               context.push('/map');
             },
