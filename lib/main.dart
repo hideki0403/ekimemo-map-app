@@ -24,6 +24,7 @@ import 'ui/pages/assistant_choose_rect.dart';
 import 'ui/pages/log.dart';
 import 'ui/pages/tools.dart';
 import 'ui/pages/route_search.dart';
+import 'ui/pages/license.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final logger = Logger('App');
@@ -105,6 +106,10 @@ class Root extends StatelessWidget {
       GoRoute(
         path: '/route-search',
         builder: (context, state) => const RouteSearchView(),
+      ),
+      GoRoute(
+        path: '/license',
+        builder: (context, state) => const LicenseView(),
       ),
       GoRoute(
         path: '/map',

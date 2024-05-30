@@ -345,9 +345,19 @@ class _SettingsViewState extends State<SettingsView> {
                   config.setDisableDbCache(value);
                 },
               ),
-              const SectionTitle(title: '駅データ'),
+              const SectionTitle(title: 'アプリ'),
               ListTile(
-                title: const Text('バージョン'),
+                title: const Text('アプリバージョン'),
+                subtitle: Text('v$_version'),
+                trailing: ElevatedButton(
+                  onPressed: kDebugMode ? null : () {
+                    AppUpdater.check();
+                  },
+                  child: const Text('更新を確認'),
+                ),
+              ),
+              ListTile(
+                title: const Text('駅データバージョン'),
                 subtitle: Text(state.stationDataVersion != '' ? state.stationDataVersion : '不明'),
                 trailing: ElevatedButton(
                   onPressed: () {
@@ -357,23 +367,10 @@ class _SettingsViewState extends State<SettingsView> {
                 ),
               ),
               ListTile(
-                title: const Text('License'),
-                subtitle: const Text('"station_database" by Seo-4d696b75, Licensed under CC BY 4.0'),
-                onTap: () async {
-                  const url = 'https://github.com/Seo-4d696b75/station_database';
-                  if (await canLaunchUrlString(url)) await launchUrlString(url);
+                title: const Text('ライセンス'),
+                onTap: () {
+                  context.push('/license');
                 },
-              ),
-              const SectionTitle(title: 'アプリ'),
-              ListTile(
-                title: const Text('バージョン'),
-                subtitle: Text('v$_version'),
-                trailing: ElevatedButton(
-                  onPressed: kDebugMode ? null : () {
-                    AppUpdater.check();
-                  },
-                  child: const Text('更新を確認'),
-                ),
               ),
               if (_isDebug) ...[
                 const SectionTitle(title: 'デバッグ'),
