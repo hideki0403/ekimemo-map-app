@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'services/database.dart';
 import 'services/config.dart';
@@ -130,10 +131,11 @@ class Root extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final config = Provider.of<ConfigProvider>(context);
+    final font = GoogleFonts.asMap().keys.contains(config.fontFamily) ? config.fontFamily : null;
     return DynamicColorBuilder(
       builder: (lightColorScheme, darkColorScheme) => MaterialApp.router(
-        theme: _buildTheme(Brightness.light, lightColorScheme, config.fontFamily),
-        darkTheme: _buildTheme(Brightness.dark, darkColorScheme, config.fontFamily),
+        theme: _buildTheme(Brightness.light, lightColorScheme, font),
+        darkTheme: _buildTheme(Brightness.dark, darkColorScheme, font),
         themeMode: config.themeMode,
         routerConfig: router,
       ),
@@ -142,11 +144,10 @@ class Root extends StatelessWidget {
 }
 
 ThemeData _buildTheme(Brightness brightness, ColorScheme? colorScheme, String? fontFamily) {
-  return ThemeData(
+  final baseTheme = ThemeData(
     useMaterial3: true,
     brightness: brightness,
     colorScheme: colorScheme,
-    fontFamily: fontFamily,
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: <TargetPlatform, PageTransitionsBuilder>{
         TargetPlatform.android: ZoomPageTransitionsBuilder(
@@ -154,5 +155,9 @@ ThemeData _buildTheme(Brightness brightness, ColorScheme? colorScheme, String? f
         ),
       },
     ),
+  );
+
+  return baseTheme.copyWith(
+    textTheme: fontFamily != null ? GoogleFonts.getTextTheme(fontFamily, baseTheme.textTheme) : GoogleFonts.notoSansJpTextTheme(baseTheme.textTheme),
   );
 }
