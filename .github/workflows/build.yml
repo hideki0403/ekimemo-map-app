@@ -61,8 +61,8 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          name: ${{ steps.flutter_version.outputs.version_number }}+${{ steps.commit_count.outputs.number }}
-          tag_name: ${{ steps.flutter_version.outputs.version_number }}+${{ steps.commit_count.outputs.number }}
+          name: v${{ steps.flutter_version.outputs.version_number }}+${{ steps.commit_count.outputs.number }}
+          tag_name: v${{ steps.flutter_version.outputs.version_number }}+${{ steps.commit_count.outputs.number }}
           files: app-release.apk
           token: ${{ secrets.GITHUB_TOKEN }}
           generate_release_notes: true
