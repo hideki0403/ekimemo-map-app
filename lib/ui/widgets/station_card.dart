@@ -11,8 +11,9 @@ import 'package:ekimemo_map/services/config.dart';
 class StationCard extends StatelessWidget {
   final StationData stationData;
   final int index;
+  final bool viewOnly;
   final _cooldownTimerState = GlobalKey<_CooldownTimerState>();
-  StationCard({required this.stationData, required this.index, super.key});
+  StationCard({required this.stationData, required this.index, this.viewOnly = false, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class StationCard extends StatelessWidget {
         onTap: () {
           context.push(Uri(path: '/station', queryParameters: {'id': stationData.station.code.toString()}).toString());
         },
-        onLongPress: () async {
+        onLongPress: viewOnly ? null : () async {
           final rebuild = await showDialog(context: context, builder: (context) => _StationMenu(station: stationData.station, index: index)) as bool?;
           if (rebuild == true) {
             _cooldownTimerState.currentState?.rebuildTimer();
@@ -53,7 +54,7 @@ class StationCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Column(
+              if (!viewOnly) Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(stationData.distance ?? '', textScaler: const TextScaler.linear(1.2)),
