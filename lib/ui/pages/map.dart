@@ -142,6 +142,13 @@ class _MapViewState extends State<MapView> {
       maxResults: renderingLimit,
     );
 
+    // マップが極端に拡大されていた場合は表示できる駅が無くなるため、画面中央から最短の駅を取得する
+    if (stations.isEmpty) {
+      final center = LatLng((north + south) / 2, (east + west) / 2);
+      final data = await StationSearchService.getNearestStation(center.latitude, center.longitude);
+      stations.add(data.station);
+    }
+
     if (stations.length < renderingLimit) {
       controller.setGeoJsonSource('voronoi', _buildVoronoi(stations));
       controller.setGeoJsonSource('point', _buildPoint(stations));
