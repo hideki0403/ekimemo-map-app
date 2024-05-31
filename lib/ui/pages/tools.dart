@@ -40,11 +40,13 @@ class _ToolItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final border = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(24),
+    );
     return Card(
+      shape: border,
       child: InkWell(
-        customBorder: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        customBorder: border,
         onTap: () {
           context.push(path);
         },
