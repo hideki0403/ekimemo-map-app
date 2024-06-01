@@ -292,7 +292,7 @@ class _MapViewState extends State<MapView> {
               });
             },
             onMapLongClick: (point, latLng) async {
-              if (_isSearchingStation) return;
+              if (!_isNormalMode || _isSearchingStation) return;
               _isSearchingStation = true;
 
               setState(() {
