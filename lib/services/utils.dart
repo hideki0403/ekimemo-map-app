@@ -195,9 +195,9 @@ Future<bool?> showConfirmDialog({String? title, String? caption}) async {
 
 Color hexToColor(String? hex) {
   if (hex == null) return Colors.transparent;
-  hex = hex.replaceAll("#", "");
+  hex = hex.replaceAll('#', '');
   if (hex.length == 6) {
-    hex = "FF$hex";
+    hex = 'FF$hex';
   }
   return Color(int.parse(hex, radix: 16));
 }
