@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class LicenseView extends StatefulWidget {
@@ -16,16 +17,16 @@ class _LicenseViewState extends State<LicenseView> {
   void initState() {
     super.initState();
 
-    LicenseRegistry.addLicense(() {
-      return Stream<LicenseEntry>.fromIterable(<LicenseEntry>[
-        const LicenseEntryWithLineBreaks(<String>['station_database'], '''
+    LicenseRegistry.addLicense(() async* {
+      yield const LicenseEntryWithLineBreaks(<String>['station_database'], '''
         "station_database" by Seo-4d696b75, Licensed under CC BY 4.0  
         
           https://github.com/Seo-4d696b75/station_database  
           
           https://creativecommons.org/licenses/by/4.0/  
-        '''),
-        const LicenseEntryWithLineBreaks(<String>['Sound Effects'], '''
+        ''');
+
+      yield const LicenseEntryWithLineBreaks(<String>['Sound Effects'], '''
         - Sound Effect by UNIVERSFIELD, LIECIO from Pixabay  
         
           https://pixabay.com/sound-effects/  
@@ -41,8 +42,9 @@ class _LicenseViewState extends State<LicenseView> {
         - ポケットサウンド
         
           https://pocket-se.info/
-        '''),
-      ]);
+        ''');
+
+      yield LicenseEntryWithLineBreaks(<String>['ekisagasu'], await rootBundle.loadString('assets/license/ekisagasu.txt'));
     });
 
     PackageInfo.fromPlatform().then((packageInfo) {
