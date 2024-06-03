@@ -11,7 +11,7 @@ enum DatabaseType {
 }
 
 class DatabaseHandler {
-  static const int _version = 3;
+  static const int _version = 4;
   static final Map<String, List<String>> _migration = {
     '1': [
       // create table
@@ -34,6 +34,10 @@ class DatabaseHandler {
     '3': [
       // add 'accessed' column to 'access_log' table
       'ALTER TABLE access_log ADD COLUMN accessed INTEGER DEFAULT 1;',
+    ],
+    '4': [
+      // add 'delaunay' column to 'station' table
+      'ALTER TABLE station ADD COLUMN delaunay TEXT DEFAULT "[]";',
     ],
   };
 
