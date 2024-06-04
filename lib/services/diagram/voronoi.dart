@@ -366,7 +366,7 @@ class Bisector<T extends Point> {
 
     _intersections.insert(index, intersection);
     if (_solvedPointIndexFrom < _solvedPointIndexTo) {
-      if (index < _solvedPointIndexFrom) {
+      if (index <= _solvedPointIndexFrom) {
         _solvedPointIndexFrom++;
         _solvedPointIndexTo++;
       } else if(index <= _solvedPointIndexTo) {
@@ -476,7 +476,7 @@ class Voronoi<T extends Point> {
     Node<T>? next;
     Node<T>? previous;
 
-    if (previousPolygon != null) {
+    if (previousPolygon == null) {
       final history = ObjectSet(point.equals, point.hashCode);
       final sample = _bisectors[0];
       next = sample.intersections[1].node;
@@ -488,7 +488,7 @@ class Voronoi<T extends Point> {
         previous = current;
       }
     } else {
-      previous = previousPolygon!.last;
+      previous = previousPolygon.last;
       for (var n in previousPolygon) {
         next = n.nextUp(previous!);
         previous = n;
