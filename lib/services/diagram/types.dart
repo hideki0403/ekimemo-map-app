@@ -23,3 +23,11 @@ class Edge {
   Point b;
   Edge(this.a, this.b);
 }
+
+class Rect {
+  double left;
+  double top;
+  double right;
+  double bottom;
+  Rect(this.left, this.top, this.right, this.bottom);
+}

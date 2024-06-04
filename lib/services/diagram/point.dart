@@ -1,6 +1,14 @@
 import 'types.dart';
 import 'utils.dart';
 
+Point init(double x, double y) {
+  if (x.isFinite && y.isFinite) {
+    return Point(x, y);
+  } else {
+    throw Exception('Invalid point: $x, $y');
+  }
+}
+
 bool equals(Point p1, Point p2) {
   return p1.x == p2.x && p1.y == p2.y;
 }
