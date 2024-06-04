@@ -3,7 +3,7 @@ typedef HashGetter<T> = int Function(T obj);
 
 int stringHash(String str) {
   var hash = 5381;
-  var i = str.length;
+  var i = str.length - 1;
   while (i >= 0) {
     hash = (hash * 33) ^ str.codeUnitAt(i);
     i--;
