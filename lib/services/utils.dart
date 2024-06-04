@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:ekimemo_map/main.dart';
 import 'package:ekimemo_map/services/station.dart';
+import 'package:ekimemo_map/services/radar.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
@@ -105,6 +106,33 @@ maplibre.LatLngBounds? getBoundsFromLine(Line line) {
   final south = properties['south'];
   final west = properties['west'];
   if (north == null || east == null || south == null || west == null) return null;
+
+  return maplibre.LatLngBounds(
+    southwest: maplibre.LatLng(south, west),
+    northeast: maplibre.LatLng(north, east),
+  );
+}
+
+maplibre.LatLngBounds getBounds(List<LatLngPoint> list, { bool margin = false }) {
+  var north = -90.0;
+  var south = 90.0;
+  var east = -180.0;
+  var west = 180.0;
+
+  for (var p in list) {
+    north = max(north, p.lat);
+    south = min(south, p.lat);
+    east = max(east, p.lng);
+    west = min(west, p.lng);
+  }
+
+  if (margin) {
+    final margin = max(north - south, east - west) * 0.05;
+    north += margin;
+    south -= margin;
+    east += margin;
+    west -= margin;
+  }
 
   return maplibre.LatLngBounds(
     southwest: maplibre.LatLng(south, west),
