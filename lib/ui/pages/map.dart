@@ -71,10 +71,10 @@ class MapViewState extends State<MapView> {
     final adapter = mapAdapters[type]!(this);
 
     // 初期化
-    await controller!.clearLines();
-    await controller!.clearSymbols();
-    await controller!.clearFills();
-    await controller!.clearCircles();
+    final layerIds = ['fill', 'point', 'line'];
+    for (final layerId in layerIds) {
+      await controller!.removeLayer(layerId);
+    }
 
     setState(() {
       _adapter = adapter;
