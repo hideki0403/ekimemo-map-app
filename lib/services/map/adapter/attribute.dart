@@ -1,4 +1,3 @@
-import 'package:geolocator/geolocator.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import '../map_adapter.dart';
 import '../utils.dart';
@@ -23,12 +22,6 @@ class AttributeMapAdapter extends CoreMapAdapter {
     await controller.addSymbolLayer('point', 'point', masterSymbolLayerProperties.copyWith(const SymbolLayerProperties(
       iconImage: ['get', 'icon'],
       iconColor: ['get', 'color'],
-    )));
-
-    final location = await Geolocator.getCurrentPosition();
-    controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
-      target: LatLng(location.latitude, location.longitude),
-      zoom: 12.0,
     )));
   }
 }

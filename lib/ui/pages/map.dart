@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -162,7 +163,12 @@ class MapViewState extends State<MapView> {
               if (widget.stationId != null || widget.lineId != null) {
                 useAdapter(MapAdapterType.viewer);
               } else {
-                useAdapter(MapAdapterType.core);
+                await useAdapter(MapAdapterType.core);
+                final location = await Geolocator.getCurrentPosition();
+                controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
+                  target: LatLng(location.latitude, location.longitude),
+                  zoom: 12.0,
+                )));
               }
             },
             onCameraIdle: () => _adapter?.onCameraIdle(),

@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 import 'package:ekimemo_map/services/search.dart';
@@ -63,12 +62,6 @@ class CoreMapAdapter extends MapAdapter {
 
     await controller.addLineLayer('voronoi', 'line', masterLineLayerProperties);
     await controller.addSymbolLayer('point', 'point', masterSymbolLayerProperties);
-
-    final location = await Geolocator.getCurrentPosition();
-      controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
-      target: LatLng(location.latitude, location.longitude),
-      zoom: 12.0,
-    )));
   }
 
   @override
@@ -135,8 +128,6 @@ class CoreMapAdapter extends MapAdapter {
     }
 
     if (stations.length < renderingLimit) {
-      controller.setGeoJsonSource('voronoi', buildVoronoi(stations));
-      controller.setGeoJsonSource('point', buildPoint(stations));
       controller.setGeoJsonSource('voronoi', buildVoronoi(stations, useAttrColor: attrMode));
       controller.setGeoJsonSource('point', buildPoint(stations, useAttr: attrMode));
       parent.removeOverlay();
