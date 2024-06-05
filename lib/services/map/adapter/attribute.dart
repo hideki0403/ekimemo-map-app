@@ -23,5 +23,7 @@ class AttributeMapAdapter extends CoreMapAdapter {
       iconImage: ['get', 'icon'],
       iconColor: ['get', 'color'],
     )));
+
+    renderVoronoi();
   }
 }

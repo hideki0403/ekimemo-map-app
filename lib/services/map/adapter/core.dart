@@ -62,11 +62,13 @@ class CoreMapAdapter extends MapAdapter {
 
     await controller.addLineLayer('voronoi', 'line', masterLineLayerProperties);
     await controller.addSymbolLayer('point', 'point', masterSymbolLayerProperties);
+
+    renderVoronoi();
   }
 
   @override
   void onCameraIdle() {
-    _renderVoronoi(Config.mapRenderingLimit);
+    renderVoronoi();
   }
 
   @override
@@ -91,14 +93,15 @@ class CoreMapAdapter extends MapAdapter {
       final accessLog = AccessCacheManager.get(data.station.id);
       final accessed = accessLog != null && accessLog.accessed;
       await AccessCacheManager.update(data.station.id, DateTime.now(), updateOnly: true, accessed: !accessed);
-      await _renderVoronoi(Config.mapRenderingLimit, force: true);
+      await renderVoronoi(force: true);
       parent.setOverlay(Text('${data.station.name}を${accessed ? '未アクセス' : 'アクセス済み'}にしました'));
     }
 
     _isSearchingStation = false;
   }
 
-  Future<void> _renderVoronoi(int renderingLimit, { bool force = false }) async {
+  Future<void> renderVoronoi({ int? renderingLimit, bool force = false }) async {
+    renderingLimit ??= Config.mapRenderingLimit;
     final isCooldown = parent.trackingMode != MyLocationTrackingMode.None && DateTime.now().difference(_lastRectUpdate).inMilliseconds < 1000;
     if (_isRendering || (isCooldown && !force)) return;
     _isRendering = true;
