@@ -125,6 +125,7 @@ class MapViewState extends State<MapView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_adapter?.title ?? 'マップ'),
+        actions: _adapter?.appBarActions,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {

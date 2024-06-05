@@ -5,6 +5,7 @@ import 'package:ekimemo_map/ui/pages/map.dart';
 
 export 'adapter/core.dart';
 export 'adapter/viewer.dart';
+export 'adapter/attribute.dart';
 
 abstract class MapAdapter {
   late final MaplibreMapController controller;
@@ -21,6 +22,9 @@ abstract class MapAdapter {
 
   // マップ左下に表示するウィジェット
   List<Widget> get floatingWidgets => [];
+
+  // AppBarのactions
+  List<Widget> get appBarActions => [];
 
   void initialize() {}
   void onCameraIdle() {}
