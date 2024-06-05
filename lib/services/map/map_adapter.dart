@@ -1,0 +1,29 @@
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:ekimemo_map/ui/pages/map.dart';
+
+export 'adapter/core.dart';
+export 'adapter/viewer.dart';
+
+abstract class MapAdapter {
+  late final MaplibreMapController controller;
+  late final MapViewState parent;
+  late final BuildContext context;
+
+  MapAdapter(this.parent) {
+    context = parent.context;
+    controller = parent.controller!;
+  }
+
+  // nullでなければページタイトルを上書きする
+  String? get title => null;
+
+  // マップ左下に表示するウィジェット
+  List<Widget> get floatingWidgets => [];
+
+  void initialize() {}
+  void onCameraIdle() {}
+  void onMapLongClick(Point<double> point, LatLng latLng) {}
+
+}

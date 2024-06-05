@@ -1,18 +1,24 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:geolocator/geolocator.dart';
 
-import 'package:ekimemo_map/models/station.dart';
-import 'package:ekimemo_map/services/search.dart';
-import 'package:ekimemo_map/services/station.dart';
-import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/config.dart';
-import 'package:ekimemo_map/services/cache.dart';
+import 'package:ekimemo_map/services/log.dart';
+import 'package:ekimemo_map/services/map/map_adapter.dart';
+import 'package:ekimemo_map/services/map/utils.dart' as map_utils;
+
+final logger = Logger('MapView');
+
+typedef MapAdapterBuilder<T extends MapAdapter> = T Function(MapViewState parent);
+
+enum MapAdapterType { core, viewer }
+final mapAdapters = <MapAdapterType, MapAdapterBuilder>{
+  MapAdapterType.core: (parent) => CoreMapAdapter(parent),
+  MapAdapterType.viewer: (parent) => ViewerMapAdapter(parent),
+};
 
 enum MapStyle {
   defaultStyle('デフォルト', 'default'),
@@ -39,163 +45,78 @@ class MapView extends StatefulWidget {
   const MapView({this.stationId, this.lineId, super.key});
 
   @override
-  State<StatefulWidget> createState() => _MapViewState();
+  State<StatefulWidget> createState() => MapViewState();
 }
 
-class _MapViewState extends State<MapView> {
+class MapViewState extends State<MapView> {
   final _mapReadyCompleter = Completer<MaplibreMapController>();
-  bool _isRendering = false;
-  bool _isSearchingStation = false;
-  bool _isNormalMode = false;
-  bool _hideFillLayer = false;
-  bool _hidePointLayer = false;
-  bool _showAttr = false;
-  DateTime _lastRectUpdate = DateTime.now();
   MyLocationTrackingMode _trackingMode = MyLocationTrackingMode.None;
   Widget? _overlayWidget;
 
-  void showLoading() {
+  MyLocationTrackingMode get trackingMode => _trackingMode;
+  MaplibreMapController? controller;
+
+  // #region MapAdapter
+  MapAdapter? _adapter;
+  List<Widget> _adapterFloatingWidgets = [];
+
+  Future<void> useAdapter(MapAdapterType type) async {
+    logger.info('Loading adapter: $type');
+
+    if (controller == null) {
+      logger.info('Controller is not ready. Waiting...');
+      controller = await _mapReadyCompleter.future;
+    }
+
+    final adapter = mapAdapters[type]!(this);
+
+    // 初期化
+    await controller!.clearLines();
+    await controller!.clearSymbols();
+    await controller!.clearFills();
+    await controller!.clearCircles();
+
     setState(() {
-      _overlayWidget = const Row(
-        children: [
-          SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(),
-          ),
-          SizedBox(width: 32),
-          Text('計算中...', style: TextStyle(fontSize: 18)),
-        ],
-      );
+      _adapter = adapter;
+    });
+
+    rebuildWidget();
+    adapter.initialize();
+    logger.info('Adapter loaded: $type');
+  }
+
+  void rebuildWidget() {
+    logger.debug('Rebuilding widget');
+    setState(() {
+      _adapterFloatingWidgets = _adapter?.floatingWidgets ?? [];
+    });
+  }
+  // #endregion MapAdapter
+
+  void showLoading() {
+    setOverlay(const Row(
+      children: [
+        SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(),
+        ),
+        SizedBox(width: 32),
+        Text('計算中...', style: TextStyle(fontSize: 18)),
+      ],
+    ));
+  }
+
+  void setOverlay(Widget widget) {
+    setState(() {
+      _overlayWidget = widget;
     });
   }
 
-  void hideOverlay() {
+  void removeOverlay() {
     setState(() {
       _overlayWidget = null;
     });
-  }
-
-  Map<String, dynamic> _buildVoronoi(List<Station> stations) {
-    final List<Map<String, dynamic>> features = [];
-    for (var station in stations) {
-      final voronoi = station.voronoi;
-      final accessLog = AccessCacheManager.get(station.id);
-      voronoi['properties'] = {
-        'color': _showAttr ? getAttrIcon(station.attr).color?.toHexStringRGB() : Colors.red.toHexStringRGB(),
-        'accessed': accessLog != null && accessLog.accessed,
-      };
-      features.add(voronoi);
-    }
-
-    return {
-      'type': 'FeatureCollection',
-      'features': features,
-    };
-  }
-
-  Map<String, dynamic> _buildPoint(List<Station> stations) {
-    final List<Map<String, dynamic>> point = [];
-    for (var station in stations) {
-      final accessLog = AccessCacheManager.get(station.id);
-      point.add({
-        'type': 'Feature',
-        'geometry': {
-          'type': 'Point',
-          'coordinates': [station.lng, station.lat],
-        },
-        'properties': {
-          'name': station.name,
-          'accessed': accessLog != null && accessLog.accessed,
-          'color': _showAttr ? getAttrIcon(station.attr).color?.toHexStringRGB() : Colors.red.toHexStringRGB(),
-          'icon': _showAttr ? station.attr.name : 'pin',
-        },
-      });
-    }
-
-    return {
-      'type': 'FeatureCollection',
-      'features': point,
-    };
-  }
-
-  Future<void> _renderVoronoi(int renderingLimit, { bool force = false }) async {
-    final isCooldown = _trackingMode != MyLocationTrackingMode.None && DateTime.now().difference(_lastRectUpdate).inMilliseconds < 1000;
-    if (_isRendering || (isCooldown && !force)) return;
-    _isRendering = true;
-
-    final controller = await _mapReadyCompleter.future;
-    final bounds = await controller.getVisibleRegion();
-    final north = bounds.northeast.latitude;
-    final east = bounds.northeast.longitude;
-    final south = bounds.southwest.latitude;
-    final west = bounds.southwest.longitude;
-
-    final margin = min(max(north - south, east - west) * 0.5, 0.5);
-
-    showLoading();
-    final stations = await StationManager.updateRect(
-      north + margin,
-      east + margin,
-      south - margin,
-      west - margin,
-      maxResults: renderingLimit,
-    );
-
-    // マップが極端に拡大されていた場合は表示できる駅が無くなるため、画面中央から最短の駅を取得する
-    if (stations.isEmpty) {
-      final center = LatLng((north + south) / 2, (east + west) / 2);
-      final data = await StationSearchService.getNearestStation(center.latitude, center.longitude);
-      stations.add(data.station);
-    }
-
-    if (stations.length < renderingLimit) {
-      controller.setGeoJsonSource('voronoi', _buildVoronoi(stations));
-      controller.setGeoJsonSource('point', _buildPoint(stations));
-      hideOverlay();
-    } else {
-      setState(() {
-        _overlayWidget = const Text('画面範囲内の駅数が多すぎるため、メッシュを描画できませんでした。地図を拡大してください。');
-      });
-    }
-
-    _isRendering = false;
-    _lastRectUpdate = DateTime.now();
-  }
-
-  Future<void> _renderSingleStation() async {
-    final controller = await _mapReadyCompleter.future;
-
-    final station = await StationCache.get(int.parse(widget.stationId!));
-    if (station == null) return;
-
-    controller.setGeoJsonSource('voronoi', _buildVoronoi([station]));
-    controller.setGeoJsonSource('point', _buildPoint([station]));
-    controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
-      target: LatLng(station.lat, station.lng),
-      zoom: 14.0,
-    )));
-  }
-
-  Future<void> _renderSingleLine() async {
-    final controller = await _mapReadyCompleter.future;
-
-    final line = await LineCache.get(int.parse(widget.lineId!));
-    if (line == null || line.polylineList == null) return;
-
-    final stations = await Future.wait(line.stationList.map((x) async {
-      final station = await StationCache.get(x);
-      if (station == null) throw Exception('Station not found');
-      return station;
-    }));
-
-    controller.setGeoJsonSource('voronoi', line.polylineList as Map<String, dynamic>);
-    controller.setGeoJsonSource('point', _buildPoint(stations));
-
-    final bounds = getBoundsFromLine(line);
-    if (bounds != null) {
-      controller.moveCamera(CameraUpdate.newLatLngBounds(bounds));
-    }
   }
 
   @override
@@ -203,7 +124,7 @@ class _MapViewState extends State<MapView> {
     final config = Provider.of<ConfigProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.stationId != null ? 'マップ (駅情報)' : widget.lineId != null ? 'マップ (路線情報)' : 'マップ'),
+        title: Text(_adapter?.title ?? 'マップ'),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -225,147 +146,42 @@ class _MapViewState extends State<MapView> {
             onStyleLoadedCallback: () async {
               final controller = await _mapReadyCompleter.future;
 
+              // add resources
               await controller.addImage('pin', (await rootBundle.load('assets/icon/location.png')).buffer.asUint8List(), true);
               await controller.addImage('heat', (await rootBundle.load('assets/icon/heat.png')).buffer.asUint8List(), true);
               await controller.addImage('cool', (await rootBundle.load('assets/icon/cool.png')).buffer.asUint8List(), true);
               await controller.addImage('eco', (await rootBundle.load('assets/icon/eco.png')).buffer.asUint8List(), true);
               await controller.addImage('unknown', (await rootBundle.load('assets/icon/unknown.png')).buffer.asUint8List(), true);
-              await controller.addGeoJsonSource('voronoi', _buildVoronoi([]));
-              await controller.addGeoJsonSource('point', _buildPoint([]));
 
-              await controller.addFillLayer('voronoi', 'fill', const FillLayerProperties(
-                fillColor: ['get', 'color'],
-                fillOpacity: [
-                  'case',
-                  ['get', 'accessed'],
-                  0.3,
-                  0.0,
-                ],
-              ));
+              // add sources
+              await controller.addGeoJsonSource('voronoi', map_utils.buildVoronoi([]));
+              await controller.addGeoJsonSource('point', map_utils.buildPoint([]));
 
-              await controller.addLineLayer('voronoi', 'line', LineLayerProperties(
-                lineColor: ['get', 'color'],
-                lineWidth: (widget.lineId != null || widget.stationId != null) ? 2.0 : 1.0,
-              ));
-
-              await controller.addSymbolLayer('point', 'point', const SymbolLayerProperties(
-                textField: [Expressions.get, 'name'],
-                textHaloWidth: 2,
-                textSize: 14,
-                textColor: '#444',
-                textHaloColor: '#ffffff',
-                textFont: ['migu2m-regular'],
-                textOffset: [
-                  Expressions.literal,
-                  [0, 2]
-                ],
-                iconImage: ['get', 'icon'],
-                iconSize: 0.2,
-                iconColor: ['get', 'color'],
-              ));
-
-              if (widget.stationId != null) {
-                _renderSingleStation();
-                return;
+              if (widget.stationId != null || widget.lineId != null) {
+                useAdapter(MapAdapterType.viewer);
+              } else {
+                useAdapter(MapAdapterType.core);
               }
-
-              if (widget.lineId != null) {
-                _renderSingleLine();
-                return;
-              }
-
-              _isNormalMode = true;
-
-              final location = await Geolocator.getCurrentPosition();
-              controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
-                target: LatLng(location.latitude, location.longitude),
-                zoom: 12.0,
-              )));
             },
-            onCameraIdle: () async {
-              if (!_isNormalMode) return;
-              _renderVoronoi(config.mapRenderingLimit);
-            },
+            onCameraIdle: () => _adapter?.onCameraIdle(),
             onCameraTrackingDismissed: () {
               setState(() {
                 _trackingMode = MyLocationTrackingMode.None;
               });
             },
-            onMapLongClick: (point, latLng) async {
-              if (!_isNormalMode || _isSearchingStation) return;
-              _isSearchingStation = true;
-
-              setState(() {
-                _overlayWidget = const Text('駅情報を取得中...');
-              });
-
-              final data = await StationSearchService.getNearestStation(latLng.latitude, latLng.longitude);
-
-              if (_hideFillLayer) {
-                setState(() {
-                  _overlayWidget = Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        getAttrIcon(data.station.attr, context: context),
-                        const SizedBox(width: 4),
-                        Text(data.station.name),
-                      ]
-                  );
-                });
-              } else {
-                final accessLog = AccessCacheManager.get(data.station.id);
-                final accessed = accessLog != null && accessLog.accessed;
-                await AccessCacheManager.update(data.station.id, DateTime.now(), updateOnly: true, accessed: !accessed);
-                await _renderVoronoi(config.mapRenderingLimit, force: true);
-                _overlayWidget = Text('${data.station.name}を${accessed ? '未アクセス' : 'アクセス済み'}にしました');
-              }
-
-              _isSearchingStation = false;
-            },
+            onMapLongClick: (point, latLng) => _adapter?.onMapLongClick(point, latLng),
             styleString: config.mapStyle.toString(),
             myLocationEnabled: true,
             myLocationTrackingMode: _trackingMode,
           ),
-          if (_isNormalMode) Positioned(
+          Positioned(
             bottom: 0,
             left: 0,
             child: Container(
               padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _showAttr = !_showAttr;
-                        _renderVoronoi(config.mapRenderingLimit, force: true);
-                      });
-                    },
-                    child: Text('属性表示: ${_showAttr ? 'ON' : 'OFF'}'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _hidePointLayer = !_hidePointLayer;
-                        _mapReadyCompleter.future.then((value) {
-                          value.setLayerVisibility('point', !_hidePointLayer);
-                        });
-                      });
-                    },
-                    child: Text('駅アイコン表示: ${_hidePointLayer ? 'OFF' : 'ON'}'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _hideFillLayer = !_hideFillLayer;
-                        _mapReadyCompleter.future.then((value) {
-                          value.setLayerVisibility('fill', !_hideFillLayer);
-                        });
-                      });
-                    },
-                    child: Text('アクセス状態表示: ${_hideFillLayer ? 'OFF' : 'ON'}'),
-                  ),
-                ],
+                children: _adapterFloatingWidgets,
               )
             ),
           ),
