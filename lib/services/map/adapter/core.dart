@@ -7,6 +7,7 @@ import 'package:ekimemo_map/services/search.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/services/utils.dart';
+import 'package:ekimemo_map/ui/pages/map.dart';
 import '../map_adapter.dart';
 import '../utils.dart';
 
@@ -16,6 +17,8 @@ class CoreMapAdapter extends MapAdapter {
   bool _isRendering = false;
   bool _isSearchingStation = false;
   DateTime _lastRectUpdate = DateTime.now();
+
+  bool get attrMode => false;
 
   CoreMapAdapter(super.parent);
 
@@ -27,7 +30,7 @@ class CoreMapAdapter extends MapAdapter {
         controller.setLayerVisibility('point', !_hidePointLayer);
         parent.rebuildWidget();
       },
-      child: Text('駅アイコン表示: ${_hidePointLayer ? 'OFF' : 'ON'}'),
+      child: Text('${ attrMode ? '属性アイコン': 'マップピン' }表示: ${_hidePointLayer ? 'OFF' : 'ON'}'),
     ),
     ElevatedButton(
       onPressed: () {
@@ -35,7 +38,15 @@ class CoreMapAdapter extends MapAdapter {
         controller.setLayerVisibility('fill', !_hideAccessState);
         parent.rebuildWidget();
       },
-      child: Text('アクセス状態表示: ${_hideAccessState ? 'OFF' : 'ON'}'),
+      child: Text('${ attrMode ? '塗りつぶし' : 'アクセス状態' }表示: ${_hideAccessState ? 'OFF' : 'ON'}'),
+    ),
+  ];
+
+  @override
+  List<Widget> get appBarActions => [
+    IconButton(
+      icon: const Icon(Icons.layers),
+      onPressed: () => parent.useAdapter(attrMode ? MapAdapterType.core : MapAdapterType.attribute),
     ),
   ];
 
@@ -126,6 +137,8 @@ class CoreMapAdapter extends MapAdapter {
     if (stations.length < renderingLimit) {
       controller.setGeoJsonSource('voronoi', buildVoronoi(stations));
       controller.setGeoJsonSource('point', buildPoint(stations));
+      controller.setGeoJsonSource('voronoi', buildVoronoi(stations, useAttrColor: attrMode));
+      controller.setGeoJsonSource('point', buildPoint(stations, useAttr: attrMode));
       parent.removeOverlay();
     } else {
       parent.setOverlay(const Text('画面範囲内の駅数が多すぎるため、メッシュを描画できませんでした。地図を拡大してください。'));

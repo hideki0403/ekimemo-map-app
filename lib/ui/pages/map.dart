@@ -14,10 +14,11 @@ final logger = Logger('MapView');
 
 typedef MapAdapterBuilder<T extends MapAdapter> = T Function(MapViewState parent);
 
-enum MapAdapterType { core, viewer }
+enum MapAdapterType { core, viewer, attribute }
 final mapAdapters = <MapAdapterType, MapAdapterBuilder>{
   MapAdapterType.core: (parent) => CoreMapAdapter(parent),
   MapAdapterType.viewer: (parent) => ViewerMapAdapter(parent),
+  MapAdapterType.attribute: (parent) => AttributeMapAdapter(parent),
 };
 
 enum MapStyle {
