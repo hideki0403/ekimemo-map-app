@@ -28,6 +28,7 @@ abstract class MapAdapter {
 
   void initialize() {}
   void onCameraIdle() {}
+  void onMapClick(Point<double> point, LatLng latLng) {}
   void onMapLongClick(Point<double> point, LatLng latLng) {}
 
 }

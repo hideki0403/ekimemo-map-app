@@ -177,6 +177,7 @@ class MapViewState extends State<MapView> {
                 _trackingMode = MyLocationTrackingMode.None;
               });
             },
+            onMapClick: (point, latLng) => _adapter?.onMapClick(point, latLng),
             onMapLongClick: (point, latLng) => _adapter?.onMapLongClick(point, latLng),
             styleString: config.mapStyle.toString(),
             myLocationEnabled: true,
