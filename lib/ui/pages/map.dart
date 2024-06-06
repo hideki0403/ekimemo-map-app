@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
@@ -148,6 +149,9 @@ class MapViewState extends State<MapView> {
             },
             onStyleLoadedCallback: () async {
               final controller = await _mapReadyCompleter.future;
+
+              // fallback of onMapClick
+              controller.onFeatureTapped.add((dynamic _, Point<double> point, LatLng latLng) => _adapter?.onMapClick(point, latLng));
 
               // add resources
               await controller.addImage('pin', (await rootBundle.load('assets/icon/location.png')).buffer.asUint8List(), true);
