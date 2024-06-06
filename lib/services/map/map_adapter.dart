@@ -17,13 +17,13 @@ abstract class MapAdapter {
     controller = parent.controller!;
   }
 
-  // nullでなければページタイトルを上書きする
+  /// nullでなければページタイトルを上書きする
   String? get title => null;
 
-  // マップ左下に表示するウィジェット
+  /// マップ左下に表示するウィジェット
   List<Widget> get floatingWidgets => [];
 
-  // AppBarのactions
+  /// AppBarのactions
   List<Widget> get appBarActions => [];
 
   void initialize() {}
