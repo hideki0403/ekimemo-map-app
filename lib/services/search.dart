@@ -253,18 +253,19 @@ class StationSearchService {
     return dist;
   }
 
-  static Future<StationData> getNearestStation(double latitude, double longitude, { bool withLineData = false }) async {
+  static Future<List<StationData>> getNearestStations(double latitude, double longitude, { bool withLineData = false, int maxResults = 1}) async {
     if (!serviceAvailable) throw Exception('StationSearchService not initialized');
     final dist = <StationData>[];
-    await _search(_root!, latitude, longitude, dist, maxResults: 1);
-    final data = dist.first;
+    await _search(_root!, latitude, longitude, dist, maxResults: maxResults);
 
     if (withLineData) {
-      final lineData = await LineCache.get(data.station.lines.first);
-      data.lineName = lineData?.name;
+      for (final data in dist) {
+        final lineData = await LineCache.get(data.station.lines.first);
+        data.lineName = lineData?.name;
+      }
     }
 
-    return data;
+    return dist;
   }
 
   static double _fixedLatLng(double value) {

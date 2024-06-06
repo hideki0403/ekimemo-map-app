@@ -26,7 +26,7 @@ class RouteSearchViewState extends State<RouteSearchView> {
     for (var i = 0; i < trackPoints.length; i++) {
       final pt = trackPoints[i];
       if (pt.lat != null && pt.lon != null) {
-        final data = await StationSearchService.getNearestStation(pt.lat!, pt.lon!, withLineData: true);
+        final data = (await StationSearchService.getNearestStations(pt.lat!, pt.lon!, withLineData: true)).first;
         if (!s.containsKey(data.station.id)) {
           s[data.station.id] = data;
         }
