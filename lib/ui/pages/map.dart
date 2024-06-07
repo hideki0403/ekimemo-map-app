@@ -125,6 +125,12 @@ class MapViewState extends State<MapView> {
   }
 
   @override
+  void dispose() {
+    _adapter?.onDispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final config = Provider.of<ConfigProvider>(context);
     return Scaffold(

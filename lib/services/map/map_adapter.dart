@@ -28,6 +28,7 @@ abstract class MapAdapter {
   List<Widget> get appBarActions => [];
 
   void initialize() {}
+  void onDispose() {}
   void onCameraIdle() {}
   void onMapClick(Point<double> point, LatLng latLng) {}
   void onMapLongClick(Point<double> point, LatLng latLng) {}
