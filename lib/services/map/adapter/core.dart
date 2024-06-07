@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:bottom_sheet/bottom_sheet.dart';
 
 import 'package:ekimemo_map/services/search.dart';
 import 'package:ekimemo_map/services/station.dart';
@@ -14,7 +16,6 @@ class CoreMapAdapter extends MapAdapter {
   bool _hidePointLayer = false;
   bool _hideAccessState = false;
   bool _isRendering = false;
-  bool _isSearchingStation = false;
   DateTime _lastRectUpdate = DateTime.now();
 
   bool get attrMode => false;
@@ -72,13 +73,143 @@ class CoreMapAdapter extends MapAdapter {
   }
 
   @override
-  void onMapLongClick(Point<double> point, LatLng latLng) async {
-    if (_isSearchingStation) return;
-
-    _isSearchingStation = true;
+  void onMapClick(Point<double> point, LatLng latLng) async {
     parent.setOverlay(const Text('駅情報を取得中...'));
 
-    final data = await StationSearchService.getNearestStation(latLng.latitude, latLng.longitude);
+    final stations = await StationSearchService.getNearestStations(latLng.latitude, latLng.longitude, maxResults: Config.maxResults + 1);
+    for (final data in stations) {
+      data.distance = beautifyDistance(measure(latLng.latitude, latLng.longitude, data.station.lat, data.station.lng));
+    }
+
+    final data = stations.first;
+    final accessLog = AccessCacheManager.get(data.station.id);
+    final accessed = accessLog != null && accessLog.accessed;
+    parent.removeOverlay();
+
+    if (!context.mounted) return;
+
+    await showFlexibleBottomSheet(
+      context: context,
+      anchors: [0, 0.5, 1],
+      isSafeArea: true,
+      bottomSheetBorderRadius: const BorderRadius.vertical(top: Radius.circular(25.0)),
+      builder: (context, scrollController, _) {
+        return ListView(
+          controller: scrollController,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(data.station.name, textScaler: const TextScaler.linear(1.75)),
+                        const SizedBox(height: 4),
+                        Text(data.station.nameKana),
+                        const SizedBox(height: 12),
+                        Row(children: [
+                          getAttrIcon(data.station.attr, context: context),
+                          const SizedBox(width: 4),
+                          Expanded(child: Text(data.station.attr.name)),
+                          Text(data.distance ?? '???m'),
+                        ]),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Divider(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                            child: IconButton(
+                          onPressed: () {
+                            if (context.mounted) Navigator.of(context).pop();
+                            // TODO: レーダーモードへの切り替えを実装する
+                            parent.setOverlay(const Text('未実装の機能です'));
+                          },
+                          icon: const Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Column(children: [
+                              Icon(Icons.radar),
+                              SizedBox(height: 4),
+                              Text('レーダー'),
+                            ]),
+                          ),
+                        )),
+                        Expanded(
+                            child: IconButton(
+                          onPressed: () {
+                            context.push(Uri(path: '/station', queryParameters: {'id': data.station.code.toString()}).toString());
+                          },
+                          icon: const Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Column(children: [
+                              Icon(Icons.pending),
+                              SizedBox(height: 4),
+                              Text('詳細'),
+                            ]),
+                          ),
+                        )),
+                        Expanded(
+                            child: IconButton(
+                          onPressed: () async {
+                            await AccessCacheManager.update(data.station.id, DateTime.now(), updateOnly: true, accessed: !accessed);
+                            await renderVoronoi(force: true);
+                            if (context.mounted) Navigator.of(context).pop();
+                            parent.setOverlay(Text('${data.station.name}を${accessed ? '未アクセス' : 'アクセス済み'}にしました'));
+                          },
+                          icon: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Column(
+                              children: [
+                                Icon(accessed ? Icons.cancel : Icons.check_circle),
+                                const SizedBox(height: 4),
+                                const Text('アクセス状態切替', textAlign: TextAlign.center),
+                              ],
+                            ),
+                          ),
+                        )),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 16),
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Column(children: [
+                      const Text('タップした地点からレーダーで届く駅'),
+                      const SizedBox(height: 8),
+                      ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: stations.length,
+                        itemBuilder: (context, index) {
+                          return _StationSimple(stations[index], index);
+                        },
+                      ),
+                    ]),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void onMapLongClick(Point<double> point, LatLng latLng) async {
+    parent.setOverlay(const Text('駅情報を取得中...'));
+
+    final data = (await StationSearchService.getNearestStations(latLng.latitude, latLng.longitude)).first;
 
     if (_hideAccessState) {
       parent.setOverlay(Row(
@@ -96,8 +227,6 @@ class CoreMapAdapter extends MapAdapter {
       await renderVoronoi(force: true);
       parent.setOverlay(Text('${data.station.name}を${accessed ? '未アクセス' : 'アクセス済み'}にしました'));
     }
-
-    _isSearchingStation = false;
   }
 
   Future<void> renderVoronoi({ int? renderingLimit, bool force = false }) async {
@@ -126,7 +255,7 @@ class CoreMapAdapter extends MapAdapter {
     // マップが極端に拡大されていた場合は表示できる駅が無くなるため、画面中央から最短の駅を取得する
     if (stations.isEmpty) {
       final center = LatLng((north + south) / 2, (east + west) / 2);
-      final data = await StationSearchService.getNearestStation(center.latitude, center.longitude);
+      final data = (await StationSearchService.getNearestStations(center.latitude, center.longitude)).first;
       stations.add(data.station);
     }
 
@@ -140,5 +269,41 @@ class CoreMapAdapter extends MapAdapter {
 
     _isRendering = false;
     _lastRectUpdate = DateTime.now();
+  }
+}
+
+class _StationSimple extends StatelessWidget {
+  final StationData data;
+  final int index;
+
+  const _StationSimple(this.data, this.index);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: InkWell(
+        customBorder: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        onTap: () {
+          context.push(Uri(path: '/station', queryParameters: {'id': data.station.code.toString()}).toString());
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12, right: 20),
+          child: Row(
+            children: [
+              Text('$index'),
+              const SizedBox(width: 16),
+              getAttrIcon(data.station.attr, context: context),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(data.station.name, textScaler: const TextScaler.linear(1.2)),
+              ),
+              Text(data.distance ?? '???m'),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
