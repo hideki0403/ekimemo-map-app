@@ -42,6 +42,11 @@ class RadarMapAdapter extends MapAdapter {
     _renderRadar();
   }
 
+  @override
+  void onDispose() {
+    _radarService.terminate();
+  }
+
   Future<void> _renderRadar() async {
     final callback = HighVoronoiCallback(
       onStarted: () {
