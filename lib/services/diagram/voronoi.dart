@@ -1,13 +1,10 @@
 import 'dart:math' as math;
 
-import 'package:ekimemo_map/services/log.dart';
 import 'types.dart';
 import 'line.dart' as line_util;
 import 'point.dart' as point;
 import 'triangle.dart' as triangle;
 import 'utils.dart';
-
-final logger = Logger('voronoi');
 
 enum StepDirection {
   up,
@@ -398,6 +395,7 @@ class Bisector<T extends Point> {
 typedef NodeList<T extends Point> = List<List<Node<T>>>;
 typedef PointProvider<T extends Point> = Future<List<T>> Function(T p);
 typedef Callback = void Function(int index, List<Point> polygon);
+typedef Logger = void Function(String message);
 
 class Voronoi<T extends Point> {
   late T _center;
@@ -410,6 +408,7 @@ class Voronoi<T extends Point> {
   bool _running = false;
   int _targetIndex = 1;
   Callback? _callback;
+  Logger? _logger;
 
   Voronoi(T center, Triangle frame, PointProvider<T> provider) {
     _center = center;
@@ -417,7 +416,7 @@ class Voronoi<T extends Point> {
     _provider = provider;
   }
 
-  Future<NodeList<T>> execute(int level, Callback? callback) async {
+  Future<NodeList<T>> execute(int level, Callback? callback, [Logger? logger]) async {
     if (_running) throw Exception('already running');
     _running = true;
 
@@ -430,6 +429,7 @@ class Voronoi<T extends Point> {
     _stopwatch.start();
 
     _callback = callback;
+    _logger = logger;
     _bisectors.clear();
     _addBoundary(line_util.init(_container.a, _container.b));
     _addBoundary(line_util.init(_container.b, _container.c));
@@ -452,7 +452,7 @@ class Voronoi<T extends Point> {
       node.onSolved(index);
     }
 
-    logger.debug('searching polygon: $index, time: ${loopTime.elapsedMilliseconds}ms');
+    _logger?.call('searching polygon: $index, time: ${loopTime.elapsedMilliseconds}ms');
 
     if (_callback != null) {
       _callback!(index, polygon);
@@ -465,7 +465,7 @@ class Voronoi<T extends Point> {
         n.release();
       }
 
-      logger.debug('searching polygon finished: ${_stopwatch.elapsedMilliseconds}ms');
+      _logger?.call('searching polygon finished: ${_stopwatch.elapsedMilliseconds}ms');
       _running = false;
 
       return [...result, polygon];

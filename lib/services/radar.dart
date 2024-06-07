@@ -5,13 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:ekimemo_map/models/station.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'cache.dart';
-import 'log.dart';
+import 'log.dart' as log;
 import 'diagram/types.dart';
 import 'diagram/voronoi.dart';
 import 'diagram/rect.dart' as rect;
 
-final logger = Logger('Radar');
-final workerLogger = Logger('Radar:worker');
+final logger = log.Logger('Radar');
 
 class StationPoint extends Point {
   StationPoint(super.x, super.y, this.code);
@@ -106,7 +105,12 @@ class SearchRadarRange {
         }
         case 'error': {
           terminate();
+          logger.error('Worker error: ${message['message']}');
           callback.onError?.call();
+          break;
+        }
+        case 'log': {
+          logger.debug(message['message']);
           break;
         }
       }
@@ -122,6 +126,7 @@ class SearchRadarRange {
   void terminate() {
     _worker?.kill(priority: Isolate.immediate);
     _worker = null;
+    logger.debug('VoronoiWorker terminated');
   }
 }
 
@@ -140,6 +145,10 @@ void _voronoiWorker(List<dynamic> args) {
     });
   }
 
+  void logger(String message) {
+    sendPort.send({'type': 'log', 'message': message});
+  }
+
   Future<List<StationPoint>> provider(StationPoint x) async {
     final completer = Completer<List<StationPoint>>();
     providerCompleter[x.code] = completer;
@@ -153,9 +162,8 @@ void _voronoiWorker(List<dynamic> args) {
   receivePort.listen((message) {
     switch (message['type']) {
       case 'start': {
-        voronoi.execute(level, progress).then((_) => sendPort.send({'type': 'complete'})).catchError((e) {
-          workerLogger.error('Error: $e');
-          sendPort.send({'type': 'error'});
+        voronoi.execute(level, progress, logger).then((_) => sendPort.send({'type': 'complete'})).catchError((e) {
+          sendPort.send({'type': 'error', 'message': e.toString()});
         });
         break;
       }
