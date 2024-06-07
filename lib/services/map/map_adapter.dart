@@ -6,6 +6,7 @@ import 'package:ekimemo_map/ui/pages/map.dart';
 export 'adapter/core.dart';
 export 'adapter/viewer.dart';
 export 'adapter/attribute.dart';
+export 'adapter/radar.dart';
 
 abstract class MapAdapter {
   late final MaplibreMapController controller;

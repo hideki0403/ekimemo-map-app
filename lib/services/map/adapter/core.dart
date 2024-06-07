@@ -126,12 +126,10 @@ class CoreMapAdapter extends MapAdapter {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Expanded(
-                            child: IconButton(
+                        Expanded(child: IconButton(
                           onPressed: () {
                             if (context.mounted) Navigator.of(context).pop();
-                            // TODO: レーダーモードへの切り替えを実装する
-                            parent.setOverlay(const Text('未実装の機能です'));
+                            context.push(Uri(path: '/map', queryParameters: {'radar-id': data.station.code.toString()}).toString());
                           },
                           icon: const Padding(
                             padding: EdgeInsets.all(4),
@@ -142,8 +140,7 @@ class CoreMapAdapter extends MapAdapter {
                             ]),
                           ),
                         )),
-                        Expanded(
-                            child: IconButton(
+                        Expanded(child: IconButton(
                           onPressed: () {
                             context.push(Uri(path: '/station', queryParameters: {'id': data.station.code.toString()}).toString());
                           },
@@ -156,8 +153,7 @@ class CoreMapAdapter extends MapAdapter {
                             ]),
                           ),
                         )),
-                        Expanded(
-                            child: IconButton(
+                        Expanded(child: IconButton(
                           onPressed: () async {
                             await AccessCacheManager.update(data.station.id, DateTime.now(), updateOnly: true, accessed: !accessed);
                             await renderVoronoi(force: true);

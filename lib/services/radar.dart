@@ -33,8 +33,7 @@ class RadarPolygon {
     return {
       'type': 'Feature',
       'properties': {
-        'no_fill': true,
-        'color': radarK != null ? HSVColor.fromAHSV(0.5, index / radarK * 360, 1.0, 1.0).toColor().toHexStringRGB() : 0xff000000,
+        'color': radarK != null ? HSVColor.fromAHSV(1.0, index / radarK * 360, 0.6, 1.0).toColor().toHexStringRGB() : 0xff000000,
       },
       'geometry': {
         'type': 'Polygon',
