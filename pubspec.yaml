@@ -65,6 +65,7 @@ dependencies:
   flutter_tts: ^4.0.2
   file_picker: ^8.0.3
   gpx: ^2.2.2
+  bottom_sheet: ^4.0.4
 
 dev_dependencies:
   flutter_test:
