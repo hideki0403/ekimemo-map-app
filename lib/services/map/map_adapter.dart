@@ -24,6 +24,10 @@ abstract class MapAdapter {
   /// マップ左下に表示するウィジェット
   List<Widget> get floatingWidgets => [];
 
+  /// マップの下部に表示するウィジェット
+  /// (アダプタ固有のコントローラー等を表示する場合等に使用する)
+  List<Widget> get bottomWidgets => [];
+
   /// AppBarのactions
   List<Widget> get appBarActions => [];
 

@@ -64,6 +64,7 @@ class MapViewState extends State<MapView> {
   // #region MapAdapter
   MapAdapter? _adapter;
   List<Widget> _adapterFloatingWidgets = [];
+  List<Widget> _adapterBottomWidgets = [];
 
   Future<void> useAdapter(MapAdapterType type) async {
     logger.info('Loading adapter: $type');
@@ -94,6 +95,7 @@ class MapViewState extends State<MapView> {
     logger.debug('Rebuilding widget');
     setState(() {
       _adapterFloatingWidgets = _adapter?.floatingWidgets ?? [];
+      _adapterBottomWidgets = _adapter?.bottomWidgets ?? [];
     });
   }
   // #endregion MapAdapter
@@ -146,6 +148,16 @@ class MapViewState extends State<MapView> {
         },
         foregroundColor: _trackingMode != MyLocationTrackingMode.None ? Theme.of(context).colorScheme.primary : null,
         child: Icon(_trackingMode != MyLocationTrackingMode.None ? Icons.gps_fixed : Icons.gps_not_fixed),
+      ),
+      bottomNavigationBar: _adapterBottomWidgets.isEmpty ? null : Container(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: _adapterBottomWidgets,
+          ),
+        ),
       ),
       body: SafeArea(
         child: Stack(children: [
