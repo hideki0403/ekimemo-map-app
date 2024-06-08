@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 import 'package:ekimemo_map/services/radar.dart';
 import 'package:ekimemo_map/services/cache.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/config.dart';
+import 'package:ekimemo_map/ui/widgets/cb_slider.dart';
 import '../map_adapter.dart';
 import '../utils.dart';
 
@@ -14,22 +14,41 @@ class RadarMapAdapter extends MapAdapter {
 
   final _radarService = SearchRadarRange();
   final _maxRange = Config.maxResults;
+  int _showRange = Config.maxResults;
+  bool _selectedRangeOnly = false;
+  List<RadarPolygon> _polygonCache = [];
 
   @override
   List<Widget> get floatingWidgets => [
     ElevatedButton(
       onPressed: () {
-        _radarService.terminate();
-        parent.context.pop();
+        _selectedRangeOnly = !_selectedRangeOnly;
+        parent.rebuildWidget();
+        _reRender();
       },
-      child: const Text('戻る'),
+      child: Text(_selectedRangeOnly ? '選択した範囲のみ表示' : '選択した範囲以下を表示'),
     ),
+  ];
+
+  @override
+  List<Widget> get bottomWidgets => [
+    CbSlider(
+      defaultValue: _showRange,
+      min: 1,
+      max: _maxRange,
+      disabled: _polygonCache.isEmpty,
+      onChanged: (value) {
+        _showRange = value;
+        _reRender();
+      },
+    )
   ];
 
   @override
   void initialize() async {
     await controller.addLineLayer('voronoi', 'line', masterLineLayerProperties.copyWith(const LineLayerProperties(
       lineColor: ['get', 'color'],
+      lineWidth: 1.5,
     )));
 
     await controller.addFillLayer('voronoi', 'fill', masterFillLayerProperties.copyWith(const FillLayerProperties(
@@ -47,29 +66,39 @@ class RadarMapAdapter extends MapAdapter {
     _radarService.terminate();
   }
 
+  void _reRender() async {
+    if (_polygonCache.isEmpty) return;
+    final polygons = _polygonCache.where((e) {
+      return _selectedRangeOnly ? e.index == _showRange : e.index <= _showRange;
+    }).toList();
+    _renderPolygon(polygons);
+    await controller.setLayerVisibility('fill', _selectedRangeOnly);
+  }
+
+  void _renderPolygon(List<RadarPolygon> polygons) {
+    final features = polygons.map((e) => e.toGeoJson(_showRange)).toList();
+    controller.setGeoJsonSource('voronoi', {
+      'type': 'FeatureCollection',
+      'features': features,
+    });
+  }
+
   Future<void> _renderRadar() async {
     final callback = HighVoronoiCallback(
       onStarted: () {
         parent.showLoading();
       },
       onProgress: (List<RadarPolygon> polygons) async {
-        final features = polygons.map((e) => e.toGeoJson(_maxRange)).toList();
-        controller.setGeoJsonSource('voronoi', {
-          'type': 'FeatureCollection',
-          'features': features,
-        });
-
+        _renderPolygon(polygons);
         controller.moveCamera(CameraUpdate.newLatLngBounds(getBounds(polygons.last.polygon, margin: true)));
       },
       onComplete: (List<RadarPolygon> polygons) async {
-        final features = polygons.map((e) => e.toGeoJson(_maxRange)).toList();
-        // final features = [polygons.last.toGeoJson()];
-        controller.setGeoJsonSource('voronoi', {
-          'type': 'FeatureCollection',
-          'features': features,
-        });
+        _renderPolygon(polygons);
         controller.moveCamera(CameraUpdate.newLatLngBounds(getBounds(polygons.last.polygon, margin: true)));
         parent.removeOverlay();
+
+        _polygonCache = polygons;
+        parent.rebuildWidget();
       },
       onError: () {
         parent.setOverlay(const Text('エラーが発生しました'));
