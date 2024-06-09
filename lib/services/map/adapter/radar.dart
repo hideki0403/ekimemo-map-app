@@ -21,7 +21,7 @@ class RadarMapAdapter extends MapAdapter {
   @override
   List<Widget> get floatingWidgets => [
     ElevatedButton(
-      onPressed: () {
+      onPressed: _polygonCache.isEmpty ? null : () {
         _selectedRangeOnly = !_selectedRangeOnly;
         parent.rebuildWidget();
         _reRender();
