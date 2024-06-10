@@ -53,6 +53,7 @@ class CoreMapAdapter extends MapAdapter {
   @override
   void initialize() async {
     await controller.addFillLayer('voronoi', 'fill', masterFillLayerProperties.copyWith(const FillLayerProperties(
+      fillColor: [Expressions.get, 'color'],
       fillOpacity: [
         'case',
         ['get', 'accessed'],
@@ -61,8 +62,13 @@ class CoreMapAdapter extends MapAdapter {
       ],
     )));
 
-    await controller.addLineLayer('voronoi', 'line', masterLineLayerProperties);
-    await controller.addSymbolLayer('point', 'point', masterSymbolLayerProperties);
+    await controller.addLineLayer('voronoi', 'line', masterLineLayerProperties.copyWith(const LineLayerProperties(
+      lineColor: [Expressions.get, 'color'],
+    )));
+
+    await controller.addSymbolLayer('point', 'point', masterSymbolLayerProperties.copyWith(const SymbolLayerProperties(
+      iconColor: [Expressions.get, 'color'],
+    )));
 
     renderVoronoi();
   }
@@ -256,8 +262,8 @@ class CoreMapAdapter extends MapAdapter {
     }
 
     if (stations.length < renderingLimit) {
-      controller.setGeoJsonSource('voronoi', buildVoronoi(stations, useAttrColor: attrMode));
-      controller.setGeoJsonSource('point', buildPoint(stations, useAttr: attrMode));
+      controller.setGeoJsonSource('voronoi', buildVoronoi(stations, useAttrColor: attrMode, stationList: StationSearchService.list));
+      controller.setGeoJsonSource('point', buildPoint(stations, useAttr: attrMode, stationList: StationSearchService.list));
       parent.removeOverlay();
     } else {
       parent.setOverlay(const Text('画面範囲内の駅数が多すぎるため、メッシュを描画できませんでした。地図を拡大してください。'));
