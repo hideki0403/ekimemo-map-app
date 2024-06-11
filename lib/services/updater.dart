@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:msgpack_dart/msgpack_dart.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:install_plugin/install_plugin.dart';
 
-import 'package:ekimemo_map/main.dart';
 import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/repository/tree_node.dart';
@@ -17,119 +17,59 @@ import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/services/search.dart';
 import 'package:ekimemo_map/services/log.dart';
 import 'package:ekimemo_map/services/cache.dart';
+import 'package:ekimemo_map/services/utils.dart';
 
 final logger = Logger('Updater');
 
 class AssetUpdater {
-  static final _dio = Dio();
-  static bool _isChecking = false;
   static bool _isInitialized = false;
 
   static void check({force = false, silent = false, first = false}) async {
-    if (_isChecking) return;
-
     if (first) {
       if (_isInitialized) return;
       _isInitialized = true;
     }
 
     logger.debug('Checking for station-database updates');
-
-    _isChecking = true;
-    final response = await _dio.get('https://api.github.com/repos/hideki0403/ekimemo-map-database/releases/latest');
-    _isChecking = false;
     var updateAvailable = false;
-    if (response.statusCode != 200) throw Exception('Failed to get latest info');
 
-    final release = response.data;
-    final latestVersion = release['tag_name'].toString();
-    final asset = release['assets'].firstWhere((x) => x['name'] == 'station_database.msgpack');
-    final size = asset['size'];
-    final downloadUrl = asset['browser_download_url'];
-    if (SystemState.getString('station_data_version') != latestVersion) updateAvailable = true;
+    final resource = await _UpdateUtils.getLatestRelease('hideki0403/ekimemo-map-database', 'station_database.msgpack');
+    if (SystemState.getString('station_data_version') != resource.version) updateAvailable = true;
 
-    logger.debug('Latest version: $latestVersion, Current version: ${SystemState.getString('station_data_version')}');
+    logger.debug('Latest version: ${resource.version}, Current version: ${SystemState.getString('station_data_version')}');
 
-    if (force) return _update(downloadUrl, size, latestVersion);
-    if (!updateAvailable && silent) return;
+    if (force) return _update(resource);
 
-    showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
-      return updateAvailable ? AlertDialog(
-        title: const Text('駅データ更新'),
-        content: Text('新しい駅データ ($latestVersion) が利用可能です。更新しますか？'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-            },
-            child: const Text('キャンセル'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _update(downloadUrl, size, latestVersion);
-            },
-            child: const Text('更新'),
-          ),
-        ],
-      ) : AlertDialog(
-        title: const Text('駅データ更新'),
-        content: const Text('最新の駅データです。'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      );
-    });
-  }
-
-  static void _update(String assetUrl, int size, String version) {
-    final streamController = StreamController<double>();
-    BuildContext? internalContext;
-    bool isCanPop = false;
-
-    void popContext(BuildContext? ctx) {
-      if (internalContext == null && ctx != null) internalContext = ctx;
-      if (!isCanPop || internalContext == null) return;
-      Navigator.pop(internalContext!);
+    if (!updateAvailable) {
+      if (!silent) showMessageDialog(title: '駅データ更新', message: '最新の駅データです。');
+      return;
     }
 
-    showDialog(context: navigatorKey.currentContext!, barrierDismissible: false, builder: (ctx) {
-      popContext(ctx);
-      return AlertDialog(
-        title: const Text('駅データ更新'),
-        content: StreamBuilder<double>(
-          stream: streamController.stream,
-          initialData: 0.0,
-          builder: (_, snapshot) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('ダウンロードしています... (${(snapshot.data! * 100).toStringAsFixed(0)}%)'),
-                const SizedBox(height: 16),
-                LinearProgressIndicator(value: snapshot.data),
-              ],
-            );
-          },
-        )
-      );
-    });
+    final result = await showYesNoDialog(
+      title: '駅データ更新',
+      message: '新しい駅データ (${resource.version}) が利用可能です。更新しますか？',
+      yesText: '更新',
+      noText: 'キャンセル',
+    );
 
-    logger.debug('Downloading station-database.msgpack');
+    if (result) _update(resource);
+  }
 
-    _dio.get(assetUrl, onReceiveProgress: (current, _) {
-      streamController.add(current / size);
-    }, options: Options(responseType: ResponseType.bytes)).then((response) {
-      isCanPop = true;
-      popContext(null);
-      if (response.statusCode != 200 || response.data == null) throw Exception('Failed to download asset');
-      logger.debug('Downloaded station-database.msgpack');
-      _apply(deserialize(response.data).cast<String, dynamic>(), version);
-    });
+  static Future<void> _update(_GitHubResource resource) async {
+    dynamic data;
+    try {
+      data = await _UpdateUtils.downloadResource(resource, '駅データ更新');
+    } catch (e) {
+      if (e is DioException && e.type == DioExceptionType.cancel) {
+        logger.debug('Download canceled');
+        return;
+      }
+      logger.error('Failed to download station database: $e');
+      showMessageDialog(title: '駅データ更新', message: 'ダウンロード中にエラーが発生しました');
+      return;
+    }
+
+    _apply(deserialize(data).cast<String, dynamic>(), resource.version);
   }
 
   static void _apply(Map<String, dynamic> data, String version) async {
@@ -142,20 +82,19 @@ class AssetUpdater {
       Navigator.pop(internalContext!);
     }
 
-    showDialog(context: navigatorKey.currentContext!, barrierDismissible: false, builder: (ctx) {
-      popContext(ctx);
-      return const AlertDialog(
-        title: Text('駅データ更新'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('適用しています...\n(時間がかかる場合があります)'),
-            SizedBox(height: 16),
-            LinearProgressIndicator(),
-          ],
-        ),
-      );
-    });
+    showMessageDialog(
+      title: '駅データ更新',
+      disableActions: true,
+      receiver: (ctx) => popContext(ctx),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('適用しています...\n(時間がかかる場合があります)'),
+          SizedBox(height: 16),
+          LinearProgressIndicator(),
+        ],
+      ),
+    );
 
     logger.debug('Applying latest station database');
 
@@ -189,87 +128,83 @@ class AssetUpdater {
 
     logger.debug('Applied latest station database');
 
-    showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
-      return AlertDialog(
-        title: const Text('駅データ更新'),
-        content: const Text('駅データを更新しました'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      );
-    });
+    showMessageDialog(title: '駅データ更新', message: '駅データを更新しました');
   }
 }
 
 class AppUpdater {
-  static final _dio = Dio();
-  static bool _isChecking = false;
-
   static void check({silent = false}) async {
-    if (_isChecking) return;
-
     logger.debug('Checking for app updates');
-
-    _isChecking = true;
-    final response = await _dio.get('https://api.github.com/repos/hideki0403/ekimemo-map-app/releases/latest');
-    _isChecking = false;
     var updateAvailable = false;
-    if (response.statusCode != 200) throw Exception('Failed to get latest info');
 
-    final info = response.data;
-    final releaseVersion = info['tag_name'].toString();
+    final resource = await _UpdateUtils.getLatestRelease('hideki0403/ekimemo-map-app', 'app-release.apk');
     final packageInfo = await PackageInfo.fromPlatform();
     final currentVersion = 'v${packageInfo.version}+${packageInfo.buildNumber}';
 
-    if (currentVersion != releaseVersion) updateAvailable = true;
+    if (currentVersion != resource.version) updateAvailable = true;
 
-    logger.debug('Latest version: $releaseVersion, Current version: $currentVersion');
+    logger.debug('Latest version: ${resource.version}, Current version: $currentVersion');
 
-    if (!updateAvailable && silent) return;
+    if (!updateAvailable) {
+      if (!silent) showMessageDialog(title: 'アプリ更新', message: '更新はありませんでした');
+      return;
+    }
 
-    final asset = info['assets'].firstWhere((x) => x['name'] == 'app-release.apk');
+    final result = await showYesNoDialog(
+      title: 'アプリ更新',
+      message: '新しいバージョン (${resource.version}) が利用可能です。更新しますか？',
+      yesText: '更新',
+      noText: 'キャンセル',
+    );
 
-    showDialog(context: navigatorKey.currentContext!, builder: (ctx) {
-      return updateAvailable ? AlertDialog(
-        title: const Text('アプリ更新'),
-        content: Text('新しいバージョン $releaseVersion が利用可能です。更新しますか？'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-            },
-            child: const Text('キャンセル'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _update(asset['browser_download_url'], asset['size']);
-            },
-            child: const Text('更新'),
-          ),
-        ],
-      ) : AlertDialog(
-        title: const Text('アプリ更新'),
-        content: const Text('更新はありませんでした'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      );
-    });
+    if (result) _update(resource);
   }
 
-  static void _update(String assetUrl, int size) async {
-    final streamController = StreamController<double>();
+  static void _update(_GitHubResource resource) async {
+    final downloadPath = '${(await getTemporaryDirectory()).path}/app-release.apk';
+
+    try {
+      await _UpdateUtils.downloadResource(resource, 'アプリ更新', path: downloadPath);
+    } catch (e) {
+      if (e is DioException && e.type == DioExceptionType.cancel) {
+        logger.debug('Download canceled');
+        return;
+      }
+      logger.error('Failed to download app: $e');
+      showMessageDialog(title: 'アプリ更新', message: 'ダウンロード中にエラーが発生しました');
+      return;
+    }
+
+    InstallPlugin.installApk(downloadPath);
+  }
+}
+
+class _UpdateUtils {
+  static List<String> checking = [];
+
+  static Future<_GitHubResource> getLatestRelease(String repository, String resourceName) async {
+    final key = 'check:$repository:$resourceName';
+    if (checking.contains(key)) throw Exception('Already checking');
+    checking.add(key);
+
+    final response = await Dio().get('https://api.github.com/repos/$repository/releases/latest');
+    if (response.statusCode != 200) throw Exception('Failed to get latest info');
+
+    final release = response.data;
+    final resource = (release['assets'] as List<dynamic>).firstWhereOrNull((x) => x['name'] == resourceName);
+    if (resource == null) throw Exception('Target resource not found');
+
+    checking.remove(key);
+    return _GitHubResource(release['tag_name'].toString(), resource['browser_download_url'], resource['size']);
+  }
+
+  static Future<T?> downloadResource<T extends dynamic>(_GitHubResource resource, String title, { String? path }) async {
+    final key = 'download:${resource.downloadUrl}';
+    if (checking.contains(key)) throw Exception('Already downloading');
+    checking.add(key);
+
+    final streamController = StreamController<int>();
+    final cancelToken = CancelToken();
     BuildContext? internalContext;
     bool isCanPop = false;
 
@@ -279,41 +214,78 @@ class AppUpdater {
       Navigator.pop(internalContext!);
     }
 
-    showDialog(context: navigatorKey.currentContext!, barrierDismissible: false, builder: (ctx) {
-      popContext(ctx);
-      return AlertDialog(
-          title: const Text('アプリ更新'),
-          content: StreamBuilder<double>(
-            stream: streamController.stream,
-            initialData: 0.0,
-            builder: (_, snapshot) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('ダウンロードしています... (${(snapshot.data! * 100).toStringAsFixed(0)}%)'),
-                  const SizedBox(height: 16),
-                  LinearProgressIndicator(value: snapshot.data),
-                ],
-              );
-            },
-          )
-      );
-    });
+    showMessageDialog(
+      title: title,
+      receiver: (ctx) => popContext(ctx),
+      actions: [
+        TextButton(
+          child: const Text('キャンセル'),
+          onPressed: () {
+            cancelToken.cancel();
+            checking.remove(key);
+            isCanPop = true;
+            popContext(null);
+          },
+        ),
+      ],
+      content: StreamBuilder<int>(
+        stream: streamController.stream,
+        initialData: 0,
+        builder: (_, snapshot) {
+          final progress = snapshot.data! / resource.size;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('ダウンロードしています...'),
+              const SizedBox(height: 16),
+              LinearProgressIndicator(value: progress),
+              const SizedBox(height: 4),
+              Row(children: [
+                Expanded(child: Text('${(progress * 100).toStringAsFixed(0)}%')),
+                Text('${formatBytes(snapshot.data!)} / ${formatBytes(resource.size)}'),
+              ]),
+            ],
+          );
+        },
+      ),
+    );
 
-    logger.debug('Downloading app-release.apk');
+    logger.debug('Downloading ${resource.downloadUrl}');
 
-    final downloadPath = '${(await getTemporaryDirectory()).path}/app-release.apk';
-    final response = await _dio.download(assetUrl, downloadPath, onReceiveProgress: (current, _) {
-      streamController.add(current / size);
-      Options(responseType: ResponseType.bytes);
-    });
+    final options = Options(responseType: ResponseType.bytes);
+    onReceiveProgress(current, _) {
+      streamController.add(current);
+    }
 
+    Response<dynamic>? response;
+
+    try {
+      if (path == null) {
+        response = await Dio().get(resource.downloadUrl, onReceiveProgress: onReceiveProgress, options: options, cancelToken: cancelToken);
+        if (response.statusCode != 200 || response.data == null) throw Exception('Failed to download asset');
+      } else {
+        response = await Dio().download(resource.downloadUrl, path, onReceiveProgress: onReceiveProgress, options: options, cancelToken: cancelToken);
+        if (response.statusCode != 200) throw Exception('Failed to download asset');
+      }
+    } catch (e) {
+      checking.remove(key);
+      rethrow;
+    }
+
+    logger.debug('Downloaded ${resource.downloadUrl}');
     isCanPop = true;
     popContext(null);
-    if (response.statusCode != 200) throw Exception('Failed to download artifact');
 
-    logger.debug('Downloaded app-release.apk');
-
-    InstallPlugin.installApk(downloadPath);
+    checking.remove(key);
+    return path == null ? response.data : null;
   }
+}
+
+class _GitHubResource {
+  final String version;
+  final String downloadUrl;
+  final int size;
+
+  _GitHubResource(this.version, this.downloadUrl, this.size);
 }
