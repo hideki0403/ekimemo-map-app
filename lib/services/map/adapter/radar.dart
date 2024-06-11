@@ -15,8 +15,28 @@ class RadarMapAdapter extends MapAdapter {
   final _radarService = SearchRadarRange();
   final _maxRange = Config.maxResults;
   int _showRange = Config.maxResults;
-  bool _selectedRangeOnly = false;
+  bool _selectedRangeOnly = true;
   List<RadarPolygon> _polygonCache = [];
+
+  @override
+  String get title => 'レーダー範囲';
+
+  @override
+  List<Widget> get appBarActions => [
+    IconButton(
+      icon: const Icon(Icons.help),
+      onPressed: () {
+        showMessageDialog(
+          title: 'レーダー範囲について',
+          message: '''
+          レーダーで対象の駅にアクセスできる範囲を可視化したマップです。
+          ポリゴン (線で囲まれている範囲) 内であれば理論上レーダーでアクセスすることができます。
+          初期状態ではレーダーの検知数が$_maxRange駅の場合の範囲が表示されますが、これはマップ下部のスライダーで変更可能です。
+          '''.replaceAll(RegExp(r' {2,}'), ''),
+        );
+      },
+    ),
+  ];
 
   @override
   List<Widget> get floatingWidgets => [
@@ -93,11 +113,12 @@ class RadarMapAdapter extends MapAdapter {
         controller.moveCamera(CameraUpdate.newLatLngBounds(getBounds(polygons.last.polygon, margin: true)));
       },
       onComplete: (List<RadarPolygon> polygons) async {
-        _renderPolygon(polygons);
         controller.moveCamera(CameraUpdate.newLatLngBounds(getBounds(polygons.last.polygon, margin: true)));
         parent.removeOverlay();
 
         _polygonCache = polygons;
+        _reRender();
+
         parent.rebuildWidget();
       },
       onError: () {
