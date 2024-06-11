@@ -95,6 +95,13 @@ double randomInRange(double min, double max) {
   return min + Random().nextDouble() * (max - min);
 }
 
+const _bytesSuffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+String formatBytes(int bytes, {int decimals = 1}) {
+  if (bytes <= 0) return '0B';
+  final i = (log(bytes) / log(1024)).floor();
+  return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)}${_bytesSuffixes[i]}';
+}
+
 maplibre.LatLngBounds? getBoundsFromLine(Line line) {
   if (line.polylineList == null) return null;
 
@@ -140,19 +147,56 @@ maplibre.LatLngBounds getBounds(List<LatLngPoint> list, { bool margin = false })
   );
 }
 
-Future<void> showMessageDialog({String? title, String? message, Widget? content}) async {
+typedef ContextReceiver = void Function(BuildContext context);
+Future<void> showMessageDialog({
+  String? title,
+  String? message,
+  Widget? content,
+  ContextReceiver? receiver,
+  List<Widget>? actions,
+  bool barrierDismissible = true,
+  bool disableActions = false,
+}) async {
   return showDialog(
     context: navigatorKey.currentContext!,
+    barrierDismissible: barrierDismissible,
     builder: (context) {
+      receiver?.call(context);
       return AlertDialog(
         title: title != null ? Text(title) : null,
         content: content ?? (message != null ? Text(message) : null),
-        actions: [
+        actions: disableActions ? null : actions ?? [
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
             },
             child: const Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<bool> showYesNoDialog({String? title, String? message, String? yesText, String? noText}) async {
+  return await showDialog(
+    context: navigatorKey.currentContext!,
+    builder: (context) {
+      return AlertDialog(
+        title: title != null ? Text(title) : null,
+        content: message != null ? Text(message) : null,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+            child: Text(noText ?? 'いいえ'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: Text(yesText ?? 'はい'),
           ),
         ],
       );
