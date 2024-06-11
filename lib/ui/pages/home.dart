@@ -84,14 +84,14 @@ class HomeView extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           child: Row(children: [
             Expanded(child: Text('最終更新: ${station.lastUpdate}')),
-            Text('${station.latestProcessingTime}ms'),
+            Opacity(opacity: 0.7, child: Text('${station.latestProcessingTime}ms', textScaler: const TextScaler.linear(0.8))),
           ]),
         ),
       ),
       body: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 64),
+            padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 32),
             sliver: SliverList(
               delegate: SliverChildListDelegate.fixed(state.stationDataVersion != '' ? [
                 ListView.builder(
