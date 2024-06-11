@@ -8,6 +8,7 @@ import 'package:ekimemo_map/services/search.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/services/utils.dart';
+import 'package:ekimemo_map/services/gps.dart';
 import 'package:ekimemo_map/ui/pages/map.dart';
 import '../map_adapter.dart';
 import '../utils.dart';
@@ -88,6 +89,9 @@ class CoreMapAdapter extends MapAdapter {
     }
 
     final data = stations.first;
+
+    final location = GpsManager.lastLocation;
+    final distanceFromCurrent = location == null || !GpsManager.isEnabled ? null : beautifyDistance(measure(location.latitude, location.longitude, data.station.lat, data.station.lng));
     final accessLog = AccessCacheManager.get(data.station.id);
     final accessed = accessLog != null && accessLog.accessed;
     parent.removeOverlay();
@@ -133,7 +137,7 @@ class CoreMapAdapter extends MapAdapter {
                           getAttrIcon(data.station.attr, context: context),
                           const SizedBox(width: 4),
                           Expanded(child: Text(data.station.attr.name)),
-                          Text(data.distance ?? '???m'),
+                          if (distanceFromCurrent != null) Text('現在地から $distanceFromCurrent'),
                         ]),
                       ],
                     ),
@@ -155,7 +159,7 @@ class CoreMapAdapter extends MapAdapter {
                             child: Column(children: [
                               Icon(Icons.radar),
                               SizedBox(height: 4),
-                              Text('レーダー'),
+                              Text('レーダー範囲'),
                             ]),
                           ),
                         )),
@@ -275,8 +279,9 @@ class CoreMapAdapter extends MapAdapter {
     }
 
     if (stations.length < renderingLimit) {
-      controller.setGeoJsonSource('voronoi', buildVoronoi(stations, useAttrColor: attrMode, stationList: StationSearchService.list));
-      controller.setGeoJsonSource('point', buildPoint(stations, useAttr: attrMode, stationList: StationSearchService.list));
+      final stationList = GpsManager.isEnabled ? StationSearchService.list : null;
+      controller.setGeoJsonSource('voronoi', buildVoronoi(stations, useAttrColor: attrMode, stationList: stationList));
+      controller.setGeoJsonSource('point', buildPoint(stations, useAttr: attrMode, stationList: stationList));
       parent.removeOverlay();
     } else {
       parent.setOverlay(const Text('画面範囲内の駅数が多すぎるため、メッシュを描画できませんでした。地図を拡大してください。'));
