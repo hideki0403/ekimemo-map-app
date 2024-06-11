@@ -146,9 +146,6 @@ class _StationMenu extends StatelessWidget {
     return SimpleDialog(
       title: Text(station.name),
       children: [
-        if (index == 0) const SimpleDialogOption(
-          child: Text('この駅は操作を行えません'),
-        ),
         if (index != 0) ...[
           SimpleDialogOption(
             onPressed: () async {
@@ -166,6 +163,13 @@ class _StationMenu extends StatelessWidget {
             child: Text(cooldown == 0 ? 'タイマーをセットする' : 'タイマーをリセットする'),
           )
         ],
+        SimpleDialogOption(
+          onPressed: () async {
+            if (context.mounted) Navigator.of(context).pop(true);
+            await context.push(Uri(path: '/map', queryParameters: {'radar-id': station.code.toString()}).toString());
+          },
+          child: const Text('この駅のレーダー範囲を見る'),
+        ),
       ],
     );
   }
