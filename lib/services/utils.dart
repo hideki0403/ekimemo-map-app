@@ -265,6 +265,46 @@ Future<bool?> showConfirmDialog({String? title, String? caption}) async {
   );
 }
 
+Future<Color?> showColorPickerDialog({List<Color>? defaultColor, String? title}) async {
+  final colors = defaultColor ?? [Colors.red, Colors.pink, Colors.purple, Colors.deepPurple, Colors.indigo, Colors.blue, Colors.lightBlue, Colors.cyan, Colors.teal, Colors.green, Colors.lightGreen, Colors.lime, Colors.yellow, Colors.amber, Colors.orange, Colors.deepOrange, Colors.brown];
+  return await showDialog(
+    context: navigatorKey.currentContext!,
+    builder: (context) {
+      return AlertDialog(
+        title: Text(title ?? 'カラーピッカー'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 5,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+            ),
+            itemCount: colors.length,
+            itemBuilder: (context, index) {
+              final c = colors[index];
+              return GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop(c);
+                },
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: c,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              );
+            },
+          ),
+        )
+      );
+    },
+  );
+}
+
 Color hexToColor(String? hex) {
   if (hex == null) return Colors.transparent;
   hex = hex.replaceAll('#', '');
