@@ -9,7 +9,7 @@ export 'adapter/attribute.dart';
 export 'adapter/radar.dart';
 
 abstract class MapAdapter {
-  late final MaplibreMapController controller;
+  late final MapLibreMapController controller;
   late final MapViewState parent;
   late final BuildContext context;
 

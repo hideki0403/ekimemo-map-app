@@ -54,12 +54,12 @@ class MapView extends StatefulWidget {
 }
 
 class MapViewState extends State<MapView> {
-  final _mapReadyCompleter = Completer<MaplibreMapController>();
-  MyLocationTrackingMode _trackingMode = MyLocationTrackingMode.None;
+  final _mapReadyCompleter = Completer<MapLibreMapController>();
+  MyLocationTrackingMode _trackingMode = MyLocationTrackingMode.none;
   Widget? _overlayWidget;
 
   MyLocationTrackingMode get trackingMode => _trackingMode;
-  MaplibreMapController? controller;
+  MapLibreMapController? controller;
 
   // #region MapAdapter
   MapAdapter? _adapter;
@@ -143,11 +143,11 @@ class MapViewState extends State<MapView> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           setState(() {
-            _trackingMode = _trackingMode == MyLocationTrackingMode.None ? MyLocationTrackingMode.Tracking : MyLocationTrackingMode.None;
+            _trackingMode = _trackingMode == MyLocationTrackingMode.none ? MyLocationTrackingMode.tracking : MyLocationTrackingMode.none;
           });
         },
-        foregroundColor: _trackingMode != MyLocationTrackingMode.None ? Theme.of(context).colorScheme.primary : null,
-        child: Icon(_trackingMode != MyLocationTrackingMode.None ? Icons.gps_fixed : Icons.gps_not_fixed),
+        foregroundColor: _trackingMode != MyLocationTrackingMode.none ? Theme.of(context).colorScheme.primary : null,
+        child: Icon(_trackingMode != MyLocationTrackingMode.none ? Icons.gps_fixed : Icons.gps_not_fixed),
       ),
       bottomNavigationBar: _adapterBottomWidgets.isEmpty ? null : Container(
         color: Theme.of(context).colorScheme.surfaceContainer,
@@ -161,7 +161,7 @@ class MapViewState extends State<MapView> {
       ),
       body: SafeArea(
         child: Stack(children: [
-          MaplibreMap(
+          MapLibreMap(
             initialCameraPosition: const CameraPosition(target: LatLng(35.681236, 139.767125), zoom: 10.0),
             trackCameraPosition: true,
             onMapCreated: (controller) {
@@ -200,7 +200,7 @@ class MapViewState extends State<MapView> {
             onCameraIdle: () => _adapter?.onCameraIdle(),
             onCameraTrackingDismissed: () {
               setState(() {
-                _trackingMode = MyLocationTrackingMode.None;
+                _trackingMode = MyLocationTrackingMode.none;
               });
             },
             onMapClick: (point, latLng) => _adapter?.onMapClick(point, latLng),

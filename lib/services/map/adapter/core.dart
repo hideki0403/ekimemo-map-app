@@ -250,7 +250,7 @@ class CoreMapAdapter extends MapAdapter {
 
   Future<void> renderVoronoi({ int? renderingLimit, bool force = false }) async {
     renderingLimit ??= Config.mapRenderingLimit;
-    final isCooldown = parent.trackingMode != MyLocationTrackingMode.None && DateTime.now().difference(_lastRectUpdate).inMilliseconds < 1000;
+    final isCooldown = parent.trackingMode != MyLocationTrackingMode.none && DateTime.now().difference(_lastRectUpdate).inMilliseconds < 1000;
     if (_isRendering || (isCooldown && !force)) return;
     _isRendering = true;
 
