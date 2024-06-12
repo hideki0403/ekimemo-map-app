@@ -137,32 +137,33 @@ class Root extends StatelessWidget {
   Widget build(BuildContext context) {
     final config = Provider.of<ConfigProvider>(context);
     final font = GoogleFonts.asMap().keys.contains(config.fontFamily) ? config.fontFamily : null;
+
+    ThemeData buildTheme(Brightness brightness, ColorScheme? colorScheme) {
+      final baseTheme = ThemeData(
+        useMaterial3: true,
+        brightness: brightness,
+        colorScheme: config.useMaterialYou ? colorScheme : ColorScheme.fromSeed(seedColor: config.themeSeedColor, brightness: brightness),
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: <TargetPlatform, PageTransitionsBuilder>{
+            TargetPlatform.android: ZoomPageTransitionsBuilder(
+              allowEnterRouteSnapshotting: false,
+            ),
+          },
+        ),
+      );
+
+      return baseTheme.copyWith(
+        textTheme: font != null ? GoogleFonts.getTextTheme(font, baseTheme.textTheme) : GoogleFonts.notoSansJpTextTheme(baseTheme.textTheme),
+      );
+    }
+
     return DynamicColorBuilder(
       builder: (lightColorScheme, darkColorScheme) => MaterialApp.router(
-        theme: _buildTheme(Brightness.light, lightColorScheme, font),
-        darkTheme: _buildTheme(Brightness.dark, darkColorScheme, font),
+        theme: buildTheme(Brightness.light, lightColorScheme),
+        darkTheme: buildTheme(Brightness.dark, darkColorScheme),
         themeMode: config.themeMode,
         routerConfig: router,
       ),
     );
   }
-}
-
-ThemeData _buildTheme(Brightness brightness, ColorScheme? colorScheme, String? fontFamily) {
-  final baseTheme = ThemeData(
-    useMaterial3: true,
-    brightness: brightness,
-    colorScheme: colorScheme,
-    pageTransitionsTheme: const PageTransitionsTheme(
-      builders: <TargetPlatform, PageTransitionsBuilder>{
-        TargetPlatform.android: ZoomPageTransitionsBuilder(
-          allowEnterRouteSnapshotting: false,
-        ),
-      },
-    ),
-  );
-
-  return baseTheme.copyWith(
-    textTheme: fontFamily != null ? GoogleFonts.getTextTheme(fontFamily, baseTheme.textTheme) : GoogleFonts.notoSansJpTextTheme(baseTheme.textTheme),
-  );
 }

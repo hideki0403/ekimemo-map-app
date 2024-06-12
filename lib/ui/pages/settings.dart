@@ -288,6 +288,33 @@ class _SettingsViewState extends State<SettingsView> {
                   }
                 },
               ),
+              SwitchListTile(
+                title: const Text('Material You'),
+                subtitle: const Text('アプリの配色に端末のテーマカラーを使用します。'),
+                value: config.useMaterialYou,
+                onChanged: (value) {
+                  config.setUseMaterialYou(value);
+                },
+              ),
+              ListTile(
+                title: const Text('テーマカラー'),
+                subtitle: Text(config.useMaterialYou ? 'MaterialYouが有効の場合は設定できません' : 'アプリのテーマカラーを設定できます'),
+                trailing: config.useMaterialYou ? null : Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: config.themeSeedColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Theme.of(context).dividerColor),
+                  ),
+                ),
+                onTap: config.useMaterialYou ? null : () async {
+                  final result = await showColorPickerDialog(title: 'テーマカラー');
+                  if (result != null) {
+                    config.setThemeSeedColor(result);
+                  }
+                },
+              ),
               ListTile(
                 title: const Text('フォント'),
                 subtitle: Text(_fontFamily[config.fontFamily] ?? '不明'),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/repository/meta.dart';
 import 'package:ekimemo_map/ui/pages/map.dart';
 
@@ -43,6 +45,8 @@ class ConfigProvider extends ChangeNotifier {
     return font;
   }
   bool get disableDbCache => _config?.getBool('disable_db_cache') ?? false;
+  bool get useMaterialYou => _config?.getBool('use_material_you') ?? false;
+  Color get themeSeedColor => hexToColor(_config?.getString('theme_seed_color') ?? Colors.blue.toHexStringRGB());
 
   void notify() {
     notifyListeners();
@@ -137,6 +141,16 @@ class ConfigProvider extends ChangeNotifier {
     _config?.setBool('disable_db_cache', value);
     notifyListeners();
   }
+
+  void setUseMaterialYou(bool value) {
+    _config?.setBool('use_material_you', value);
+    notifyListeners();
+  }
+
+  void setThemeSeedColor(Color value) {
+    _config?.setString('theme_seed_color', value.toHexStringRGB());
+    notifyListeners();
+  }
 }
 
 class Config {
@@ -164,6 +178,8 @@ class Config {
   static int get mapRenderingLimit => _configProvider?.mapRenderingLimit ?? 750;
   static String? get fontFamily => _configProvider?.fontFamily ?? GoogleFonts.notoSansJp().fontFamily;
   static bool get disableDbCache => _configProvider?.disableDbCache ?? false;
+  static bool get useMaterialYou => _configProvider?.useMaterialYou ?? false;
+  static Color get themeSeedColor => _configProvider?.themeSeedColor ?? Colors.blue;
 
   static String getString(String key, {String defaultValue = ''}) {
     return _configProvider?.config?.getString(key) ?? defaultValue;
