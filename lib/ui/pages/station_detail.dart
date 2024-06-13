@@ -84,14 +84,26 @@ class _StationDetailViewState extends State<StationDetailView> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.center,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.push(Uri(path: '/map', queryParameters: {'station-id': widget.stationId}).toString());
-                    },
-                    child: const Text('マップで見る'),
-                  ),
+                Wrap(
+                  direction: Axis.horizontal,
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        context.push(Uri(path: '/map', queryParameters: {'station-id': widget.stationId}).toString());
+                      },
+                      icon: const Icon(Icons.map),
+                      label: const Text('マップ'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        context.push(Uri(path: '/map', queryParameters: {'radar-id': widget.stationId}).toString());
+                      },
+                      icon: const Icon(Icons.radar),
+                      label: const Text('レーダー範囲'),
+                    ),
+                  ]
                 ),
                 if (kDebugMode) ...[
                   const SectionTitle(title: 'Debug'),
