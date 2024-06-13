@@ -52,7 +52,7 @@ class AssetUpdater {
       noText: 'キャンセル',
     );
 
-    if (result) _update(resource);
+    if (result == true) _update(resource);
   }
 
   static Future<void> _update(_GitHubResource resource) async {
@@ -85,6 +85,7 @@ class AssetUpdater {
     showMessageDialog(
       title: '駅データ更新',
       disableActions: true,
+      disableClose: true,
       receiver: (ctx) => popContext(ctx),
       content: const Column(
         mainAxisSize: MainAxisSize.min,
@@ -157,7 +158,7 @@ class AppUpdater {
       noText: 'キャンセル',
     );
 
-    if (result) _update(resource);
+    if (result == true) _update(resource);
   }
 
   static void _update(_GitHubResource resource) async {
@@ -216,6 +217,7 @@ class _UpdateUtils {
 
     showMessageDialog(
       title: title,
+      disableClose: true,
       receiver: (ctx) => popContext(ctx),
       actions: [
         TextButton(

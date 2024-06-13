@@ -154,31 +154,34 @@ Future<void> showMessageDialog({
   Widget? content,
   ContextReceiver? receiver,
   List<Widget>? actions,
-  bool barrierDismissible = true,
+  bool disableClose = false,
   bool disableActions = false,
 }) async {
   return showDialog(
     context: navigatorKey.currentContext!,
-    barrierDismissible: barrierDismissible,
+    barrierDismissible: !disableClose,
     builder: (context) {
       receiver?.call(context);
-      return AlertDialog(
-        title: title != null ? Text(title) : null,
-        content: content ?? (message != null ? Text(message) : null),
-        actions: disableActions ? null : actions ?? [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('OK'),
-          ),
-        ],
+      return PopScope(
+        canPop: !disableClose,
+        child: AlertDialog(
+          title: title != null ? Text(title) : null,
+          content: content ?? (message != null ? Text(message) : null),
+          actions: disableActions ? null : actions ?? [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
       );
     },
   );
 }
 
-Future<bool> showYesNoDialog({String? title, String? message, String? yesText, String? noText}) async {
+Future<bool?> showYesNoDialog({String? title, String? message, String? yesText, String? noText}) async {
   return await showDialog(
     context: navigatorKey.currentContext!,
     builder: (context) {
