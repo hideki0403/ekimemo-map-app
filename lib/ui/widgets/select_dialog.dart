@@ -78,7 +78,7 @@ class _SelectDialogState extends State<SelectDialog> {
           },
           child: const Text('キャンセル'),
         ),
-        if (widget.showOkButton == true) TextButton(
+        if (widget.showOkButton == true) ElevatedButton(
           onPressed: () {
             Navigator.of(context).pop(selectedValue);
           },

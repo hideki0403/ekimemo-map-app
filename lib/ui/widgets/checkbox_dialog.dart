@@ -59,7 +59,7 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
           },
           child: const Text('キャンセル'),
         ),
-        TextButton(
+        ElevatedButton(
           onPressed: () {
             Navigator.of(context).pop(selectedValue);
           },

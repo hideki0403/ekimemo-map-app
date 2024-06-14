@@ -81,7 +81,7 @@ class _EditorDialogState extends State<EditorDialog> {
         ],
       ),
       actions: [
-        TextButton(
+        ElevatedButton(
           onPressed: () {
             Navigator.of(context).pop(controller.text);
           },

@@ -168,7 +168,7 @@ Future<void> showMessageDialog({
           title: title != null ? Text(title) : null,
           content: content ?? (message != null ? Text(message) : null),
           actions: disableActions ? null : actions ?? [
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -195,7 +195,7 @@ Future<bool?> showYesNoDialog({String? title, String? message, String? yesText, 
             },
             child: Text(noText ?? 'いいえ'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop(true);
             },
@@ -256,7 +256,7 @@ Future<bool?> showConfirmDialog({String? title, String? caption}) async {
             },
             child: const Text('キャンセル'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop(true);
             },
