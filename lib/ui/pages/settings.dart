@@ -12,6 +12,7 @@ import 'package:ekimemo_map/services/database.dart';
 import 'package:ekimemo_map/services/native.dart';
 import 'package:ekimemo_map/services/notification.dart';
 import 'package:ekimemo_map/services/assistant.dart';
+import 'package:ekimemo_map/services/backup.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
 import 'package:ekimemo_map/ui/pages/map.dart';
@@ -361,6 +362,22 @@ class _SettingsViewState extends State<SettingsView> {
                     config.setMapRenderingLimit(max(1, int.parse(result)));
                   }
                 },
+              ),
+              const SectionTitle(title: 'データ管理'),
+              ListTile(
+                title: const Text('バックアップ'),
+                subtitle: const Text('駅にアクセスした記録をバックアップします。'),
+                onTap: () => BackupService.backup(),
+              ),
+              ListTile(
+                title: const Text('復元'),
+                subtitle: const Text('バックアップした記録を復元します。'),
+                onTap: () => BackupService.restore(),
+              ),
+              ListTile(
+                title: const Text('インポート'),
+                subtitle: const Text('他のアプリでエクスポートしたCSVファイルから記録をインポートします。'),
+                onTap: () => BackupService.importCsv(),
               ),
               const SectionTitle(title: '高度な設定'),
               SwitchListTile(

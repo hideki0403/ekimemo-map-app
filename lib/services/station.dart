@@ -43,8 +43,11 @@ class AccessCacheManager {
   static final accessCache = <String, AccessCacheItem>{};
   static final _repository = AccessLogRepository();
 
-  static Future<void> initialize() async {
-    if (accessCache.isNotEmpty) return;
+  static Future<void> initialize({ bool force = false }) async {
+    if (accessCache.isNotEmpty) {
+      if (!force) return;
+      accessCache.clear();
+    }
 
     final accessLogs = await _repository.getAll();
     for (final accessLog in accessLogs) {
