@@ -51,6 +51,10 @@ class StationCache {
     return !CacheManager.disableCache ? _cache[id] : await _repository.get(id);
   }
 
+  static Future<List<Station>>? getAll () async {
+    return !CacheManager.disableCache ? _cache.values.toList() : await _repository.getAll();
+  }
+
   static Future<int> convert(String id) async {
     return !CacheManager.disableCache ? _convert[id]! : (await _repository.get(id, column: 'id'))!.code;
   }
