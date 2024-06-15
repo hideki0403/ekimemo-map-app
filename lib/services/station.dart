@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/access_log.dart';
+import 'package:ekimemo_map/models/passing_log.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
+import 'package:ekimemo_map/repository/passing_log.dart';
 import 'package:intl/intl.dart';
 import 'config.dart';
 import 'notification.dart';
@@ -13,6 +16,9 @@ import 'assistant.dart';
 import 'search.dart';
 import 'gps.dart';
 import 'cache.dart';
+import 'log.dart';
+
+final logger = Logger('StationManager');
 
 enum ResultType {
   success,
@@ -90,6 +96,31 @@ class AccessCacheManager {
 
   static AccessCacheItem? get(String id) {
     return accessCache[id];
+  }
+}
+
+class PassingLogManager {
+  static final _repository = PassingLogRepository();
+  static Future<void> insert(StationData data, bool reNotify) async {
+    if (GpsManager.lastLocation == null) {
+      logger.warning('PassingLogManager: Location is not available');
+      return;
+    }
+
+    final latitude = GpsManager.lastLocation!.latitude;
+    final longitude = GpsManager.lastLocation!.longitude;
+
+    final passingLog = PassingLog();
+    passingLog.uuid = const Uuid().v4();
+    passingLog.id = data.station.id;
+    passingLog.timestamp = DateTime.now();
+    passingLog.latitude = latitude;
+    passingLog.longitude = longitude;
+    passingLog.speed = GpsManager.lastLocation!.speed;
+    passingLog.accuracy = GpsManager.lastLocation!.accuracy;
+    passingLog.distance = measure(latitude, longitude, data.station.lat, data.station.lng);
+    passingLog.isReNotify = reNotify;
+    await _repository.insertModel(passingLog);
   }
 }
 
@@ -241,6 +272,8 @@ class StationManager {
   }
 
   static void _handleStationUpdate(StationData data, { bool reNotify = false, bool silent = false }) {
+    PassingLogManager.insert(data, reNotify);
+
     final body = !reNotify ? '${data.distance}で最寄り駅になりました' : '最後に通知してから${beautifySeconds(Config.cooldownTime)}が経過しました';
     final ttsText = !reNotify ? '「${data.station.nameKana}」が、最寄り駅になりました' : '「${data.station.nameKana}」に、アクセスしてから、${beautifySeconds(Config.cooldownTime, jp: true)}が経過しました';
     NotificationManager.showNotification(data.station.name, body, silent: silent, icon: reNotify ? 'ic_notification_remind' : 'ic_notification_new', ttsText: ttsText);
