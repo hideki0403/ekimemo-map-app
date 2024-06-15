@@ -11,7 +11,7 @@ enum DatabaseType {
 }
 
 class DatabaseHandler {
-  static const int _version = 4;
+  static const int _version = 5;
   static final Map<String, List<String>> _migration = {
     '1': [
       // create table
@@ -38,6 +38,10 @@ class DatabaseHandler {
     '4': [
       // add 'delaunay' column to 'station' table
       'ALTER TABLE station ADD COLUMN delaunay TEXT DEFAULT "[]";',
+    ],
+    '5': [
+      // create 'passing_log' table
+      'CREATE TABLE IF NOT EXISTS passing_log (uuid TEXT PRIMARY KEY, id TEXT, timestamp TEXT, latitude REAL, longitude REAL, speed REAL, accuracy REAL, distance INTEGER, isReNotify INTEGER);',
     ],
   };
 
