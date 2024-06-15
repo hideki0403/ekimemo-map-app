@@ -66,6 +66,7 @@ dependencies:
   file_picker: ^8.0.3
   gpx: ^2.2.2
   bottom_sheet: ^4.0.4
+  uuid: ^4.4.0
 
 dev_dependencies:
   flutter_test:
