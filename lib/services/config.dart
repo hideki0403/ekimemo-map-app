@@ -41,7 +41,7 @@ class ConfigProvider extends ChangeNotifier {
   ThemeMode get themeMode => ThemeMode.values.firstWhere((e) => e.name == _config?.getString('theme_mode'), orElse: () => ThemeMode.system);
   String? get fontFamily {
     final font = _config?.getString('font_family');
-    if (font == null || font == '') return GoogleFonts.notoSansJp().fontFamily;
+    if (font == null || font == '') return 'Noto Sans JP';
     return font;
   }
   bool get disableDbCache => _config?.getBool('disable_db_cache') ?? false;
@@ -176,7 +176,7 @@ class Config {
   static MapStyle get mapStyle => _configProvider?.mapStyle ?? MapStyle.defaultStyle;
   static ThemeMode get themeMode => _configProvider?.themeMode ?? ThemeMode.system;
   static int get mapRenderingLimit => _configProvider?.mapRenderingLimit ?? 750;
-  static String? get fontFamily => _configProvider?.fontFamily ?? GoogleFonts.notoSansJp().fontFamily;
+  static String? get fontFamily => _configProvider?.fontFamily ?? 'Noto Sans JP';
   static bool get disableDbCache => _configProvider?.disableDbCache ?? false;
   static bool get useMaterialYou => _configProvider?.useMaterialYou ?? false;
   static Color get themeSeedColor => _configProvider?.themeSeedColor ?? Colors.blue;
