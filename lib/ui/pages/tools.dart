@@ -18,7 +18,7 @@ class ToolsView extends StatelessWidget {
               delegate: SliverChildListDelegate.fixed([
                 _ToolItem(title: '検索', description: '駅の検索を行うことが出来ます (未実装)', icon: Icons.search, path: '/search'),
                 SizedBox(height: 12),
-                _ToolItem(title: 'アクセス履歴', description: 'アクセスした駅の履歴を確認することが出来ます (未実装)', icon: Icons.history, path: '/history'),
+                _ToolItem(title: 'アクセス履歴', description: 'アクセスした駅の履歴を確認することが出来ます', icon: Icons.history, path: '/history'),
                 SizedBox(height: 12),
                 _ToolItem(title: 'ルート探索', description: 'GPXファイルを読み込み、通過する駅の一覧を表示することが出来ます', icon: Icons.directions, path: '/route-search'),
               ]),
