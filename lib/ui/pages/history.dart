@@ -42,7 +42,7 @@ class HistoryViewState extends State<HistoryView> {
             onPressed: () async {
               await _loadHistory();
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('最新のアクセス履歴を読み込みました')));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('最新のアクセス履歴を読み込みました'), duration: Duration(seconds: 1)));
               }
             },
             icon: const Icon(Icons.sync),
@@ -75,6 +75,7 @@ class HistoryViewState extends State<HistoryView> {
                 ListView.builder(
                     padding: EdgeInsets.zero,
                     shrinkWrap: true,
+                    reverse: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: passingLog.length,
                     itemBuilder: (context, index) {
@@ -153,8 +154,8 @@ class _StationHistoryState extends State<_StationHistory> {
                     spacing: 8,
                     children: [
                       Text('距離: ${beautifyDistance(widget.data.distance)}'),
-                      Text('精度: ${widget.data.accuracy}m'),
-                      Text('速度: ${widget.data.speed}km/h'),
+                      Text('精度: ${widget.data.accuracy.toStringAsFixed(1)}m'),
+                      Text('速度: ${widget.data.speed.toStringAsFixed(1)}km/h'),
                     ],
                   ),
                   const SizedBox(height: 2),
