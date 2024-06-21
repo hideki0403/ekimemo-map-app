@@ -23,6 +23,7 @@ import 'ui/pages/assistant_flow.dart';
 import 'ui/pages/assistant_choose_rect.dart';
 import 'ui/pages/log.dart';
 import 'ui/pages/tools.dart';
+import 'ui/pages/search.dart';
 import 'ui/pages/history.dart';
 import 'ui/pages/route_search.dart';
 import 'ui/pages/license.dart';
@@ -103,6 +104,10 @@ class Root extends StatelessWidget {
       GoRoute(
         path: '/tools',
         builder: (context, state) => const ToolsView(),
+      ),
+      GoRoute(
+        path: '/search',
+        builder: (context, state) => const SearchView(),
       ),
       GoRoute(
         path: '/history',

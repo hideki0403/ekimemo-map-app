@@ -16,7 +16,7 @@ class ToolsView extends StatelessWidget {
             padding: EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 64),
             sliver: SliverList(
               delegate: SliverChildListDelegate.fixed([
-                _ToolItem(title: '検索', description: '駅の検索を行うことが出来ます (未実装)', icon: Icons.search, path: '/search'),
+                _ToolItem(title: '検索', description: '駅の検索を行うことが出来ます', icon: Icons.search, path: '/search'),
                 SizedBox(height: 12),
                 _ToolItem(title: 'アクセス履歴', description: 'アクセスした駅の履歴を確認することが出来ます', icon: Icons.history, path: '/history'),
                 SizedBox(height: 12),
