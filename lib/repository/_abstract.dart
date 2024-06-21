@@ -125,4 +125,16 @@ abstract class AbstractRepository<T extends AbstractModel> {
     final List<Map<String, dynamic>> maps = await _database!.query(_tableName, columns: [_primaryKey]);
     return maps.length;
   }
+
+  Future<List<T>> search(String column, String query) async {
+    if (_database == null) await _initialize();
+    final List<Map<String, dynamic>> maps = await _database!.query(
+      _tableName,
+      where: '$column LIKE ?',
+      whereArgs: ['%$query%'],
+    );
+    return List.generate(maps.length, (i) {
+      return _model.fromMap(maps[i]);
+    });
+  }
 }
