@@ -58,6 +58,10 @@ class StationCache {
   static Future<int> convert(String id) async {
     return !CacheManager.disableCache ? _convert[id]! : (await _repository.get(id, column: 'id'))!.code;
   }
+
+  static Future<List<Station>> search(String query) async {
+    return !CacheManager.disableCache ? _cache.values.where((station) => station.name.contains(query)).toList() : await _repository.search('name', query);
+  }
 }
 
 class LineCache {
@@ -74,6 +78,10 @@ class LineCache {
 
   static Future<Line?> get(int id) async {
     return !CacheManager.disableCache ? _cache[id] : await _repository.get(id);
+  }
+
+  static Future<List<Line>> search(String query) async {
+    return !CacheManager.disableCache ? _cache.values.where((line) => line.name.contains(query)).toList() : await _repository.search('name', query);
   }
 }
 
