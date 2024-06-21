@@ -7,7 +7,8 @@ import 'package:go_router/go_router.dart';
 
 class LineSimple extends StatelessWidget {
   final Line line;
-  const LineSimple({required this.line, super.key});
+  final bool disableStats;
+  const LineSimple({required this.line, this.disableStats = false, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +37,7 @@ class LineSimple extends StatelessWidget {
               Expanded(
                 child: Text(line.name, textScaler: const TextScaler.linear(1.2)),
               ),
-              _AccessProgress(stationList: line.stationList),
+              if (!disableStats) _AccessProgress(stationList: line.stationList),
             ],
           ),
         ),
