@@ -60,7 +60,7 @@ class StationCache {
   }
 
   static Future<List<Station>> search(String query) async {
-    return !CacheManager.disableCache ? _cache.values.where((station) => station.name.contains(query)).toList() : await _repository.search('name', query);
+    return !CacheManager.disableCache ? _cache.values.where((station) => station.originalName.contains(query)).toList() : await _repository.search('original_name', query);
   }
 }
 
