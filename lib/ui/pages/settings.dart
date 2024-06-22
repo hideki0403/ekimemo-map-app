@@ -412,7 +412,7 @@ class _SettingsViewState extends State<SettingsView> {
                 ),
               ),
               ListTile(
-                title: const Text('ライセンス'),
+                title: const Text('オープンソースライセンス'),
                 onTap: () {
                   context.push('/license');
                 },

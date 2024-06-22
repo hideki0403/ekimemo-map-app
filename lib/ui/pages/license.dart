@@ -60,6 +60,7 @@ class _LicenseViewState extends State<LicenseView> {
     return LicensePage(
       applicationName: '駅メモマップ',
       applicationVersion: _version,
+      applicationIcon: Image.asset('assets/icon/app.png', width: 128, height: 128),
     );
   }
 }
