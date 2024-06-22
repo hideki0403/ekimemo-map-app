@@ -29,31 +29,35 @@ class _StationDetailViewState extends State<StationDetailView> {
   @override
   void initState() {
     super.initState();
+    _loadStation();
+  }
+
+  Future<void> _loadStation() async {
     if (widget.stationId == null) return;
+
     final stationId = int.parse(widget.stationId!);
-    StationCache.get(stationId).then((x) {
-      if (x == null || !context.mounted) return;
-      setState(() {
-        station = x;
-      });
+    final x = await StationCache.get(stationId);
+    if (x == null || !context.mounted) return;
+    setState(() {
+      station = x;
+    });
 
-      List<Line> tmp = [];
-        station?.lines.forEach((lineCode) async {
-        await LineCache.get(lineCode).then((x) {
-          if (x == null) return;
-          tmp.add(x);
-        }).then((_) => {
-          setState(() {
-            lines = tmp;
-          })
-        });
-      });
+    List<Line> tmp = [];
+    for (var lineCode in x.lines) {
+      final y = await LineCache.get(lineCode);
+      if (y == null) continue;
+      tmp.add(y);
+    }
 
-      AccessLogRepository().get(x.id).then((x) {
-        setState(() {
-          accessLog = x;
-        });
-      });
+    if (!context.mounted) return;
+    setState(() {
+      lines = tmp;
+    });
+
+    final z = await AccessLogRepository().get(x.id);
+    if (!context.mounted) return;
+    setState(() {
+      accessLog = z;
     });
   }
 

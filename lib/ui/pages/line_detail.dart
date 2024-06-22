@@ -26,29 +26,32 @@ class _LineDetailViewState extends State<LineDetailView> {
   @override
   void initState() {
     super.initState();
+    _loadLine();
+  }
+
+  Future<void> _loadLine() async {
     if (widget.lineId == null) return;
 
-    LineCache.get(int.parse(widget.lineId!)).then((x) {
-      if (x == null || !context.mounted) return;
-      setState(() {
-        line = x;
-      });
+    final x = await LineCache.get(int.parse(widget.lineId!));
+    if (x == null || !context.mounted) return;
+    setState(() {
+      line = x;
+    });
 
-      final List<Station> tmpStation = [];
-      final List<int> tmpAccessed = [];
+    final List<Station> tmpStation = [];
+    final List<int> tmpAccessed = [];
 
-      Future.wait(line!.stationList.map((x) async {
-        final station = await StationCache.get(x);
-        final accessLog = await _accessLogRepository.get(station?.id);
-        if (accessLog != null) tmpAccessed.add(x);
-        if (station != null) tmpStation.add(station);
-      })).then((_) {
-        if (!context.mounted) return;
-        setState(() {
-          stations = tmpStation;
-          accessedStation = tmpAccessed;
-        });
-      });
+    await Future.wait(line!.stationList.map((x) async {
+      final station = await StationCache.get(x);
+      final accessLog = await _accessLogRepository.get(station?.id);
+      if (accessLog != null) tmpAccessed.add(x);
+      if (station != null) tmpStation.add(station);
+    }));
+
+    if (!context.mounted) return;
+    setState(() {
+      stations = tmpStation;
+      accessedStation = tmpAccessed;
     });
   }
 
