@@ -82,6 +82,7 @@ class MapViewState extends State<MapView> {
       await controller!.removeLayer(layerId);
     }
 
+    if (!context.mounted) return;
     setState(() {
       _adapter = adapter;
     });
@@ -142,6 +143,7 @@ class MapViewState extends State<MapView> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
+          if (!context.mounted) return;
           setState(() {
             _trackingMode = _trackingMode == MyLocationTrackingMode.none ? MyLocationTrackingMode.tracking : MyLocationTrackingMode.none;
           });

@@ -50,6 +50,8 @@ class _SettingsViewState extends State<SettingsView> {
     final packageInfo = await PackageInfo.fromPlatform();
     final commitHash = await NativeMethods.getCommitHash();
     final hasPermission = await NativeMethods.hasPermission();
+
+    if (!context.mounted) return;
     setState(() {
       _version = packageInfo.version;
       _buildNumber = packageInfo.buildNumber;

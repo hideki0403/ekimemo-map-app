@@ -55,7 +55,7 @@ class RouteSearchViewState extends State<RouteSearchView> {
                       type: FileType.any,
                       withData: true,
                     );
-                    if (result != null) {
+                    if (result != null && context.mounted) {
                       final file = result.files.single;
                       if (file.extension != 'gpx') return;
                       if (file.bytes == null) return;
@@ -90,6 +90,7 @@ class RouteSearchViewState extends State<RouteSearchView> {
                     final result = await calculateRoute();
                     stopwatch.stop();
 
+                    if (!context.mounted) return;
                     setState(() {
                       isCalculating = false;
                       calcTime = stopwatch.elapsedMilliseconds;

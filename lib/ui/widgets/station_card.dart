@@ -114,6 +114,7 @@ class _CooldownTimerState extends State<_CooldownTimer> {
     if (_coolDown == 0) return;
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!context.mounted) return timer.cancel();
       setState(() {
         _coolDown--;
       });

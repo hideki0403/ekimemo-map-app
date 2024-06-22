@@ -56,7 +56,7 @@ class _LogViewState extends State<LogView> {
                 data: Map.fromEntries(LogType.values.map((e) => MapEntry(e.name, _filterTypes.contains(e)))),
               );
 
-              if (type != null) {
+              if (type != null && context.mounted) {
                 setState(() {
                   _filterTypes.clear();
                   _filterTypes.addAll(LogType.values.where((e) => type[e.name] ?? false));
@@ -70,7 +70,7 @@ class _LogViewState extends State<LogView> {
                 type: EditorDialogType.text,
               );
 
-              if (tag != null) {
+              if (tag != null && context.mounted) {
                 setState(() {
                   _filterTagName = tag;
                 });

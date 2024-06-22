@@ -79,6 +79,8 @@ class _AccessProgressState extends State<_AccessProgress> {
       if (x == null) return;
       stations.add(await StationCache.convert(x.id));
     }));
+
+    if (!context.mounted) return;
     setState(() {
       accessedStation = stations;
       isComplete = stations.length == widget.stationList.length;

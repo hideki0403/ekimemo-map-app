@@ -29,7 +29,7 @@ class _LineDetailViewState extends State<LineDetailView> {
     if (widget.lineId == null) return;
 
     LineCache.get(int.parse(widget.lineId!)).then((x) {
-      if (x == null) return;
+      if (x == null || !context.mounted) return;
       setState(() {
         line = x;
       });
@@ -43,6 +43,7 @@ class _LineDetailViewState extends State<LineDetailView> {
         if (accessLog != null) tmpAccessed.add(x);
         if (station != null) tmpStation.add(station);
       })).then((_) {
+        if (!context.mounted) return;
         setState(() {
           stations = tmpStation;
           accessedStation = tmpAccessed;

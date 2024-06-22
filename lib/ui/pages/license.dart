@@ -48,6 +48,7 @@ class _LicenseViewState extends State<LicenseView> {
     });
 
     PackageInfo.fromPlatform().then((packageInfo) {
+      if (!context.mounted) return;
       setState(() {
         _version = packageInfo.version;
       });

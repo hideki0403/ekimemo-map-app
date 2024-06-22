@@ -28,7 +28,7 @@ class _AssistantFlowViewState extends State<AssistantFlowView> {
 
   Future<void> addTapItem() async {
     final result = await context.push('/assistant-choose-rect');
-    if (result != null && result is Rect) {
+    if (result != null && result is Rect && context.mounted) {
       setState(() {
         _data.add(TapItem(result.top + result.bottom / 2, result.left + result.right / 2));
         AssistantFlow.set(_data);
@@ -38,7 +38,7 @@ class _AssistantFlowViewState extends State<AssistantFlowView> {
 
   Future<void> addTapRectItem() async {
     final result = await context.push('/assistant-choose-rect');
-    if (result != null && result is Rect) {
+    if (result != null && result is Rect && context.mounted) {
       setState(() {
         _data.add(TapRectItem(result));
         AssistantFlow.set(_data);
@@ -53,7 +53,7 @@ class _AssistantFlowViewState extends State<AssistantFlowView> {
       type: EditorDialogType.integer,
     );
 
-    if (result != null) {
+    if (result != null && context.mounted) {
       setState(() {
         _data.add(WaitItem(int.parse(result)));
         AssistantFlow.set(_data);
@@ -68,7 +68,7 @@ class _AssistantFlowViewState extends State<AssistantFlowView> {
       type: EditorDialogType.integer,
     );
 
-    if (result != null) {
+    if (result != null && context.mounted) {
       setState(() {
         _data.add(WaitRandomItem(int.parse(result)));
         AssistantFlow.set(_data);
@@ -135,16 +135,13 @@ class _AssistantFlowViewState extends State<AssistantFlowView> {
                   try {
                     final data = utf8.decode(base64Decode(result));
                     final items = AssistantFlowUtils.parse(data);
+
+                    if (!context.mounted) return;
                     setState(() {
                       _data = items;
                       AssistantFlow.set(_data);
                     });
-
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Imported'))
-                      );
-                    }
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Imported')));
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -167,6 +164,7 @@ class _AssistantFlowViewState extends State<AssistantFlowView> {
                   description: _data[index].content,
                   id: index,
                   onDeleted: (int id) {
+                    if (!context.mounted) return;
                     setState(() {
                       _data.removeAt(id);
                       AssistantFlow.set(_data);
@@ -176,6 +174,7 @@ class _AssistantFlowViewState extends State<AssistantFlowView> {
               ),
               itemCount: _data.length,
               onReorder: (oldIndex, newIndex) {
+                if (!context.mounted) return;
                 setState(() {
                   if (oldIndex < newIndex) {
                     newIndex -= 1;

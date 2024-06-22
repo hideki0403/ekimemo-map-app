@@ -37,6 +37,7 @@ class _SearchViewState extends State<SearchView> {
     if (stations.isNotEmpty) texts.add('${stations.length}駅');
     if (lines.isNotEmpty) texts.add('${lines.length}路線');
 
+    if (!context.mounted) return;
     setState(() {
       hitStations = stations;
       hitLines = lines;

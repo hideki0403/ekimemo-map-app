@@ -41,6 +41,8 @@ class _AssistantChooseRectViewState extends State<AssistantChooseRectView> {
           final image = await ImagePicker().pickImage(source: ImageSource.gallery);
           if (image == null) return;
           final bytes = await image.readAsBytes();
+
+          if (!context.mounted) return;
           setState(() {
             _image = bytes;
           });

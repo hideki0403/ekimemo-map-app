@@ -32,7 +32,7 @@ class _StationDetailViewState extends State<StationDetailView> {
     if (widget.stationId == null) return;
     final stationId = int.parse(widget.stationId!);
     StationCache.get(stationId).then((x) {
-      if (x == null) return;
+      if (x == null || !context.mounted) return;
       setState(() {
         station = x;
       });

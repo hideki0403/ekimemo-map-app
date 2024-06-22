@@ -26,6 +26,7 @@ class HistoryViewState extends State<HistoryView> {
 
   Future<void> _loadHistory() async {
     final logs = await PassingLogRepository().getAll();
+    if (!context.mounted) return;
     setState(() {
       passingLog.clear();
       passingLog.addAll(logs);
@@ -121,7 +122,7 @@ class _StationHistoryState extends State<_StationHistory> {
   Future<void> _loadStationData() async {
     final stationCode = await StationCache.convert(widget.data.id);
     final data = await StationCache.get(stationCode);
-
+    if (!context.mounted) return;
     setState(() {
       stationData = data;
     });
