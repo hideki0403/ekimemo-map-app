@@ -15,15 +15,17 @@ class AssistantService : AccessibilityService() {
     }
 
     private val TAG = "AssistantService"
+    private val accessibilityEventTypes = intArrayOf(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED, AccessibilityEvent.TYPE_WINDOWS_CHANGED)
     private var foregroundPackageName: String? = null
     private var targetDebugPackageName: Regex? = null
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || event.eventType == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
-            val packageName = event.packageName.toString()
-            if (packageName.startsWith("com.android")) return
-            foregroundPackageName = packageName
-        }
+        if (accessibilityEventTypes.contains(event.eventType).not()) return
+        if (event.packageName == null) return
+
+        val packageName = event.packageName.toString()
+        if (packageName.startsWith("com.android")) return
+        foregroundPackageName = packageName
     }
 
     override fun onInterrupt() {
