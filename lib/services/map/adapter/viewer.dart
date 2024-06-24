@@ -29,7 +29,7 @@ class ViewerMapAdapter extends MapAdapter {
   }
 
   Future<void> _renderSingleStation() async {
-    final station = await StationCache.get(int.parse(parent.widget.stationId!));
+    final station = await StationCache.get(parent.widget.stationId!);
     if (station == null) return;
 
     controller.setGeoJsonSource('voronoi', buildVoronoi([station]));

@@ -120,8 +120,7 @@ class _StationHistoryState extends State<_StationHistory> {
   }
 
   Future<void> _loadStationData() async {
-    final stationCode = await StationCache.convert(widget.data.id);
-    final data = await StationCache.get(stationCode);
+    final data = await StationCache.get(widget.data.id);
     if (!context.mounted) return;
     setState(() {
       stationData = data;
@@ -136,7 +135,7 @@ class _StationHistoryState extends State<_StationHistory> {
           borderRadius: BorderRadius.circular(16),
         ),
         onTap: () {
-          context.push(Uri(path: '/station', queryParameters: {'id': stationData?.code.toString()}).toString());
+          context.push(Uri(path: '/station', queryParameters: {'id': stationData?.id}).toString());
         },
         child: Padding(
           padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12, right: 20),

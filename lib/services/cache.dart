@@ -34,29 +34,22 @@ class CacheManager {
 
 class StationCache {
   static final _repository = StationRepository();
-  static final _cache = SplayTreeMap<int, Station>();
-  static final _convert = <String, int>{};
+  static final _cache = SplayTreeMap<String, Station>();
 
   static Future<void> initialize() async {
     final stations = await _repository.getAll();
     _cache.clear();
-    _convert.clear();
     for (final station in stations) {
-      _cache[station.code] = station;
-      _convert[station.id] = station.code;
+      _cache[station.id] = station;
     }
   }
 
-  static Future<Station?> get(int id) async {
+  static Future<Station?> get(String id) async {
     return !CacheManager.disableCache ? _cache[id] : await _repository.get(id);
   }
 
   static Future<List<Station>>? getAll () async {
     return !CacheManager.disableCache ? _cache.values.toList() : await _repository.getAll();
-  }
-
-  static Future<int> convert(String id) async {
-    return !CacheManager.disableCache ? _convert[id]! : (await _repository.get(id, column: 'id'))!.code;
   }
 
   static Future<List<Station>> search(String query) async {
@@ -87,18 +80,18 @@ class LineCache {
 
 class TreeNodeCache {
   static final _repository = TreeNodeRepository();
-  static final _cache = SplayTreeMap<int, TreeNode>();
+  static final _cache = SplayTreeMap<String, TreeNode>();
 
   static Future<void> initialize() async {
     final nodes = await _repository.getAll();
     _cache.clear();
     for (final node in nodes) {
-      _cache[node.code] = node;
+      _cache[node.id] = node;
     }
   }
 
-  static Future<TreeNode?> get(int code) async {
-    return !CacheManager.disableCache ? _cache[code] : await _repository.get(code);
+  static Future<TreeNode?> get(String id) async {
+    return !CacheManager.disableCache ? _cache[id] : await _repository.get(id);
   }
 
   static Future<int> count() async {

@@ -13,8 +13,8 @@ import 'diagram/rect.dart' as rect;
 final logger = log.Logger('Radar');
 
 class StationPoint extends Point {
-  StationPoint(super.x, super.y, this.code);
-  int code;
+  StationPoint(super.x, super.y, this.id);
+  String id;
 }
 
 class LatLngPoint {
@@ -61,13 +61,13 @@ class SearchRadarRange {
 
   bool get isRunning => _worker != null;
 
-  Future<List<StationPoint>> _provider(int code) async {
-    final station = await StationCache.get(code);
+  Future<List<StationPoint>> _provider(String id) async {
+    final station = await StationCache.get(id);
     if (station == null) {
-      throw Exception('Station not found: $code');
+      throw Exception('Station not found: $id');
     }
     return await Future.wait(station.delaunay.map((e) => StationCache.get(e))).then((value) {
-      return value.where((e) => e != null).map((e) => StationPoint(e!.lng, e.lat, e.code)).toList();
+      return value.where((e) => e != null).map((e) => StationPoint(e!.lng, e.lat, e.id)).toList();
     });
   }
 
@@ -89,9 +89,9 @@ class SearchRadarRange {
           break;
         }
         case 'point': {
-          final code = message['code'] as int;
-          final station = await _provider(code);
-          workerSendPort?.send({'type': 'point', 'code': code, 'point': station});
+          final id = message['id'] as String;
+          final station = await _provider(id);
+          workerSendPort?.send({'type': 'point', 'id': id, 'point': station});
         }
         case 'progress': {
           _polygon.add(message['polygon']);
@@ -117,7 +117,7 @@ class SearchRadarRange {
     });
 
     final container = rect.getContainer(rect.init(127, 46, 146, 26));
-    final center = StationPoint(station.lng, station.lat, station.code);
+    final center = StationPoint(station.lng, station.lat, station.id);
 
     _worker = await Isolate.spawn(_voronoiWorker, [receivePort.sendPort, center, container, radarK]);
     callback.onStarted?.call();
@@ -136,7 +136,7 @@ void _voronoiWorker(List<dynamic> args) {
   final container = args[2] as Triangle;
   final level = args[3] as int;
 
-  final providerCompleter = <int, Completer>{};
+  final providerCompleter = <String, Completer>{};
 
   void progress(int index, List<Point> polygon) {
     sendPort.send({
@@ -151,8 +151,8 @@ void _voronoiWorker(List<dynamic> args) {
 
   Future<List<StationPoint>> provider(StationPoint x) async {
     final completer = Completer<List<StationPoint>>();
-    providerCompleter[x.code] = completer;
-    sendPort.send({'type': 'point', 'code': x.code});
+    providerCompleter[x.id] = completer;
+    sendPort.send({'type': 'point', 'id': x.id});
     return completer.future;
   }
 
@@ -168,8 +168,8 @@ void _voronoiWorker(List<dynamic> args) {
         break;
       }
       case 'point': {
-        final code = message['code'] as int;
-        final completer = providerCompleter[code];
+        final id = message['id'] as String;
+        final completer = providerCompleter[id];
         if (completer != null) completer.complete(message['point']);
       }
     }

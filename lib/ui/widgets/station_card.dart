@@ -23,7 +23,7 @@ class StationCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         onTap: () {
-          context.push(Uri(path: '/station', queryParameters: {'id': stationData.station.code.toString()}).toString());
+          context.push(Uri(path: '/station', queryParameters: {'id': stationData.station.id}).toString());
         },
         onLongPress: viewOnly ? null : () async {
           final rebuild = await showDialog(context: context, builder: (context) => _StationMenu(station: stationData.station, index: index)) as bool?;
@@ -167,7 +167,7 @@ class _StationMenu extends StatelessWidget {
         SimpleDialogOption(
           onPressed: () async {
             if (context.mounted) Navigator.of(context).pop(true);
-            await context.push(Uri(path: '/map', queryParameters: {'radar-id': station.code.toString()}).toString());
+            await context.push(Uri(path: '/map', queryParameters: {'radar-id': station.id}).toString());
           },
           child: const Text('この駅のレーダー範囲を見る'),
         ),

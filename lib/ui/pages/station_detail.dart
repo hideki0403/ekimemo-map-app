@@ -34,9 +34,7 @@ class _StationDetailViewState extends State<StationDetailView> {
 
   Future<void> _loadStation() async {
     if (widget.stationId == null) return;
-
-    final stationId = int.parse(widget.stationId!);
-    final x = await StationCache.get(stationId);
+    final x = await StationCache.get(widget.stationId!);
     if (x == null || !context.mounted) return;
     setState(() {
       station = x;

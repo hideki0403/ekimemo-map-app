@@ -44,24 +44,24 @@ class StationData {
 class StationNode {
   late final int depth;
   late final Bounds region;
-  late final int code;
-  late final int? leftCode;
-  late final int? rightCode;
+  late final String id;
+  late final String? leftId;
+  late final String? rightId;
 
   Station? station;
   StationNode? left;
   StationNode? right;
 
   StationNode({required this.depth, required TreeNode node, required this.region}) {
-    code = node.code;
-    leftCode = node.left;
-    rightCode = node.right;
+    id = node.id;
+    leftId = node.left;
+    rightId = node.right;
   }
 
   Future<StationNode> build() async {
-    station = await StationCache.get(code);
-    if (station == null) throw Exception('Station not found: $code');
-    if (!region.isInsideRect(station!.lat, station!.lng)) throw Exception('Station $code is out of region');
+    station = await StationCache.get(id);
+    if (station == null) throw Exception('Station not found: $id');
+    if (!region.isInsideRect(station!.lat, station!.lng)) throw Exception('Station $id is out of region');
     return this;
   }
 
@@ -76,9 +76,9 @@ class StationNode {
   Future<StationNode?> getLeft() async {
     final isEven = depth % 2 == 0;
 
-    if (leftCode != null && left == null) {
-      final leftNode = await TreeNodeCache.get(leftCode!);
-      if (leftNode == null) throw Exception('Node $leftCode not found');
+    if (leftId != null && left == null) {
+      final leftNode = await TreeNodeCache.get(leftId!);
+      if (leftNode == null) throw Exception('Node $leftId not found');
 
       final leftNodeRegion = Bounds(
         north: isEven ? region.north : station!.lat,
@@ -96,9 +96,9 @@ class StationNode {
   Future<StationNode?> getRight() async {
     final isEven = depth % 2 == 0;
 
-    if (rightCode != null && right == null) {
-      final rightNode = await TreeNodeCache.get(rightCode!);
-      if (rightNode == null) throw Exception('Node $rightCode not found');
+    if (rightId != null && right == null) {
+      final rightNode = await TreeNodeCache.get(rightId!);
+      if (rightNode == null) throw Exception('Node $rightId not found');
 
       final rightNodeRegion = Bounds(
         north: region.north,
@@ -132,7 +132,7 @@ class StationSearchService {
   static Future<void> initialize() async {
     if (await TreeNodeCache.count() == 0) return;
 
-    final rootNodeId = int.parse(SystemState.treeNodeRoot);
+    final rootNodeId = SystemState.treeNodeRoot;
     final rootNode = await TreeNodeCache.get(rootNodeId);
     if (rootNode == null) {
       logger.error('Root node not found: $rootNodeId, service: ${SystemState.serviceAvailable}');
@@ -197,11 +197,11 @@ class StationSearchService {
 
     final tasks = <Future<void>>[];
 
-    if (node.leftCode != null && ((node.depth % 2 == 0 && bounds.west < station.lng) || (node.depth % 2 == 1 && bounds.south < station.lat))) {
+    if (node.leftId != null && ((node.depth % 2 == 0 && bounds.west < station.lng) || (node.depth % 2 == 1 && bounds.south < station.lat))) {
       tasks.add(_searchRect((await node.getLeft())!, bounds, dist, maxResults));
     }
 
-    if (node.rightCode != null && ((node.depth % 2 == 0 && bounds.east > station.lng) || (node.depth % 2 == 1 && bounds.north > station.lat))) {
+    if (node.rightId != null && ((node.depth % 2 == 0 && bounds.east > station.lng) || (node.depth % 2 == 1 && bounds.north > station.lat))) {
       tasks.add(_searchRect((await node.getRight())!, bounds, dist, maxResults));
     }
 

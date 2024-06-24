@@ -47,7 +47,7 @@ class LineSimple extends StatelessWidget {
 }
 
 class _AccessProgress extends StatefulWidget {
-  final List<int> stationList;
+  final List<String> stationList;
   const _AccessProgress({required this.stationList});
 
   @override
@@ -56,7 +56,7 @@ class _AccessProgress extends StatefulWidget {
 
 class _AccessProgressState extends State<_AccessProgress> {
   final AccessLogRepository _accessLogRepository = AccessLogRepository();
-  List<int> accessedStation = [];
+  List<String> accessedStation = [];
   bool isComplete = false;
 
   @override
@@ -72,12 +72,12 @@ class _AccessProgressState extends State<_AccessProgress> {
   }
 
   Future<void> rebuild() async {
-    final stations = <int>[];
+    final stations = <String>[];
     await Future.wait(widget.stationList.map((stationId) async {
       final station = await StationCache.get(stationId);
       final x = await _accessLogRepository.get(station?.id);
       if (x == null) return;
-      stations.add(await StationCache.convert(x.id));
+      stations.add(x.id);
     }));
 
     if (!context.mounted) return;

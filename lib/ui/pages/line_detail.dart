@@ -21,7 +21,7 @@ class _LineDetailViewState extends State<LineDetailView> {
   final AccessLogRepository _accessLogRepository = AccessLogRepository();
   Line? line;
   List<Station> stations = [];
-  List<int> accessedStation = [];
+  List<String> accessedStation = [];
 
   @override
   void initState() {
@@ -39,7 +39,7 @@ class _LineDetailViewState extends State<LineDetailView> {
     });
 
     final List<Station> tmpStation = [];
-    final List<int> tmpAccessed = [];
+    final List<String> tmpAccessed = [];
 
     await Future.wait(line!.stationList.map((x) async {
       final station = await StationCache.get(x);
@@ -125,7 +125,7 @@ class _LineDetailViewState extends State<LineDetailView> {
                       final station = stations[index];
                       return StationSimple(
                         station: station,
-                        isAccessed: accessedStation.contains(station.code),
+                        isAccessed: accessedStation.contains(station.id),
                       );
                     }
                 )
