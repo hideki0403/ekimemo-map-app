@@ -11,7 +11,7 @@ enum DatabaseType {
 }
 
 class DatabaseHandler {
-  static const int _version = 5;
+  static const int _version = 6;
   static final Map<String, List<String>> _migration = {
     '1': [
       // create table
@@ -43,6 +43,12 @@ class DatabaseHandler {
       // create 'passing_log' table
       'CREATE TABLE IF NOT EXISTS passing_log (uuid TEXT PRIMARY KEY, id TEXT, timestamp TEXT, latitude REAL, longitude REAL, speed REAL, accuracy REAL, distance INTEGER, isReNotify INTEGER);',
     ],
+    '6': [
+      'CREATE TABLE IF NOT EXISTS tree_node_new (id TEXT PRIMARY KEY, left TEXT, right TEXT);',
+      'INSERT INTO tree_node_new SELECT id, left, right FROM tree_node;',
+      'DROP TABLE tree_node;',
+      'ALTER TABLE tree_node_new RENAME TO tree_node;',
+    ]
   };
 
   static Future<void> _migrate(Database db, int previousVersion, int oldVersion) async {
