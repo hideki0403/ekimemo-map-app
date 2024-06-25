@@ -47,11 +47,7 @@ class ViewerMapAdapter extends MapAdapter {
     final line = await _lineRepository.getOne(int.parse(parent.widget.lineId!));
     if (line == null || line.polylineList == null) return;
 
-    final stations = await Future.wait(line.stationList.map((x) async {
-      final station = await _stationRepository.getOne(x);
-      if (station == null) throw Exception('Station not found');
-      return station;
-    }));
+    final stations = await _stationRepository.get(line.stationList);
 
     controller.setGeoJsonSource('voronoi', line.polylineList as Map<String, dynamic>);
     controller.setGeoJsonSource('point', buildPoint(stations));

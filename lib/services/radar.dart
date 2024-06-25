@@ -67,8 +67,9 @@ class SearchRadarRange {
     if (station == null) {
       throw Exception('Station not found: $id');
     }
-    return await Future.wait(station.delaunay.map((e) => _repository.getOne(e))).then((value) {
-      return value.where((e) => e != null).map((e) => StationPoint(e!.lng, e.lat, e.id)).toList();
+
+    return _repository.get(station.delaunay).then((value) {
+      return value.map((e) => StationPoint(e.lng, e.lat, e.id)).toList();
     });
   }
 

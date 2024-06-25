@@ -22,6 +22,27 @@ abstract class AbstractRepository<T extends AbstractModel> {
     _database = await DatabaseHandler.db;
   }
 
+  /// データベースからレコードを取得します。
+  Future<List<T>> get(List<dynamic> keys, {String? column}) async {
+    if (_database == null) await _initialize();
+
+    final stringKeys = keys.map((key) => key.toString()).toList();
+    final targetColumn = column ?? _primaryKey;
+    try {
+      final List<Map<String, dynamic>> maps = await _database!.query(
+        _tableName,
+        where: '$targetColumn IN (${List.generate(stringKeys.length, (_) => '?').join(', ')})',
+        whereArgs: stringKeys,
+      );
+      return List.generate(maps.length, (i) {
+        return _model.fromMap(maps[i]);
+      });
+    } catch (e) {
+      logger.error('Failed to get records from $_tableName by $targetColumn: $stringKeys');
+      return [];
+    }
+  }
+
   /// データベースからレコードを1件取得します。
   Future<T?> getOne(dynamic key, {String? column}) async {
     if (_database == null) await _initialize();
@@ -37,7 +58,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
       if (maps.isEmpty) return null;
       return _model.fromMap(maps[0]);
     } catch (e) {
-      logger.error('Failed to get $targetColumn: $stringKey');
+      logger.error('Failed to get record from $_tableName by $targetColumn: $stringKey');
       return null;
     }
   }

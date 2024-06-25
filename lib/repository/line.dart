@@ -25,6 +25,18 @@ class LineRepository extends AbstractRepository<Line> {
   }
 
   @override
+  Future<List<Line>> get(List<dynamic> keys, {String? column}) async {
+    if (_useCache) {
+      if (column == null) {
+        return keys.map((key) => _cache[key]).whereType<Line>().toList();
+      } else {
+        logger.info('column is specified, fallback to database');
+      }
+    }
+    return super.get(keys, column: column);
+  }
+
+  @override
   Future<Line?> getOne(dynamic key, {String? column}) async {
     if (_useCache) {
       if (column == null) {

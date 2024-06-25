@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'package:ekimemo_map/models/line.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:go_router/go_router.dart';
-
-final _stationRepository = StationRepository();
 
 class LineSimple extends StatelessWidget {
   final Line line;
@@ -74,17 +71,10 @@ class _AccessProgressState extends State<_AccessProgress> {
   }
 
   Future<void> rebuild() async {
-    final stations = <String>[];
-    await Future.wait(widget.stationList.map((stationId) async {
-      final station = await _stationRepository.getOne(stationId);
-      final x = await _accessLogRepository.getOne(station?.id);
-      if (x == null) return;
-      stations.add(x.id);
-    }));
-
+    final stations = await _accessLogRepository.get(widget.stationList);
     if (!context.mounted) return;
     setState(() {
-      accessedStation = stations;
+      accessedStation = stations.map((x) => x.id).toList();
       isComplete = stations.length == widget.stationList.length;
     });
   }

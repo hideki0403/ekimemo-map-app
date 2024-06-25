@@ -44,13 +44,7 @@ class _StationDetailViewState extends State<StationDetailView> {
       station = x;
     });
 
-    List<Line> tmp = [];
-    for (var lineCode in x.lines) {
-      final y = await _lineRepository.getOne(lineCode);
-      if (y == null) continue;
-      tmp.add(y);
-    }
-
+    final tmp = await _lineRepository.get(x.lines);
     if (!context.mounted) return;
     setState(() {
       lines = tmp;

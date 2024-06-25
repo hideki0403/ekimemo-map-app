@@ -25,6 +25,18 @@ class StationRepository extends AbstractRepository<Station> {
   }
 
   @override
+  Future<List<Station>> get(List<dynamic> keys, {String? column}) async {
+    if (_useCache) {
+      if (column == null) {
+        return keys.map((key) => _cache[key.toString()]).whereType<Station>().toList();
+      } else {
+        logger.info('column is specified, fallback to database');
+      }
+    }
+    return super.get(keys, column: column);
+  }
+
+  @override
   Future<Station?> getOne(dynamic key, {String? column}) async {
     if (_useCache) {
       if (column == null) {

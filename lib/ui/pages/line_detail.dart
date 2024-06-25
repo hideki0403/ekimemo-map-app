@@ -42,20 +42,13 @@ class _LineDetailViewState extends State<LineDetailView> {
       line = x;
     });
 
-    final List<Station> tmpStation = [];
-    final List<String> tmpAccessed = [];
-
-    await Future.wait(line!.stationList.map((x) async {
-      final station = await _stationRepository.getOne(x);
-      final accessLog = await _accessLogRepository.getOne(station?.id);
-      if (accessLog != null) tmpAccessed.add(x);
-      if (station != null) tmpStation.add(station);
-    }));
+    final tmpStation = await _stationRepository.get(line!.stationList);
+    final accessLog = await _accessLogRepository.get(tmpStation.map((x) => x.id).toList());
 
     if (!context.mounted) return;
     setState(() {
       stations = tmpStation;
-      accessedStation = tmpAccessed;
+      accessedStation = accessLog.map((x) => x.id).toList();
     });
   }
 
