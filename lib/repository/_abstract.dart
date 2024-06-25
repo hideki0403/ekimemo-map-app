@@ -8,14 +8,14 @@ abstract class AbstractRepository<T extends AbstractModel> {
   late final String _tableName;
   late final String _primaryKey;
   late final T _model;
-  late final Logger _logger;
+  late final Logger logger;
 
   AbstractRepository(T model, String tableName, String primaryKey) {
     _tableName = tableName;
     _primaryKey = primaryKey;
     _model = model;
 
-    _logger = Logger('DB:$_tableName');
+    logger = Logger('DB:$_tableName');
   }
 
   static _initialize() async {
@@ -36,7 +36,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
       if (maps.isEmpty) return null;
       return _model.fromMap(maps[0]);
     } catch (e) {
-      _logger.error('Failed to get $targetColumn: $stringKey');
+      logger.error('Failed to get $targetColumn: $stringKey');
       return null;
     }
   }
@@ -49,7 +49,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
         return _model.fromMap(maps[i]);
       });
     } catch (e) {
-      _logger.error('Failed to get all records from $_tableName');
+      logger.error('Failed to get all records from $_tableName');
       return [];
     }
   }
@@ -64,7 +64,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
       }
       return result;
     } catch (e) {
-      _logger.error('Failed to get all records (map) from $_tableName');
+      logger.error('Failed to get all records (map) from $_tableName');
       return {};
     }
   }
@@ -78,7 +78,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     } catch (e) {
-      _logger.error('Failed to insert data to $_tableName');
+      logger.error('Failed to insert data to $_tableName');
     }
   }
 
@@ -95,7 +95,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
       }
       await batch.commit(noResult: true);
     } catch (e) {
-      _logger.error('Failed to bulk insert data to $_tableName');
+      logger.error('Failed to bulk insert data to $_tableName');
     }
   }
 
@@ -108,7 +108,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     } catch (e) {
-      _logger.error('Failed to insert model to $_tableName');
+      logger.error('Failed to insert model to $_tableName');
     }
   }
 
@@ -125,7 +125,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
       }
       await batch.commit(noResult: true);
     } catch (e) {
-      _logger.error('Failed to bulk insert model to $_tableName');
+      logger.error('Failed to bulk insert model to $_tableName');
     }
   }
 
@@ -140,7 +140,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
         whereArgs: [mappedModel[_primaryKey]],
       );
     } catch (e) {
-      _logger.error('Failed to update model in $_tableName');
+      logger.error('Failed to update model in $_tableName');
     }
   }
 
@@ -153,7 +153,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
         whereArgs: [key],
       );
     } catch (e) {
-      _logger.error('Failed to delete record from $_tableName');
+      logger.error('Failed to delete record from $_tableName');
     }
   }
 
@@ -162,7 +162,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     try {
       await _database!.delete(_tableName);
     } catch (e) {
-      _logger.error('Failed to clear $_tableName');
+      logger.error('Failed to clear $_tableName');
     }
   }
 
@@ -172,7 +172,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
       final List<Map<String, dynamic>> maps = await _database!.query(_tableName, columns: [_primaryKey]);
       return maps.length;
     } catch (e) {
-      _logger.error('Failed to count records in $_tableName');
+      logger.error('Failed to count records in $_tableName');
       return 0;
     }
   }
@@ -189,7 +189,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
         return _model.fromMap(maps[i]);
       });
     } catch (e) {
-      _logger.error('Failed to search records in $_tableName');
+      logger.error('Failed to search records in $_tableName');
       return [];
     }
   }
