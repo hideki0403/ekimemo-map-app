@@ -2,7 +2,13 @@ import 'package:ekimemo_map/models/meta.dart';
 import '_abstract.dart';
 
 class MetaRepository extends AbstractRepository<Meta> {
-  MetaRepository() : super(Meta(), 'meta', 'key');
+  static MetaRepository? _instance;
+  MetaRepository._internal() : super(Meta(), 'meta', 'key');
+
+  factory MetaRepository() {
+    _instance ??= MetaRepository._internal();
+    return _instance!;
+  }
 
   Future<String> getValue(String key) async {
     final meta = await get(key);
