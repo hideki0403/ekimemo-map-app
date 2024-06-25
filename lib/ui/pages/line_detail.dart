@@ -123,6 +123,7 @@ class _LineDetailViewState extends State<LineDetailView> {
                       return StationSimple(
                         station: station,
                         isAccessed: accessedStation.contains(station.id),
+                        showAttr: true,
                       );
                     }
                 )
