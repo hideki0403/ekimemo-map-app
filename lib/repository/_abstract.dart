@@ -189,12 +189,12 @@ abstract class AbstractRepository<T extends AbstractModel> {
   }
 
   /// データベースのレコードを検索します。
-  Future<List<T>> search(String column, String query) async {
+  Future<List<T>> search(String query, [String? column]) async {
     if (_database == null) await _initialize();
     try {
       final List<Map<String, dynamic>> maps = await _database!.query(
         _tableName,
-        where: '$column LIKE ?',
+        where: '${column ?? _primaryKey } LIKE ?',
         whereArgs: ['%$query%'],
       );
       return List.generate(maps.length, (i) {
