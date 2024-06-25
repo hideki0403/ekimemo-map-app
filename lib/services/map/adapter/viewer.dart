@@ -1,9 +1,12 @@
 import 'package:maplibre_gl/maplibre_gl.dart';
-
-import 'package:ekimemo_map/services/cache.dart';
+import 'package:ekimemo_map/repository/station.dart';
+import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import '../map_adapter.dart';
 import '../utils.dart';
+
+final _stationRepository = StationRepository();
+final _lineRepository = LineRepository();
 
 class ViewerMapAdapter extends MapAdapter {
   ViewerMapAdapter(super.parent);
@@ -29,7 +32,7 @@ class ViewerMapAdapter extends MapAdapter {
   }
 
   Future<void> _renderSingleStation() async {
-    final station = await StationCache.get(parent.widget.stationId!);
+    final station = await _stationRepository.get(parent.widget.stationId!);
     if (station == null) return;
 
     controller.setGeoJsonSource('voronoi', buildVoronoi([station]));
@@ -41,11 +44,11 @@ class ViewerMapAdapter extends MapAdapter {
   }
 
   Future<void> _renderSingleLine() async {
-    final line = await LineCache.get(int.parse(parent.widget.lineId!));
+    final line = await _lineRepository.get(int.parse(parent.widget.lineId!));
     if (line == null || line.polylineList == null) return;
 
     final stations = await Future.wait(line.stationList.map((x) async {
-      final station = await StationCache.get(x);
+      final station = await _stationRepository.get(x);
       if (station == null) throw Exception('Station not found');
       return station;
     }));

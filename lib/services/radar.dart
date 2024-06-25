@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 
 import 'package:ekimemo_map/models/station.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
-import 'cache.dart';
+import 'package:ekimemo_map/repository/station.dart';
 import 'log.dart' as log;
 import 'diagram/types.dart';
 import 'diagram/voronoi.dart';
@@ -54,6 +54,7 @@ class HighVoronoiCallback {
 typedef StationProvider = Future<List<StationPoint>> Function(StationPoint x);
 
 class SearchRadarRange {
+  final _repository = StationRepository();
   final List<RadarPolygon> _polygon = [];
   Isolate? _worker;
 
@@ -62,11 +63,11 @@ class SearchRadarRange {
   bool get isRunning => _worker != null;
 
   Future<List<StationPoint>> _provider(String id) async {
-    final station = await StationCache.get(id);
+    final station = await _repository.get(id);
     if (station == null) {
       throw Exception('Station not found: $id');
     }
-    return await Future.wait(station.delaunay.map((e) => StationCache.get(e))).then((value) {
+    return await Future.wait(station.delaunay.map((e) => _repository.get(e))).then((value) {
       return value.where((e) => e != null).map((e) => StationPoint(e!.lng, e.lat, e.id)).toList();
     });
   }

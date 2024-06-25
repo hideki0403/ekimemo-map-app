@@ -3,11 +3,15 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
+import 'package:ekimemo_map/repository/station.dart';
+import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'package:ekimemo_map/services/utils.dart';
-import 'package:ekimemo_map/services/cache.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
 import 'package:ekimemo_map/ui/widgets/station_simple.dart';
+
+final _stationRepository = StationRepository();
+final _lineRepository = LineRepository();
 
 class LineDetailView extends StatefulWidget {
   final String? lineId;
@@ -32,7 +36,7 @@ class _LineDetailViewState extends State<LineDetailView> {
   Future<void> _loadLine() async {
     if (widget.lineId == null) return;
 
-    final x = await LineCache.get(int.parse(widget.lineId!));
+    final x = await _lineRepository.get(int.parse(widget.lineId!));
     if (x == null || !context.mounted) return;
     setState(() {
       line = x;
@@ -42,7 +46,7 @@ class _LineDetailViewState extends State<LineDetailView> {
     final List<String> tmpAccessed = [];
 
     await Future.wait(line!.stationList.map((x) async {
-      final station = await StationCache.get(x);
+      final station = await _stationRepository.get(x);
       final accessLog = await _accessLogRepository.get(station?.id);
       if (accessLog != null) tmpAccessed.add(x);
       if (station != null) tmpStation.add(station);

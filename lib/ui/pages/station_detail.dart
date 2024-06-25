@@ -6,12 +6,16 @@ import 'package:intl/intl.dart';
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
 import 'package:ekimemo_map/models/access_log.dart';
+import 'package:ekimemo_map/repository/station.dart';
+import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'package:ekimemo_map/services/const.dart';
 import 'package:ekimemo_map/services/utils.dart';
-import 'package:ekimemo_map/services/cache.dart';
 import 'package:ekimemo_map/ui/widgets/line_simple.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
+
+final _stationRepository = StationRepository();
+final _lineRepository = LineRepository();
 
 class StationDetailView extends StatefulWidget {
   final String? stationId;
@@ -34,7 +38,7 @@ class _StationDetailViewState extends State<StationDetailView> {
 
   Future<void> _loadStation() async {
     if (widget.stationId == null) return;
-    final x = await StationCache.get(widget.stationId!);
+    final x = await _stationRepository.get(widget.stationId!);
     if (x == null || !context.mounted) return;
     setState(() {
       station = x;
@@ -42,7 +46,7 @@ class _StationDetailViewState extends State<StationDetailView> {
 
     List<Line> tmp = [];
     for (var lineCode in x.lines) {
-      final y = await LineCache.get(lineCode);
+      final y = await _lineRepository.get(lineCode);
       if (y == null) continue;
       tmp.add(y);
     }

@@ -12,7 +12,10 @@ import 'services/gps.dart';
 import 'services/station.dart';
 import 'services/notification.dart';
 import 'services/log.dart';
-import 'services/cache.dart';
+
+import 'repository/station.dart';
+import 'repository/line.dart';
+import 'repository/tree_node.dart';
 
 import 'ui/pages/home.dart';
 import 'ui/pages/settings.dart';
@@ -36,7 +39,6 @@ void main() async {
 
   FlutterError.onError = (details) {
     logger.error('FlutterError: ${details.exceptionAsString()}, stack: ${details.stack}');
-
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
@@ -53,7 +55,11 @@ void main() async {
   await systemStateProvider.init();
 
   Config.init(configProvider);
-  await CacheManager.initialize();
+
+  // Initialize database cache
+  await StationRepository().buildCache();
+  await LineRepository().buildCache();
+  await TreeNodeRepository().buildCache();
 
   SystemState.init(systemStateProvider);
   NotificationManager.initialize();

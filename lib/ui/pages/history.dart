@@ -3,9 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:ekimemo_map/services/utils.dart';
-import 'package:ekimemo_map/services/cache.dart';
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/passing_log.dart';
+import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/passing_log.dart';
 
 class HistoryView extends StatefulWidget {
@@ -120,7 +120,7 @@ class _StationHistoryState extends State<_StationHistory> {
   }
 
   Future<void> _loadStationData() async {
-    final data = await StationCache.get(widget.data.id);
+    final data = await StationRepository().get(widget.data.id);
     if (!context.mounted) return;
     setState(() {
       stationData = data;

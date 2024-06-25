@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 import 'package:ekimemo_map/services/radar.dart';
-import 'package:ekimemo_map/services/cache.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/config.dart';
+import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/ui/widgets/cb_slider.dart';
 import '../map_adapter.dart';
 import '../utils.dart';
@@ -126,7 +126,7 @@ class RadarMapAdapter extends MapAdapter {
       },
     );
 
-    final station = await StationCache.get(parent.widget.radarId!);
+    final station = await StationRepository().get(parent.widget.radarId!);
     if (station == null) return;
     _radarService.run(station, _maxRange, callback);
   }

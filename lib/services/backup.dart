@@ -7,7 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/log.dart';
-import 'package:ekimemo_map/services/cache.dart';
+import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'package:ekimemo_map/models/access_log.dart';
 
@@ -97,8 +97,8 @@ class BackupService {
       final csv = utf8.decode(file.bytes!);
       final lines = csv.split('\n');
 
-      final stationCache = await StationCache.getAll();
-      if (stationCache == null || stationCache.isEmpty) {
+      final stationCache = await StationRepository().getAll();
+      if (stationCache.isEmpty) {
         showMessageDialog(message: 'インポート中にエラーが発生しました');
         return;
       }

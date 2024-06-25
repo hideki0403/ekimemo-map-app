@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
-import 'package:ekimemo_map/services/cache.dart';
+import 'package:ekimemo_map/repository/station.dart';
+import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/ui/widgets/station_simple.dart';
 import 'package:ekimemo_map/ui/widgets/line_simple.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
+
+final _stationRepository = StationRepository();
+final _lineRepository = LineRepository();
 
 class SearchView extends StatefulWidget {
   const SearchView({super.key});
@@ -31,8 +35,8 @@ class _SearchViewState extends State<SearchView> {
       return;
     }
 
-    final stations = await StationCache.search(query);
-    final lines = await LineCache.search(query);
+    final stations = await _stationRepository.search(query);
+    final lines = await _lineRepository.search(query);
     List<String> texts = [];
     if (stations.isNotEmpty) texts.add('${stations.length}駅');
     if (lines.isNotEmpty) texts.add('${lines.length}路線');
