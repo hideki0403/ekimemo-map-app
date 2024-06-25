@@ -32,7 +32,7 @@ class ViewerMapAdapter extends MapAdapter {
   }
 
   Future<void> _renderSingleStation() async {
-    final station = await _stationRepository.get(parent.widget.stationId!);
+    final station = await _stationRepository.getOne(parent.widget.stationId!);
     if (station == null) return;
 
     controller.setGeoJsonSource('voronoi', buildVoronoi([station]));
@@ -44,11 +44,11 @@ class ViewerMapAdapter extends MapAdapter {
   }
 
   Future<void> _renderSingleLine() async {
-    final line = await _lineRepository.get(int.parse(parent.widget.lineId!));
+    final line = await _lineRepository.getOne(int.parse(parent.widget.lineId!));
     if (line == null || line.polylineList == null) return;
 
     final stations = await Future.wait(line.stationList.map((x) async {
-      final station = await _stationRepository.get(x);
+      final station = await _stationRepository.getOne(x);
       if (station == null) throw Exception('Station not found');
       return station;
     }));

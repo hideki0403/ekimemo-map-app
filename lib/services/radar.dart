@@ -63,11 +63,11 @@ class SearchRadarRange {
   bool get isRunning => _worker != null;
 
   Future<List<StationPoint>> _provider(String id) async {
-    final station = await _repository.get(id);
+    final station = await _repository.getOne(id);
     if (station == null) {
       throw Exception('Station not found: $id');
     }
-    return await Future.wait(station.delaunay.map((e) => _repository.get(e))).then((value) {
+    return await Future.wait(station.delaunay.map((e) => _repository.getOne(e))).then((value) {
       return value.where((e) => e != null).map((e) => StationPoint(e!.lng, e.lat, e.id)).toList();
     });
   }

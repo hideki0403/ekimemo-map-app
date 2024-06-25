@@ -38,7 +38,7 @@ class _StationDetailViewState extends State<StationDetailView> {
 
   Future<void> _loadStation() async {
     if (widget.stationId == null) return;
-    final x = await _stationRepository.get(widget.stationId!);
+    final x = await _stationRepository.getOne(widget.stationId!);
     if (x == null || !context.mounted) return;
     setState(() {
       station = x;
@@ -46,7 +46,7 @@ class _StationDetailViewState extends State<StationDetailView> {
 
     List<Line> tmp = [];
     for (var lineCode in x.lines) {
-      final y = await _lineRepository.get(lineCode);
+      final y = await _lineRepository.getOne(lineCode);
       if (y == null) continue;
       tmp.add(y);
     }
@@ -56,7 +56,7 @@ class _StationDetailViewState extends State<StationDetailView> {
       lines = tmp;
     });
 
-    final z = await AccessLogRepository().get(x.id);
+    final z = await AccessLogRepository().getOne(x.id);
     if (!context.mounted) return;
     setState(() {
       accessLog = z;

@@ -76,8 +76,8 @@ class _AccessProgressState extends State<_AccessProgress> {
   Future<void> rebuild() async {
     final stations = <String>[];
     await Future.wait(widget.stationList.map((stationId) async {
-      final station = await _stationRepository.get(stationId);
-      final x = await _accessLogRepository.get(station?.id);
+      final station = await _stationRepository.getOne(stationId);
+      final x = await _accessLogRepository.getOne(station?.id);
       if (x == null) return;
       stations.add(x.id);
     }));

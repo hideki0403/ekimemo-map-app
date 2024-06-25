@@ -23,7 +23,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
   }
 
   /// データベースからレコードを1件取得します。
-  Future<T?> get(dynamic key, {String? column}) async {
+  Future<T?> getOne(dynamic key, {String? column}) async {
     if (_database == null) await _initialize();
 
     final stringKey = key.toString();

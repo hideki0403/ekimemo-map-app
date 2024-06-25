@@ -63,7 +63,7 @@ class AccessCacheManager {
   }
 
   static Future<void> update(String id, DateTime lastAccess, { bool updateOnly = false, bool? accessed }) async {
-    final accessLog = await _repository.get(id);
+    final accessLog = await _repository.getOne(id);
     var isAccessed = false;
 
     if (accessLog == null) {
@@ -232,7 +232,7 @@ class StationManager {
         final hasMasterLine = x.station.lines.contains(currentMasterLineId);
         final lineId = (hasMasterLine ? currentMasterLineId : currentLineIdRanking?.firstWhereOrNull((line) => x.station.lines.contains(line))) ?? x.station.lines.first;
 
-        x.lineName = (await _lineRepository.get(lineId))?.name ?? '不明';
+        x.lineName = (await _lineRepository.getOne(lineId))?.name ?? '不明';
         x.distance = beautifyDistance(measure(latitude, longitude, x.station.lat, x.station.lng));
       }));
 

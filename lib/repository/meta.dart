@@ -11,7 +11,7 @@ class MetaRepository extends AbstractRepository<Meta> {
   }
 
   Future<String> getValue(String key) async {
-    final meta = await get(key);
+    final meta = await getOne(key);
     return meta?.value ?? '';
   }
 

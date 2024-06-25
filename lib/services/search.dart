@@ -64,7 +64,7 @@ class StationNode {
   }
 
   Future<StationNode> build() async {
-    station = await _stationRepository.get(id);
+    station = await _stationRepository.getOne(id);
     if (station == null) throw Exception('Station not found: $id');
     if (!region.isInsideRect(station!.lat, station!.lng)) throw Exception('Station $id is out of region');
     return this;
@@ -82,7 +82,7 @@ class StationNode {
     final isEven = depth % 2 == 0;
 
     if (leftId != null && left == null) {
-      final leftNode = await _treeNodeRepository.get(leftId!);
+      final leftNode = await _treeNodeRepository.getOne(leftId!);
       if (leftNode == null) throw Exception('Node $leftId not found');
 
       final leftNodeRegion = Bounds(
@@ -102,7 +102,7 @@ class StationNode {
     final isEven = depth % 2 == 0;
 
     if (rightId != null && right == null) {
-      final rightNode = await _treeNodeRepository.get(rightId!);
+      final rightNode = await _treeNodeRepository.getOne(rightId!);
       if (rightNode == null) throw Exception('Node $rightId not found');
 
       final rightNodeRegion = Bounds(
@@ -138,7 +138,7 @@ class StationSearchService {
     if (await _treeNodeRepository.count() == 0) return;
 
     final rootNodeId = SystemState.treeNodeRoot;
-    final rootNode = await _treeNodeRepository.get(rootNodeId);
+    final rootNode = await _treeNodeRepository.getOne(rootNodeId);
     if (rootNode == null) {
       logger.error('Root node not found: $rootNodeId, service: ${SystemState.serviceAvailable}');
       return;
@@ -265,7 +265,7 @@ class StationSearchService {
 
     if (withLineData) {
       for (final data in dist) {
-        final lineData = await _lineRepository.get(data.station.lines.first);
+        final lineData = await _lineRepository.getOne(data.station.lines.first);
         data.lineName = lineData?.name;
       }
     }

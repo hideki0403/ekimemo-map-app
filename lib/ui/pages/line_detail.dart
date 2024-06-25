@@ -36,7 +36,7 @@ class _LineDetailViewState extends State<LineDetailView> {
   Future<void> _loadLine() async {
     if (widget.lineId == null) return;
 
-    final x = await _lineRepository.get(int.parse(widget.lineId!));
+    final x = await _lineRepository.getOne(int.parse(widget.lineId!));
     if (x == null || !context.mounted) return;
     setState(() {
       line = x;
@@ -46,8 +46,8 @@ class _LineDetailViewState extends State<LineDetailView> {
     final List<String> tmpAccessed = [];
 
     await Future.wait(line!.stationList.map((x) async {
-      final station = await _stationRepository.get(x);
-      final accessLog = await _accessLogRepository.get(station?.id);
+      final station = await _stationRepository.getOne(x);
+      final accessLog = await _accessLogRepository.getOne(station?.id);
       if (accessLog != null) tmpAccessed.add(x);
       if (station != null) tmpStation.add(station);
     }));

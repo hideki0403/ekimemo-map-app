@@ -25,7 +25,7 @@ class TreeNodeRepository extends AbstractRepository<TreeNode> {
   }
 
   @override
-  Future<TreeNode?> get(dynamic key, {String? column}) async {
+  Future<TreeNode?> getOne(dynamic key, {String? column}) async {
     if (_useCache) {
       if (column == null) {
         return _cache[key.toString()];
@@ -33,7 +33,7 @@ class TreeNodeRepository extends AbstractRepository<TreeNode> {
         logger.info('column is specified, fallback to database');
       }
     }
-    return super.get(key, column: column);
+    return super.getOne(key, column: column);
   }
 
   @override

@@ -120,7 +120,7 @@ class _StationHistoryState extends State<_StationHistory> {
   }
 
   Future<void> _loadStationData() async {
-    final data = await StationRepository().get(widget.data.id);
+    final data = await StationRepository().getOne(widget.data.id);
     if (!context.mounted) return;
     setState(() {
       stationData = data;

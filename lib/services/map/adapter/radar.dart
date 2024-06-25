@@ -126,7 +126,7 @@ class RadarMapAdapter extends MapAdapter {
       },
     );
 
-    final station = await StationRepository().get(parent.widget.radarId!);
+    final station = await StationRepository().getOne(parent.widget.radarId!);
     if (station == null) return;
     _radarService.run(station, _maxRange, callback);
   }
