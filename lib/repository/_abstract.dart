@@ -22,6 +22,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     _database = await DatabaseHandler.db;
   }
 
+  /// データベースからレコードを1件取得します。
   Future<T?> get(dynamic key, {String? column}) async {
     if (_database == null) await _initialize();
 
@@ -41,6 +42,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     }
   }
 
+  /// データベースから全てのレコードを取得します。
   Future<List<T>> getAll() async {
     if (_database == null) await _initialize();
     try {
@@ -54,6 +56,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     }
   }
 
+  /// データベースから全てのレコードをMapで取得します。キャッシュは無視されます。
   Future<Map<K, Map<String, dynamic>>> getAllMap<K>() async {
     if (_database == null) await _initialize();
     try {
@@ -69,6 +72,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     }
   }
 
+  /// データベースにレコードを挿入します。
   Future<void> insert(Map<String, dynamic> data) async {
     if (_database == null) await _initialize();
     try {
@@ -82,6 +86,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     }
   }
 
+  /// データベースに複数のレコードを挿入します。
   Future<void> bulkInsert(List<Map<String, dynamic>> data) async {
     if (_database == null) await _initialize();
     try {
@@ -99,6 +104,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     }
   }
 
+  /// データベースにレコードを挿入します。
   Future<void> insertModel(T model) async {
     if (_database == null) await _initialize();
     try {
@@ -112,6 +118,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     }
   }
 
+  /// データベースに複数のレコードを挿入します。
   Future<void> bulkInsertModel(List<T> models) async {
     if (_database == null) await _initialize();
     try {
@@ -129,6 +136,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     }
   }
 
+  /// データベースのレコードを更新します。
   Future<void> update(T model) async {
     if (_database == null) await _initialize();
     try {
@@ -144,6 +152,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     }
   }
 
+  /// データベースのレコードを削除します。
   Future<void> delete(dynamic key) async {
     if (_database == null) await _initialize();
     try {
@@ -157,6 +166,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     }
   }
 
+  /// データベースの全てのレコードを削除します。
   Future<void> clear() async {
     if (_database == null) await _initialize();
     try {
@@ -166,6 +176,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     }
   }
 
+  /// データベースのレコード数を取得します。
   Future<int> count() async {
     if (_database == null) await _initialize();
     try {
@@ -177,6 +188,7 @@ abstract class AbstractRepository<T extends AbstractModel> {
     }
   }
 
+  /// データベースのレコードを検索します。
   Future<List<T>> search(String column, String query) async {
     if (_database == null) await _initialize();
     try {
