@@ -26,6 +26,10 @@ class CoreMapAdapter extends MapAdapter {
   @override
   List<Widget> get floatingWidgets => [
     ElevatedButton(
+      onPressed: () => parent.useAdapter(attrMode ? MapAdapterType.core : MapAdapterType.attribute),
+      child: Text(attrMode ? '通常マップに切り替え' : '属性マップに切り替え'),
+    ),
+    ElevatedButton(
       onPressed: () {
         _hidePointLayer = !_hidePointLayer;
         controller.setLayerVisibility('point', !_hidePointLayer);
@@ -40,14 +44,6 @@ class CoreMapAdapter extends MapAdapter {
         parent.rebuildWidget();
       },
       child: Text('${ attrMode ? '塗りつぶし' : 'アクセス状態' }表示: ${_hideAccessState ? 'OFF' : 'ON'}'),
-    ),
-  ];
-
-  @override
-  List<Widget> get appBarActions => [
-    IconButton(
-      icon: const Icon(Icons.layers),
-      onPressed: () => parent.useAdapter(attrMode ? MapAdapterType.core : MapAdapterType.attribute),
     ),
   ];
 
