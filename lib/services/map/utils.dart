@@ -75,6 +75,6 @@ SymbolLayerProperties masterSymbolLayerProperties = SymbolLayerProperties(
     [0, 2]
   ],
   iconImage: 'pin',
-  iconSize: 0.2,
+  iconSize: 0.15,
   iconColor: Colors.red.toHexStringRGB(),
 );
