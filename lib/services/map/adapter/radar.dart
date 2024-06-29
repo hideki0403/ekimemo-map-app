@@ -42,6 +42,12 @@ class RadarMapAdapter extends MapAdapter {
   List<Widget> get floatingWidgets => [
     ElevatedButton(
       onPressed: _polygonCache.isEmpty ? null : () {
+        controller.moveCamera(CameraUpdate.newLatLngBounds(getBounds(_polygonCache.last.polygon, margin: true)));
+      },
+      child: const Text('表示範囲をリセット'),
+    ),
+    ElevatedButton(
+      onPressed: _polygonCache.isEmpty ? null : () {
         _selectedRangeOnly = !_selectedRangeOnly;
         parent.rebuildWidget();
         _reRender();
