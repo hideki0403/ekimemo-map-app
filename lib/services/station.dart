@@ -144,6 +144,7 @@ class StationStateNotifier extends ChangeNotifier {
 
   List<StationData> get list => StationSearchService.list;
   String get lastUpdate => StationSearchService.lastUpdatedTime != null ? DateFormat('HH:mm:ss').format(StationSearchService.lastUpdatedTime!) : '--:--:--';
+  DateTime? get lastUpdateDate => StationSearchService.lastUpdatedTime;
   String get latestProcessingTime => StationSearchService.latestProcessingTime;
 }
 

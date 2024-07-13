@@ -8,6 +8,7 @@ import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/updater.dart';
 import 'package:ekimemo_map/services/assistant.dart';
 import 'package:ekimemo_map/ui/widgets/station_card.dart';
+import 'package:ekimemo_map/ui/widgets/relative_time.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -83,7 +84,7 @@ class HomeView extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(children: [
-            Expanded(child: Text('最終更新: ${station.lastUpdate}')),
+            Expanded(child: gps.isEnabled ? RelativeTime(time: station.lastUpdateDate, prefix: '最終更新: ') : const Text('')),
             Opacity(opacity: 0.7, child: Text('${station.latestProcessingTime}ms', textScaler: const TextScaler.linear(0.8))),
           ]),
         ),
