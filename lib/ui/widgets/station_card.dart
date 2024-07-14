@@ -144,34 +144,42 @@ class _StationMenu extends StatelessWidget {
     final accessLog = AccessCacheManager.get(station.id);
     final isAccessed = accessLog != null && accessLog.accessed;
 
-    return SimpleDialog(
+    return AlertDialog(
       title: Text(station.name),
-      children: [
-        if (index != 0) ...[
-          SimpleDialogOption(
-            onPressed: () async {
-              await AccessCacheManager.update(station.id, DateTime.now(), accessed: !isAccessed);
+      contentPadding: const EdgeInsets.fromLTRB(0, 16, 0, 24),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (index != 0) ...[
+            ListTile(
+              title: Text(isAccessed ? '未アクセスにする' : 'アクセス済みにする'),
+              leading: Icon(isAccessed ? Icons.cancel : Icons.check_circle),
+              onTap: () async {
+                await AccessCacheManager.update(station.id, DateTime.now(), accessed: !isAccessed);
+                if (context.mounted) Navigator.of(context).pop(true);
+              },
+            ),
+            if (Config.enableReminder) ListTile(
+              title: Text(cooldown == 0 ? 'タイマーをセットする' : 'タイマーをリセットする'),
+              leading: Icon(cooldown == 0 ? Icons.timer : Icons.timer_off),
+              onTap: () async {
+                final time = cooldown == 0 ? DateTime.now() : DateTime.now().subtract(Duration(seconds: cooldown));
+                await AccessCacheManager.update(station.id, time, updateOnly: true);
+                if (context.mounted) Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+          ListTile(
+            title: const Text('この駅のレーダー範囲を見る'),
+            leading: const Icon(Icons.radar),
+            onTap: () async {
               if (context.mounted) Navigator.of(context).pop(true);
+              await context.push(Uri(path: '/map', queryParameters: {'radar-id': station.id}).toString());
             },
-            child: Text(isAccessed ? '未アクセスにする' : 'アクセス済みにする'),
           ),
-          if (Config.enableReminder) SimpleDialogOption(
-            onPressed: () async {
-              final time = cooldown == 0 ? DateTime.now() : DateTime.now().subtract(Duration(seconds: cooldown));
-              await AccessCacheManager.update(station.id, time, updateOnly: true);
-              if (context.mounted) Navigator.of(context).pop(true);
-            },
-            child: Text(cooldown == 0 ? 'タイマーをセットする' : 'タイマーをリセットする'),
-          )
         ],
-        SimpleDialogOption(
-          onPressed: () async {
-            if (context.mounted) Navigator.of(context).pop(true);
-            await context.push(Uri(path: '/map', queryParameters: {'radar-id': station.id}).toString());
-          },
-          child: const Text('この駅のレーダー範囲を見る'),
-        ),
-      ],
+      ),
     );
   }
 }
