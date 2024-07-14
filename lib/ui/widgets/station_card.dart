@@ -26,7 +26,7 @@ class StationCard extends StatelessWidget {
           context.push(Uri(path: '/station', queryParameters: {'id': stationData.station.id}).toString());
         },
         onLongPress: viewOnly ? null : () async {
-          final rebuild = await showDialog(context: context, builder: (context) => _StationMenu(station: stationData.station, index: index)) as bool?;
+          final rebuild = await showDialog(context: context, builder: (context) => _StationMenu(station: stationData.station, index: index, lineName: stationData.lineName)) as bool?;
           if (rebuild == true) {
             _cooldownTimerState.currentState?.rebuildTimer();
           }
@@ -134,8 +134,9 @@ class _CooldownTimerState extends State<_CooldownTimer> {
 
 // 駅部分を長押しした時に表示されるメニュー
 class _StationMenu extends StatelessWidget {
-  const _StationMenu({required this.station, required this.index});
+  const _StationMenu({required this.station, required this.index, this.lineName});
   final Station station;
+  final String? lineName;
   final int index;
 
   @override
@@ -146,11 +147,18 @@ class _StationMenu extends StatelessWidget {
 
     return AlertDialog(
       title: Text(station.name),
-      contentPadding: const EdgeInsets.fromLTRB(0, 16, 0, 24),
+      contentPadding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (lineName != null) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Opacity(opacity: 0.8, child: Text(lineName!)),
+            ),
+            const SizedBox(height: 16),
+          ],
           if (index != 0) ...[
             ListTile(
               title: Text(isAccessed ? '未アクセスにする' : 'アクセス済みにする'),
