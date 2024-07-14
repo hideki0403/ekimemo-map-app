@@ -79,12 +79,12 @@ class HomeView extends StatelessWidget {
           )
         ),
       ),
-      bottomNavigationBar: Container(
+      bottomNavigationBar: !gps.isEnabled ? null : Container(
         color: Theme.of(context).colorScheme.surfaceContainer,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(children: [
-            Expanded(child: gps.isEnabled ? RelativeTime(time: station.lastUpdateDate, prefix: '最終更新: ') : const Text('')),
+            Expanded(child: RelativeTime(time: station.lastUpdateDate, prefix: '最終更新: ')),
             Opacity(opacity: 0.7, child: Text('${station.latestProcessingTime}ms', textScaler: const TextScaler.linear(0.8))),
           ]),
         ),
