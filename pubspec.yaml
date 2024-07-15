@@ -43,7 +43,7 @@ dependencies:
     git:
       url: https://github.com/hasali19/material-foundation-flutter-packages.git
       path: packages/dynamic_color
-      ref: 542b8076ace216c954536a4ee2b76e0d225fb385
+      ref: 293eabfca19f13375829afad8886b3f371fb1933
   dio: ^5.3.3
   permission_handler: ^11.1.0
   flutter_local_notifications: ^17.1.2
