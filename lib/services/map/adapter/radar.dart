@@ -6,6 +6,7 @@ import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/ui/widgets/cb_slider.dart';
+import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
 import '../map_adapter.dart';
 import '../utils.dart';
 
@@ -13,7 +14,7 @@ class RadarMapAdapter extends MapAdapter {
   RadarMapAdapter(super.parent);
 
   final _radarService = SearchRadarRange();
-  final _maxRange = Config.maxResults;
+  int _maxRange = Config.maxResults;
   int _showRange = Config.maxResults;
   bool _selectedRangeOnly = true;
   List<RadarPolygon> _polygonCache = [];
@@ -54,6 +55,25 @@ class RadarMapAdapter extends MapAdapter {
       },
       child: Text(_selectedRangeOnly ? '選択した範囲のみ表示' : '選択した範囲以下を表示'),
     ),
+    ElevatedButton(
+      onPressed: _polygonCache.isEmpty ? null : () async {
+        final result = await showEditorDialog(
+          title: 'レーダー検知数',
+          suffix: '駅',
+          type: EditorDialogType.integer,
+          data: _maxRange.toString(),
+        );
+        if (result == null) return;
+
+        _maxRange = int.parse(result);
+        _showRange = int.parse(result);
+        _polygonCache.clear();
+
+        parent.rebuildWidget();
+        _renderRadar();
+      },
+      child: const Text('レーダー検知数を指定して再計算'),
+    ),
   ];
 
   @override
@@ -82,8 +102,6 @@ class RadarMapAdapter extends MapAdapter {
       fillOpacity: 0.3,
     )));
 
-    await controller.setLayerVisibility('fill', false);
-
     _renderRadar();
   }
 
@@ -110,6 +128,8 @@ class RadarMapAdapter extends MapAdapter {
   }
 
   Future<void> _renderRadar() async {
+    await controller.setLayerVisibility('fill', false);
+
     final callback = HighVoronoiCallback(
       onStarted: () {
         parent.showLoading();
