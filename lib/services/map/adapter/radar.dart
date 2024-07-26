@@ -137,6 +137,8 @@ class RadarMapAdapter extends MapAdapter {
       onProgress: (List<RadarPolygon> polygons) async {
         _renderPolygon(polygons);
         controller.moveCamera(CameraUpdate.newLatLngBounds(getBounds(polygons.last.polygon, margin: true)));
+
+        parent.showLoading('計算中... (${polygons.length} / $_maxRange)');
       },
       onComplete: (List<RadarPolygon> polygons) async {
         controller.moveCamera(CameraUpdate.newLatLngBounds(getBounds(polygons.last.polygon, margin: true)));

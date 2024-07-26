@@ -101,16 +101,16 @@ class MapViewState extends State<MapView> {
   }
   // #endregion MapAdapter
 
-  void showLoading() {
-    setOverlay(const Row(
+  void showLoading([String? message]) {
+    setOverlay(Row(
       children: [
-        SizedBox(
+        const SizedBox(
           width: 24,
           height: 24,
           child: CircularProgressIndicator(),
         ),
-        SizedBox(width: 32),
-        Text('計算中...', style: TextStyle(fontSize: 18)),
+        const SizedBox(width: 32),
+        Text(message ?? '計算中...', style: const TextStyle(fontSize: 18)),
       ],
     ));
   }
