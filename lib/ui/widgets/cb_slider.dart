@@ -22,10 +22,30 @@ class CbSlider extends StatefulWidget {
 
 class _CbSliderState extends State<CbSlider> {
   double _value = 0.0;
+  int _currentMax = 0;
 
   @override
   void initState() {
     super.initState();
+    resetValue();
+
+    setState(() {
+      _currentMax = widget.max;
+    });
+  }
+
+  @override
+  void didUpdateWidget(CbSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.max != _currentMax) {
+      resetValue();
+      setState(() {
+        _currentMax = widget.max;
+      });
+    }
+  }
+
+  void resetValue() {
     setState(() {
       _value = widget.defaultValue.toDouble();
     });
