@@ -24,7 +24,16 @@ class AssistantFlow {
   }
 
   static Future<void> run() async {
-    if (!(await NativeMethods.hasPermission())) return;
+    if (!(await NativeMethods.hasPermission())) {
+      logger.debug('Permission denied, skipping');
+      return;
+    }
+
+    if (!SystemState.enabledAssistantFlow) {
+      logger.debug('AssistantFlow is disabled, skipping');
+      return;
+    }
+
     final items = get();
     for (final item in items) {
       logger.debug('AssistantFlow: Next ${item.type}, ${item.content}');

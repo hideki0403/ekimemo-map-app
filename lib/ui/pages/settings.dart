@@ -474,6 +474,13 @@ class _SettingsViewState extends State<SettingsView> {
                       }
                     },
                   ),
+                  SwitchListTile(
+                    title: const Text('Enable AssistantFlow'),
+                    value: state.enabledAssistantFlow,
+                    onChanged: (value) {
+                      state.setEnabledAssistantFlow(value);
+                    },
+                  ),
                   ListTile(
                     title: const Text('Assistant Flow Editor'),
                     onTap: () {

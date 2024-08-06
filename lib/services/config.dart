@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -203,6 +202,7 @@ class SystemStateProvider extends ChangeNotifier {
   String get treeNodeRoot => state['tree_node_root'] ?? '';
   String get debugPackageName => state['debug_package_name'] ?? 'dev.yukineko.ekimemo_map';
   String get assistantFlow => state['assistant_flow'] ?? '[]';
+  bool get enabledAssistantFlow => bool.tryParse(state['enabled_assistant_flow'] ?? '') ?? false;
 
   Future<void> init() async {
     final records = await _repo.getAll();
@@ -228,6 +228,10 @@ class SystemStateProvider extends ChangeNotifier {
   void setDebugPackageName(String value) {
     set('debug_package_name', value);
   }
+
+  void setEnabledAssistantFlow(bool value) {
+    set('enabled_assistant_flow', value.toString());
+  }
 }
 
 class SystemState {
@@ -243,6 +247,7 @@ class SystemState {
   static String get treeNodeRoot => _systemStateProvider?.treeNodeRoot ?? '0';
   static String get assistantFlow => _systemStateProvider?.assistantFlow ?? '[]';
   static String get debugPackageName => _systemStateProvider?.debugPackageName ?? 'dev.yukineko.ekimemo_map';
+  static bool get enabledAssistantFlow => _systemStateProvider?.enabledAssistantFlow ?? false;
 
   static String getString(String key, {String defaultValue = ''}) {
     return _systemStateProvider?.state[key] ?? defaultValue;
