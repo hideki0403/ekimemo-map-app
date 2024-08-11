@@ -11,7 +11,7 @@ enum DatabaseType {
 }
 
 class DatabaseHandler {
-  static const int _version = 6;
+  static const int _version = 7;
   static final Map<String, List<String>> _migration = {
     '1': [
       // create table
@@ -48,6 +48,10 @@ class DatabaseHandler {
       'INSERT INTO tree_node_new SELECT id, left, right FROM tree_node;',
       'DROP TABLE tree_node;',
       'ALTER TABLE tree_node_new RENAME TO tree_node;',
+    ],
+    '7': [
+      // create 'interval_timer' table
+      'CREATE TABLE IF NOT EXISTS interval_timer (id TEXT PRIMARY KEY, duration INTEGER, enable_notification INTEGER, notification_sound TEXT, vibration_pattern TEXT);',
     ]
   };
 
