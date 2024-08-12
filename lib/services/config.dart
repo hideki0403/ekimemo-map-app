@@ -22,7 +22,7 @@ class ConfigProvider extends ChangeNotifier {
   bool get serviceAvailable => _config != null;
   SharedPreferences? get config => _config;
 
-  int get cooldownTime => _config?.getInt('cooldown_time') ?? 300;
+  int get cooldownTime => _config?.getInt('cooldown_time') ?? 320;
   bool get enableReminder => _config?.getBool('enable_reminder') ?? false;
   bool get enableNotification => _config?.getBool('enable_notification') ?? true;
   bool get enableNotificationDuringCooldown => _config?.getBool('enable_notification_during_cooldown') ?? false;
@@ -159,7 +159,7 @@ class Config {
     _configProvider = instance;
   }
 
-  static int get cooldownTime => _configProvider?.cooldownTime ?? 300;
+  static int get cooldownTime => _configProvider?.cooldownTime ?? 320;
   static bool get enableReminder => _configProvider?.enableReminder ?? false;
   static bool get enableNotification => _configProvider?.enableNotification ?? true;
   static bool get enableNotificationDuringCooldown => _configProvider?.enableNotificationDuringCooldown ?? false;
