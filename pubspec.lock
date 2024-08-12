@@ -205,8 +205,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/dynamic_color"
-      ref: "293eabfca19f13375829afad8886b3f371fb1933"
-      resolved-ref: "293eabfca19f13375829afad8886b3f371fb1933"
+      ref: "78667e1513de5cfd73b81ee29fe319de4eac5d85"
+      resolved-ref: "78667e1513de5cfd73b81ee29fe319de4eac5d85"
       url: "https://github.com/hasali19/material-foundation-flutter-packages.git"
     source: git
     version: "1.7.0"
@@ -516,10 +516,11 @@ packages:
   install_plugin:
     dependency: "direct main"
     description:
-      name: install_plugin
-      sha256: "6fb67ba0781e75de4f2f2266ed25e835bfd277c5bfc2ed034af52774355857c6"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: "73e3f228cc1c3aeb9dbb595b632a7f274e09bbae"
+      resolved-ref: "73e3f228cc1c3aeb9dbb595b632a7f274e09bbae"
+      url: "https://github.com/amxDusT/flutter_install_plugin.git"
+    source: git
     version: "2.1.0"
   intl:
     dependency: "direct main"
