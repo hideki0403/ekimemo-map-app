@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'config.dart';
+import 'utils.dart';
 
 enum NotificationSound {
   sePb1('notification_pb_1', '通知音1'),
@@ -46,6 +47,50 @@ enum VibrationPattern {
     if (value == null) return null;
     return VibrationPattern.values.firstWhereOrNull((e) => e.name == value);
   }
+}
+
+/// returns (isCanceled, selectedValue)
+Future<(bool, NotificationSound?)> notificationSoundSelector(String? defaultValue, { bool withNone = false }) async {
+  final entries = Map.fromEntries(NotificationSound.values.map((e) => MapEntry(e.name, e.displayName)));
+  if (withNone) entries[''] = 'なし';
+
+  final result = await showSelectDialog(
+    title: '通知音',
+    data: entries,
+    defaultValue: defaultValue,
+    showOkButton: true,
+    onChanged: (String? value) {
+      if (value != null && value.isNotEmpty) {
+        NotificationManager.playSound(NotificationSound.values.byName(value));
+      }
+    },
+  );
+
+  if (result == null) return (true, null);
+  if (result.isEmpty) return (false, null);
+  return (false, NotificationSound.values.byName(result));
+}
+
+/// returns (isCanceled, selectedValue)
+Future<(bool, VibrationPattern?)> vibrationPatternSelector(String? defaultValue, { bool withNone = false }) async {
+  final entries = Map.fromEntries(VibrationPattern.values.map((e) => MapEntry(e.name, e.displayName)));
+  if (withNone) entries[''] = 'なし';
+
+  final result = await showSelectDialog(
+    title: 'バイブレーションパターン',
+    data: entries,
+    defaultValue: defaultValue,
+    showOkButton: true,
+    onChanged: (String? value) {
+      if (value != null && value.isNotEmpty) {
+        NotificationManager.playVibration(VibrationPattern.values.byName(value));
+      }
+    },
+  );
+
+  if (result == null) return (true, null);
+  if (result.isEmpty) return (false, null);
+  return (false, VibrationPattern.values.byName(result));
 }
 
 class NotificationManager {
