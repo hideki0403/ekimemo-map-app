@@ -8,6 +8,7 @@ on:
     branches: [ master ]
     paths:
       - 'lib/**'
+      - 'pubspec.yaml'
   workflow_dispatch:
 
 jobs:
