@@ -44,7 +44,7 @@ class _BlinkState extends State<Blink> {
   @override
   Widget build(BuildContext context) {
     return Opacity(
-      opacity: !widget.enabled || _visible ? 1.0 : 0.0,
+      opacity: !widget.enabled || _visible ? 1.0 : 0.65,
       child: widget.child,
     );
   }
