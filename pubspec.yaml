@@ -67,6 +67,7 @@ dependencies:
   gpx: ^2.2.2
   bottom_sheet: ^4.0.4
   uuid: ^4.4.0
+  syncfusion_flutter_gauges: ^26.2.8
 
 dev_dependencies:
   flutter_test:
