@@ -124,6 +124,18 @@ class NotificationManager {
     }
   }
 
+  static Future<void> showIntervalNotification(String title, String body) async {
+    const platform = NotificationDetails(android: AndroidNotificationDetails('interval_timer', 'インターバルタイマー',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: false,
+      enableVibration: false,
+      icon: 'ic_timer',
+    ));
+
+    await _notification.show(1, title, body, platform);
+  }
+
   static Future<void> playSound(NotificationSound sound) async {
     await _audioPlayer.setVolume(Config.notificationSoundVolume / 100);
     await _audioPlayer.setSource(AssetSource('sound/${sound.toString()}.mp3'));
