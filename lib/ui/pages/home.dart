@@ -101,7 +101,11 @@ class HomeView extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: station.list.length,
                     itemBuilder: (context, index) {
-                      return StationCard(stationData: station.list[index], index: index);
+                      return StationCard(
+                        key: ValueKey(station.list[index].station.id),
+                        stationData: station.list[index],
+                        index: index,
+                      );
                     }
                 )
               ] : [
