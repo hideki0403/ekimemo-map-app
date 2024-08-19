@@ -150,7 +150,8 @@ class _StationMenu extends StatelessWidget {
               title: Text(cooldown == 0 ? 'タイマーをセットする' : 'タイマーをリセットする'),
               leading: Icon(cooldown == 0 ? Icons.timer : Icons.timer_off),
               onTap: () async {
-                final time = cooldown == 0 ? DateTime.now() : DateTime.now().subtract(Duration(seconds: cooldown));
+                final lastAccessedTime = AccessCacheManager.getTime(station.id) ?? DateTime.now();
+                final time = cooldown == 0 ? DateTime.now() : lastAccessedTime.subtract(Duration(seconds: cooldown));
                 await AccessCacheManager.update(station.id, time, updateOnly: true);
                 if (context.mounted) Navigator.of(context).pop(true);
               },
