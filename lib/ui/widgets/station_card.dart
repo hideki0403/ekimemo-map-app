@@ -142,7 +142,7 @@ class _StationMenu extends StatelessWidget {
               title: Text(isAccessed ? '未アクセスにする' : 'アクセス済みにする'),
               leading: Icon(isAccessed ? Icons.cancel : Icons.check_circle),
               onTap: () async {
-                await AccessCacheManager.update(station.id, DateTime.now(), accessed: !isAccessed);
+                await AccessCacheManager.setAccessState(station.id, !isAccessed);
                 if (context.mounted) Navigator.of(context).pop(true);
               },
             ),

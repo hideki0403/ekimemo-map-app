@@ -50,6 +50,7 @@ class AccessCacheManager {
   static final accessCache = <String, AccessCacheItem>{};
   static final _repository = AccessLogRepository();
 
+  /// AccessCacheManagerを初期化
   static Future<void> initialize({ bool force = false }) async {
     if (accessCache.isNotEmpty) {
       if (!force) return;
@@ -62,6 +63,8 @@ class AccessCacheManager {
     }
   }
 
+  /// AccessCacheManagerを通して駅のアクセス状態を更新
+  /// (同時にIntervalNotificationの再設定も行う)
   static Future<void> update(String id, DateTime lastAccess, { bool updateOnly = false, bool? accessed }) async {
     final accessLog = await _repository.getOne(id);
     var isAccessed = false;
@@ -72,7 +75,7 @@ class AccessCacheManager {
       record.firstAccess = lastAccess;
       record.lastAccess = lastAccess;
       record.accessCount = updateOnly ? 0 : 1;
-      record.accessed = accessed ?? (updateOnly ? false : true);
+      record.accessed = accessed ?? !updateOnly;
       await _repository.insertModel(record);
 
       isAccessed = record.accessed;
@@ -88,13 +91,22 @@ class AccessCacheManager {
     accessCache[id] = AccessCacheItem(lastAccess, isAccessed);
   }
 
+  /// 駅のアクセス状態を変更
+  static Future<void> setAccessState(String id, bool accessed) async {
+    final time = Config.enableReminder ? DateTime.now().subtract(Duration(seconds: Config.cooldownTime + 1)) : DateTime.now();
+    await update(id, time, accessed: accessed);
+  }
+
+  /// キャッシュに対象の駅が存在するか
   static bool has(String id) => accessCache.containsKey(id);
 
+  /// 対象の駅の最終アクセス時間を取得
   static DateTime? getTime(String id) {
     final item = accessCache[id];
     return item?.time;
   }
 
+  /// 対象の駅のキャッシュを取得
   static AccessCacheItem? get(String id) {
     return accessCache[id];
   }
