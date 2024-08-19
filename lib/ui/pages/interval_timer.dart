@@ -72,7 +72,11 @@ class _IntervalTimerViewState extends State<IntervalTimerView> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: _timers.length,
                   itemBuilder: (context, index) {
-                    return _IntervalTimerItem(item: _timers[index], deleteCallback: _loadTimers);
+                    return IntervalTimerItem(
+                      key: ValueKey(_timers[index].timer.id),
+                      item: _timers[index],
+                      deleteCallback: _loadTimers,
+                    );
                   },
                   separatorBuilder: (BuildContext context, int index) {
                     return const SizedBox(height: 12);
@@ -97,16 +101,16 @@ class _IntervalTimerViewState extends State<IntervalTimerView> {
   }
 }
 
-class _IntervalTimerItem extends StatefulWidget {
+class IntervalTimerItem extends StatefulWidget {
   final IntervalTimerHandler item;
   final Function deleteCallback;
-  const _IntervalTimerItem({required this.item, required this.deleteCallback});
+  const IntervalTimerItem({required this.item, required this.deleteCallback, super.key});
 
   @override
-  State<_IntervalTimerItem> createState() => _IntervalTimerItemState();
+  State<IntervalTimerItem> createState() => _IntervalTimerItemState();
 }
 
-class _IntervalTimerItemState extends State<_IntervalTimerItem> {
+class _IntervalTimerItemState extends State<IntervalTimerItem> {
   final ExpandableController _expandableController = ExpandableController();
   bool _isExpanded = false;
 
