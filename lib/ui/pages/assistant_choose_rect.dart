@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Image;
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:image/image.dart' hide ImageFormat;
 import 'package:ekimemo_map/services/log.dart';
 
 class AssistantChooseRectView extends StatefulWidget {
@@ -56,11 +56,17 @@ class _AssistantChooseRectViewState extends State<AssistantChooseRectView> {
             image: _image!,
             controller: _controller,
             onCropped: (result) {
-              List<double> rawRect = utf8.decode(result).split(',').map((e) => double.parse(e)).toList();
+              if (result is! CropSuccess) {
+                logger.error('Crop failed');
+                Navigator.of(context).pop();
+                return;
+              }
+              List<double> rawRect = utf8.decode(result.croppedImage).split(',').map((e) => double.parse(e)).toList();
               final rect = Rect.fromLTRB(rawRect[0], rawRect[1], rawRect[2], rawRect[3]);
               logger.debug('Cropped Rect: $rect');
               Navigator.of(context).pop(rect);
             },
+            withCircleUi: false,
             imageCropper: const ImageCropperHandler(),
           ) : const Text('Select Image'),
         )
@@ -72,6 +78,11 @@ class _AssistantChooseRectViewState extends State<AssistantChooseRectView> {
 class ImageCropperHandler extends ImageCropper<Image> {
   const ImageCropperHandler();
 
+  Uint8List rectToUint8List(Offset topLeft, Offset bottomRight) {
+    final rect = Rect.fromPoints(topLeft, bottomRight);
+    return Uint8List.fromList(utf8.encode('${rect.left},${rect.top},${rect.right},${rect.bottom}'));
+  }
+
   @override
   FutureOr<Uint8List> call({
     required dynamic original,
@@ -81,7 +92,20 @@ class ImageCropperHandler extends ImageCropper<Image> {
     dynamic shape,
   }) {
     // 画像はクロップせず、topLeft, bottomRightを元にRectを返す
-    final rect = Rect.fromPoints(topLeft, bottomRight);
-    return Uint8List.fromList(utf8.encode('${rect.left},${rect.top},${rect.right},${rect.bottom}'));
+    return rectToUint8List(topLeft, bottomRight);
   }
+
+  @override
+  RectValidator<Image> get rectValidator => defaultRectValidator;
+
+  @override
+  RectCropper<Image> get rectCropper => (Image original, { required Offset topLeft, required Size size, required ImageFormat? outputFormat }) {
+    final bottomRight = Offset(topLeft.dx + size.width, topLeft.dy + size.height);
+    return rectToUint8List(topLeft, bottomRight);
+  };
+
+  @override
+  CircleCropper<Image> get circleCropper => (Image original, { required Offset center, required double radius, required ImageFormat? outputFormat }) {
+    return Uint8List.fromList([]);
+  };
 }

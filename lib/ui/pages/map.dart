@@ -173,7 +173,7 @@ class MapViewState extends State<MapView> {
               final controller = await _mapReadyCompleter.future;
 
               // fallback of onMapClick
-              controller.onFeatureTapped.add((dynamic _, Point<double> point, LatLng latLng) => _adapter?.onMapClick(point, latLng));
+              controller.onFeatureTapped.add((dynamic _, Point<double> point, LatLng latLng, String layerId) => _adapter?.onMapClick(point, latLng));
 
               // add resources
               await controller.addImage('pin', (await rootBundle.load('assets/icon/location.png')).buffer.asUint8List(), true);
