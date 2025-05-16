@@ -201,15 +201,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
-  dynamic_color:
+  dynamic_system_colors:
     dependency: "direct main"
     description:
-      path: "packages/dynamic_color"
-      ref: "293eabfca19f13375829afad8886b3f371fb1933"
-      resolved-ref: "293eabfca19f13375829afad8886b3f371fb1933"
-      url: "https://github.com/hasali19/material-foundation-flutter-packages.git"
-    source: git
-    version: "1.7.0"
+      name: dynamic_system_colors
+      sha256: "43794e658fa88cbdec9f397dd1afd2eb69b6c9717e99b93b16ba37c3aa3b3a8c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.8.0"
   fake_async:
     dependency: transitive
     description:

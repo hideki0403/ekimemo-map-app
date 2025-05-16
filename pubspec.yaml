@@ -38,12 +38,7 @@ dependencies:
   go_router: ^15.1.2
   provider: ^6.1.5
   sqflite: ^2.4.2
-  # https://github.com/material-foundation/flutter-packages/issues/574#issuecomment-2060494544
-  dynamic_color:
-    git:
-      url: https://github.com/hasali19/material-foundation-flutter-packages.git
-      path: packages/dynamic_color
-      ref: 293eabfca19f13375829afad8886b3f371fb1933
+  dynamic_system_colors: ^1.8.0
   dio: ^5.8.0
   permission_handler: ^12.0.0
   flutter_local_notifications: ^19.2.0
