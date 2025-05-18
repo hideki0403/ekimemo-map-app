@@ -29,6 +29,7 @@ import 'ui/pages/tools.dart';
 import 'ui/pages/search.dart';
 import 'ui/pages/history.dart';
 import 'ui/pages/route_search.dart';
+import 'ui/pages/interval_timer.dart';
 import 'ui/pages/license.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -122,6 +123,10 @@ class Root extends StatelessWidget {
       GoRoute(
         path: '/route-search',
         builder: (context, state) => const RouteSearchView(),
+      ),
+      GoRoute(
+        path: '/interval-timer',
+        builder: (context, state) => const IntervalTimerView(),
       ),
       GoRoute(
         path: '/license',

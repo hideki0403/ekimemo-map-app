@@ -205,20 +205,9 @@ class _SettingsViewState extends State<SettingsView> {
                 title: const Text('通知音'),
                 subtitle: Text(config.notificationSound.displayName),
                 onTap: () async {
-                  final result = await showSelectDialog(
-                    title: '通知音',
-                    data: Map.fromEntries(NotificationSound.values.map((e) => MapEntry(e.name, e.displayName))),
-                    defaultValue: config.notificationSound.name,
-                    showOkButton: true,
-                    onChanged: (String? value) {
-                      if (value != null) {
-                        NotificationManager.playSound(NotificationSound.values.byName(value));
-                      }
-                    },
-                  );
-
-                  if (result != null) {
-                    config.setNotificationSound(NotificationSound.values.byName(result));
+                  final (isCanceled, result) = await notificationSoundSelector(config.notificationSound.name);
+                  if (!isCanceled && result != null) {
+                    config.setNotificationSound(result);
                   }
                 },
               ),
@@ -250,20 +239,9 @@ class _SettingsViewState extends State<SettingsView> {
                 title: const Text('バイブレーションパターン'),
                 subtitle: Text(config.vibrationPattern.displayName),
                 onTap: () async {
-                  final result = await showSelectDialog(
-                    title: 'バイブレーションパターン',
-                    data: Map.fromEntries(VibrationPattern.values.map((e) => MapEntry(e.name, e.displayName))),
-                    defaultValue: config.vibrationPattern.name,
-                    showOkButton: true,
-                    onChanged: (String? value) {
-                      if (value != null) {
-                        NotificationManager.playVibration(VibrationPattern.values.byName(value));
-                      }
-                    },
-                  );
-
-                  if (result != null) {
-                    config.setVibrationPattern(VibrationPattern.values.byName(result));
+                  final (isCanceled, result) = await vibrationPatternSelector(config.vibrationPattern.name);
+                  if (!isCanceled && result != null) {
+                    config.setVibrationPattern(result);
                   }
                 },
               ),
@@ -472,6 +450,13 @@ class _SettingsViewState extends State<SettingsView> {
                         state.setDebugPackageName(result);
                         AssistantFlow.init();
                       }
+                    },
+                  ),
+                  SwitchListTile(
+                    title: const Text('Enable AssistantFlow'),
+                    value: state.enabledAssistantFlow,
+                    onChanged: (value) {
+                      state.setEnabledAssistantFlow(value);
                     },
                   ),
                   ListTile(

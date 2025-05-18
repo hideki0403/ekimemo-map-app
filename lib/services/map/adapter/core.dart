@@ -174,7 +174,7 @@ class CoreMapAdapter extends MapAdapter {
                         )),
                         Expanded(child: IconButton(
                           onPressed: () async {
-                            await AccessCacheManager.update(data.station.id, DateTime.now(), updateOnly: true, accessed: !accessed);
+                            await AccessCacheManager.setAccessState(data.station.id, !accessed);
                             await renderVoronoi(force: true);
                             if (context.mounted) Navigator.of(context).pop();
                             parent.setOverlay(Text('${data.station.name}を${accessed ? '未アクセス' : 'アクセス済み'}にしました'));
@@ -238,7 +238,7 @@ class CoreMapAdapter extends MapAdapter {
     } else {
       final accessLog = AccessCacheManager.get(data.station.id);
       final accessed = accessLog != null && accessLog.accessed;
-      await AccessCacheManager.update(data.station.id, DateTime.now(), updateOnly: true, accessed: !accessed);
+      await AccessCacheManager.setAccessState(data.station.id, !accessed);
       await renderVoronoi(force: true);
       parent.setOverlay(Text('${data.station.name}を${accessed ? '未アクセス' : 'アクセス済み'}にしました'));
     }

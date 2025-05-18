@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'config.dart';
+import 'utils.dart';
 
 enum NotificationSound {
   sePb1('notification_pb_1', '通知音1'),
@@ -48,6 +49,50 @@ enum VibrationPattern {
   }
 }
 
+/// returns (isCanceled, selectedValue)
+Future<(bool, NotificationSound?)> notificationSoundSelector(String? defaultValue, { bool withNone = false }) async {
+  final entries = Map.fromEntries(NotificationSound.values.map((e) => MapEntry(e.name, e.displayName)));
+  if (withNone) entries[''] = 'なし';
+
+  final result = await showSelectDialog(
+    title: '通知音',
+    data: entries,
+    defaultValue: defaultValue,
+    showOkButton: true,
+    onChanged: (String? value) {
+      if (value != null && value.isNotEmpty) {
+        NotificationManager.playSound(NotificationSound.values.byName(value));
+      }
+    },
+  );
+
+  if (result == null) return (true, null);
+  if (result.isEmpty) return (false, null);
+  return (false, NotificationSound.values.byName(result));
+}
+
+/// returns (isCanceled, selectedValue)
+Future<(bool, VibrationPattern?)> vibrationPatternSelector(String? defaultValue, { bool withNone = false }) async {
+  final entries = Map.fromEntries(VibrationPattern.values.map((e) => MapEntry(e.name, e.displayName)));
+  if (withNone) entries[''] = 'なし';
+
+  final result = await showSelectDialog(
+    title: 'バイブレーションパターン',
+    data: entries,
+    defaultValue: defaultValue,
+    showOkButton: true,
+    onChanged: (String? value) {
+      if (value != null && value.isNotEmpty) {
+        NotificationManager.playVibration(VibrationPattern.values.byName(value));
+      }
+    },
+  );
+
+  if (result == null) return (true, null);
+  if (result.isEmpty) return (false, null);
+  return (false, VibrationPattern.values.byName(result));
+}
+
 class NotificationManager {
   static final _notification = FlutterLocalNotificationsPlugin();
   static final _audioPlayer = AudioPlayer();
@@ -77,6 +122,18 @@ class NotificationManager {
       if (Config.enableNotificationSound) await playSound(Config.notificationSound);
       if (Config.enableTts && ttsText != null) await playTTS(ttsText);
     }
+  }
+
+  static Future<void> showIntervalNotification(String title, String body) async {
+    const platform = NotificationDetails(android: AndroidNotificationDetails('interval_timer', 'インターバルタイマー',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: false,
+      enableVibration: false,
+      icon: 'ic_timer',
+    ));
+
+    await _notification.show(1, title, body, platform);
   }
 
   static Future<void> playSound(NotificationSound sound) async {

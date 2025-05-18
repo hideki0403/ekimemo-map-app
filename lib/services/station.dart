@@ -50,6 +50,7 @@ class AccessCacheManager {
   static final accessCache = <String, AccessCacheItem>{};
   static final _repository = AccessLogRepository();
 
+  /// AccessCacheManagerを初期化
   static Future<void> initialize({ bool force = false }) async {
     if (accessCache.isNotEmpty) {
       if (!force) return;
@@ -62,7 +63,9 @@ class AccessCacheManager {
     }
   }
 
-  static Future<void> update(String id, DateTime lastAccess, { bool updateOnly = false, bool? accessed }) async {
+  /// AccessCacheManagerを通して駅のアクセス状態を更新
+  /// (同時にIntervalNotificationの再設定も行う)
+  static Future<void> update(String id, DateTime lastAccess, { bool updateOnly = false, bool disableNotify = false, bool? accessed }) async {
     final accessLog = await _repository.getOne(id);
     var isAccessed = false;
 
@@ -72,7 +75,7 @@ class AccessCacheManager {
       record.firstAccess = lastAccess;
       record.lastAccess = lastAccess;
       record.accessCount = updateOnly ? 0 : 1;
-      record.accessed = accessed ?? (updateOnly ? false : true);
+      record.accessed = accessed ?? !updateOnly;
       await _repository.insertModel(record);
 
       isAccessed = record.accessed;
@@ -86,15 +89,26 @@ class AccessCacheManager {
     }
 
     accessCache[id] = AccessCacheItem(lastAccess, isAccessed);
+    StationManager.setIntervalNotification();
+    if (!disableNotify) StationManager.notify();
   }
 
+  /// 駅のアクセス状態を変更
+  static Future<void> setAccessState(String id, bool accessed) async {
+    final time = Config.enableReminder ? DateTime.now().subtract(Duration(seconds: Config.cooldownTime + 1)) : DateTime.now();
+    await update(id, time, accessed: accessed);
+  }
+
+  /// キャッシュに対象の駅が存在するか
   static bool has(String id) => accessCache.containsKey(id);
 
+  /// 対象の駅の最終アクセス時間を取得
   static DateTime? getTime(String id) {
     final item = accessCache[id];
     return item?.time;
   }
 
+  /// 対象の駅のキャッシュを取得
   static AccessCacheItem? get(String id) {
     return accessCache[id];
   }
@@ -208,7 +222,7 @@ class StationManager {
       final isCoolDown = getCoolDownTime(station.station.id) > 0;
 
       if (updated) {
-        if (!isCoolDown) await AccessCacheManager.update(station.station.id, DateTime.now());
+        if (!isCoolDown) await AccessCacheManager.update(station.station.id, DateTime.now(), disableNotify: true);
 
         // 優先表示される路線名を計算
         final lineIdCount = <int, int>{};
@@ -237,11 +251,11 @@ class StationManager {
         x.distance = beautifyDistance(measure(latitude, longitude, x.station.lat, x.station.lng));
       }));
 
-      _stateNotifier.notify();
+      notify();
 
       if (updated) {
         _handleStationUpdate(station, silent: isCoolDown && !Config.enableNotificationDuringCooldown);
-        _scheduleNotification();
+        setIntervalNotification();
       }
     });
   }
@@ -252,7 +266,7 @@ class StationManager {
     });
   }
 
-  static void _scheduleNotification() {
+  static void setIntervalNotification() {
     final currentStation = StationSearchService.list.firstOrNull;
     if (currentStation == null) return;
     _notificationTimer?.cancel();
@@ -265,12 +279,15 @@ class StationManager {
 
       final stationId = currentStation.station.id;
       final accessLog = AccessCacheManager.has(stationId);
-      if (accessLog) {
-        AccessCacheManager.update(stationId, DateTime.now(), updateOnly: true);
-      }
+      if (!accessLog) logger.warning('IntervalNotification: AccessLog not found ($stationId)');
 
-      _scheduleNotification();
+      // IntervalNotificationの再設定はAccessCacheManager.update内で行われる
+      await AccessCacheManager.update(stationId, DateTime.now(), updateOnly: true);
     });
+  }
+
+  static void notify() {
+    _stateNotifier.notify();
   }
 
   static void _handleStationUpdate(StationData data, { bool reNotify = false, bool silent = false }) {
