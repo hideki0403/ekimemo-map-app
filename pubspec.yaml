@@ -46,7 +46,7 @@ dependencies:
   maplibre_gl: ^0.21.0
   google_fonts: ^6.1.0
   path_provider: ^2.1.5
-  install_plugin: ^2.1.0
+  android_package_installer: ^0.0.3
   package_info_plus: ^8.3.0
   collection: ^1.19.1
   msgpack_dart: ^1.0.1

@@ -5,7 +5,7 @@ import 'package:msgpack_dart/msgpack_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:install_plugin/install_plugin.dart';
+import 'package:android_package_installer/android_package_installer.dart';
 
 import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/line.dart';
@@ -135,6 +135,8 @@ class AssetUpdater {
 }
 
 class AppUpdater {
+  static String? cachePath;
+
   static void check({silent = false}) async {
     logger.debug('Checking for app updates');
     var updateAvailable = false;
@@ -164,20 +166,41 @@ class AppUpdater {
 
   static void _update(_GitHubResource resource) async {
     final downloadPath = '${(await getTemporaryDirectory()).path}/app-release.apk';
+    String? path;
 
-    try {
-      await _UpdateUtils.downloadResource(resource, 'アプリ更新', path: downloadPath);
-    } catch (e) {
-      if (e is DioException && e.type == DioExceptionType.cancel) {
-        logger.debug('Download canceled');
-        return;
+    if (cachePath != null) {
+      final result = await showYesNoDialog(
+        title: 'アプリ更新',
+        message: 'ダウンロードキャッシュがあります。\n再度ダウンロードしますか？',
+        yesText: 'キャッシュを使用',
+        noText: 'ダウンロード',
+      );
+
+      if (result == null) return;
+      if (result) {
+        path = cachePath;
       }
-      logger.error('Failed to download app: $e');
-      showMessageDialog(title: 'アプリ更新', message: 'ダウンロード中にエラーが発生しました');
-      return;
     }
 
-    InstallPlugin.installApk(downloadPath);
+    if (path == null) {
+      try {
+        await _UpdateUtils.downloadResource(resource, 'アプリ更新', path: downloadPath);
+        cachePath = downloadPath;
+        path = downloadPath;
+      } catch (e) {
+        if (e is DioException && e.type == DioExceptionType.cancel) {
+          logger.debug('Download canceled');
+          return;
+        }
+        logger.error('Failed to download app: $e');
+        showMessageDialog(title: 'アプリ更新', message: 'ダウンロード中にエラーが発生しました');
+        return;
+      }
+    }
+
+    await AndroidPackageInstaller.installApk(
+      apkFilePath: path,
+    );
   }
 }
 
