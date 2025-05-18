@@ -14,7 +14,7 @@ final _stationRepository = StationRepository();
 final _lineRepository = LineRepository();
 
 class LineDetailView extends StatefulWidget {
-  final String? lineId;
+  final int? lineId;
   const LineDetailView({this.lineId, super.key});
 
   @override
@@ -25,7 +25,7 @@ class _LineDetailViewState extends State<LineDetailView> {
   final AccessLogRepository _accessLogRepository = AccessLogRepository();
   Line? line;
   List<Station> stations = [];
-  List<String> accessedStation = [];
+  List<int> accessedStation = [];
 
   @override
   void initState() {
@@ -36,7 +36,7 @@ class _LineDetailViewState extends State<LineDetailView> {
   Future<void> _loadLine() async {
     if (widget.lineId == null) return;
 
-    final x = await _lineRepository.getOne(int.parse(widget.lineId!));
+    final x = await _lineRepository.getOne(widget.lineId!);
     if (x == null || !context.mounted) return;
     setState(() {
       line = x;
@@ -92,7 +92,7 @@ class _LineDetailViewState extends State<LineDetailView> {
                   alignment: Alignment.center,
                   child: ElevatedButton(
                     onPressed: line?.polylineList != null ? () {
-                      context.push(Uri(path: '/map', queryParameters: {'line-id': widget.lineId}).toString());
+                      context.push(Uri(path: '/map', queryParameters: {'line-id': widget.lineId.toString()}).toString());
                     } : null,
                     child: const Text('マップで見る'),
                   ),

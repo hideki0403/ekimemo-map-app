@@ -43,9 +43,9 @@ enum MapStyle {
 }
 
 class MapView extends StatefulWidget {
-  final String? stationId;
-  final String? lineId;
-  final String? radarId;
+  final int? stationId;
+  final int? lineId;
+  final int? radarId;
 
   const MapView({this.stationId, this.lineId, this.radarId, super.key});
 

@@ -244,7 +244,7 @@ class SystemState {
   static bool get serviceAvailable => _systemStateProvider != null;
 
   static String get stationDataVersion => _systemStateProvider?.stationDataVersion ?? '';
-  static String get treeNodeRoot => _systemStateProvider?.treeNodeRoot ?? '0';
+  static int? get treeNodeRoot => int.tryParse(_systemStateProvider?.treeNodeRoot ?? '');
   static String get assistantFlow => _systemStateProvider?.assistantFlow ?? '[]';
   static String get debugPackageName => _systemStateProvider?.debugPackageName ?? 'dev.yukineko.ekimemo_map';
   static bool get enabledAssistantFlow => _systemStateProvider?.enabledAssistantFlow ?? false;

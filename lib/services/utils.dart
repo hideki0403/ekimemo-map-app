@@ -63,7 +63,7 @@ Icon getAttrIcon(StationAttr attr, { BuildContext? context }) {
   }
 }
 
-int getCoolDownTime(String stationId) {
+int getCoolDownTime(int stationId) {
   final data = AccessCacheManager.getTime(stationId);
   if (data == null || !Config.enableReminder) return 0;
 

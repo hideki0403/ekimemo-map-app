@@ -49,9 +49,9 @@ class StationData {
 class StationNode {
   late final int depth;
   late final Bounds region;
-  late final String id;
-  late final String? leftId;
-  late final String? rightId;
+  late final int id;
+  late final int? leftId;
+  late final int? rightId;
 
   Station? station;
   StationNode? left;
@@ -138,6 +138,11 @@ class StationSearchService {
     if (await _treeNodeRepository.count() == 0) return;
 
     final rootNodeId = SystemState.treeNodeRoot;
+    if (rootNodeId == null) {
+      logger.error('Root node ID is null');
+      return;
+    }
+
     final rootNode = await _treeNodeRepository.getOne(rootNodeId);
     if (rootNode == null) {
       logger.error('Root node not found: $rootNodeId, service: ${SystemState.serviceAvailable}');

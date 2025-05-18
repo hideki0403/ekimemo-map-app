@@ -46,7 +46,7 @@ class LineSimple extends StatelessWidget {
 }
 
 class _AccessProgress extends StatefulWidget {
-  final List<String> stationList;
+  final List<int> stationList;
   const _AccessProgress({required this.stationList});
 
   @override
@@ -55,7 +55,7 @@ class _AccessProgress extends StatefulWidget {
 
 class _AccessProgressState extends State<_AccessProgress> {
   final AccessLogRepository _accessLogRepository = AccessLogRepository();
-  List<String> accessedStation = [];
+  List<int> accessedStation = [];
   bool isComplete = false;
 
   @override

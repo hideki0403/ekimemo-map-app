@@ -44,7 +44,7 @@ class ViewerMapAdapter extends MapAdapter {
   }
 
   Future<void> _renderSingleLine() async {
-    final line = await _lineRepository.getOne(int.parse(parent.widget.lineId!));
+    final line = await _lineRepository.getOne(parent.widget.lineId);
     if (line == null || line.polylineList == null) return;
 
     final stations = await _stationRepository.get(line.stationList);

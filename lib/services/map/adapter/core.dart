@@ -148,7 +148,7 @@ class CoreMapAdapter extends MapAdapter {
                         Expanded(child: IconButton(
                           onPressed: () {
                             if (context.mounted) Navigator.of(context).pop();
-                            context.push(Uri(path: '/map', queryParameters: {'radar-id': data.station.id}).toString());
+                            context.push(Uri(path: '/map', queryParameters: {'radar-id': data.station.id.toString()}).toString());
                           },
                           icon: const Padding(
                             padding: EdgeInsets.all(4),
@@ -161,7 +161,7 @@ class CoreMapAdapter extends MapAdapter {
                         )),
                         Expanded(child: IconButton(
                           onPressed: () {
-                            context.push(Uri(path: '/station', queryParameters: {'id': data.station.id}).toString());
+                            context.push(Uri(path: '/station', queryParameters: {'id': data.station.id.toString()}).toString());
                           },
                           icon: const Padding(
                             padding: EdgeInsets.all(4),
@@ -302,7 +302,7 @@ class _StationSimple extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         onTap: () {
-          context.push(Uri(path: '/station', queryParameters: {'id': data.station.id}).toString());
+          context.push(Uri(path: '/station', queryParameters: {'id': data.station.id.toString()}).toString());
         },
         child: Padding(
           padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12, right: 20),

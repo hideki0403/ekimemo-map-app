@@ -14,7 +14,7 @@ final logger = log.Logger('Radar');
 
 class StationPoint extends Point {
   StationPoint(super.x, super.y, this.id);
-  String id;
+  int id;
 }
 
 class LatLngPoint {
@@ -62,7 +62,7 @@ class SearchRadarRange {
 
   bool get isRunning => _worker != null;
 
-  Future<List<StationPoint>> _provider(String id) async {
+  Future<List<StationPoint>> _provider(int id) async {
     final station = await _repository.getOne(id);
     if (station == null) {
       throw Exception('Station not found: $id');
@@ -91,7 +91,7 @@ class SearchRadarRange {
           break;
         }
         case 'point': {
-          final id = message['id'] as String;
+          final id = message['id'] as int;
           final station = await _provider(id);
           workerSendPort?.send({'type': 'point', 'id': id, 'point': station});
         }
@@ -138,7 +138,7 @@ void _voronoiWorker(List<dynamic> args) {
   final container = args[2] as Triangle;
   final level = args[3] as int;
 
-  final providerCompleter = <String, Completer>{};
+  final providerCompleter = <int, Completer>{};
 
   void progress(int index, List<Point> polygon) {
     sendPort.send({
@@ -170,7 +170,7 @@ void _voronoiWorker(List<dynamic> args) {
         break;
       }
       case 'point': {
-        final id = message['id'] as String;
+        final id = message['id'] as int;
         final completer = providerCompleter[id];
         if (completer != null) completer.complete(message['point']);
       }

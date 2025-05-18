@@ -13,7 +13,7 @@ class TreeNodeRepository extends AbstractRepository<TreeNode> {
   }
 
   static final _useCache = !Config.disableDbCache;
-  static final _cache = SplayTreeMap<String, TreeNode>();
+  static final _cache = SplayTreeMap<int, TreeNode>();
 
   Future<void> buildCache() async {
     if (!_useCache) return;
@@ -28,7 +28,7 @@ class TreeNodeRepository extends AbstractRepository<TreeNode> {
   Future<TreeNode?> getOne(dynamic key, {String? column}) async {
     if (_useCache) {
       if (column == null) {
-        return _cache[key.toString()];
+        return _cache[key];
       } else {
         logger.info('column is specified, fallback to database');
       }

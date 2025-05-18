@@ -18,11 +18,11 @@ class RouteSearchViewState extends State<RouteSearchView> {
   bool isCalculating = false;
   String fileName = '';
   List<Wpt> trackPoints = [];
-  Map<String, StationData> stations = {};
+  Map<int, StationData> stations = {};
   int calcTime = 0;
 
-  Future<Map<String, StationData>> calculateRoute() async {
-    final s = <String, StationData>{};
+  Future<Map<int, StationData>> calculateRoute() async {
+    final s = <int, StationData>{};
     for (var i = 0; i < trackPoints.length; i++) {
       final pt = trackPoints[i];
       if (pt.lat != null && pt.lon != null) {

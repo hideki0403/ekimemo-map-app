@@ -8,7 +8,7 @@ import 'package:ekimemo_map/services/utils.dart';
 
 Map<String, dynamic> buildVoronoi(List<Station> stations, { bool useAttrColor = false, List<StationData>? stationList }) {
   final List<Map<String, dynamic>> features = [];
-  final List<String> nearStations = stationList?.map((x) => x.station.id).toList() ?? [];
+  final List<int> nearStations = stationList?.map((x) => x.station.id).toList() ?? [];
 
   for (var station in stations) {
     final voronoi = station.voronoi;
@@ -28,7 +28,7 @@ Map<String, dynamic> buildVoronoi(List<Station> stations, { bool useAttrColor = 
 
 Map<String, dynamic> buildPoint(List<Station> stations, { bool useAttr = false, List<StationData>? stationList }) {
   final List<Map<String, dynamic>> point = [];
-  final List<String> nearStations = stationList?.map((x) => x.station.id).toList() ?? [];
+  final List<int> nearStations = stationList?.map((x) => x.station.id).toList() ?? [];
 
   for (var station in stations) {
     final accessLog = AccessCacheManager.get(station.id);

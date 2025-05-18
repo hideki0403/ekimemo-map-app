@@ -2,7 +2,7 @@ import '_abstract.dart';
 
 class PassingLog extends AbstractModel {
   late String uuid;
-  late String id;
+  late int id;
   late DateTime timestamp;
   late double latitude;
   late double longitude;

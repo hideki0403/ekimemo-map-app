@@ -1,7 +1,7 @@
 import '_abstract.dart';
 
 class AccessLog extends AbstractModel {
-  late String id;
+  late int id;
   late DateTime firstAccess;
   late DateTime lastAccess;
   late int accessCount;

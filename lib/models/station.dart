@@ -5,7 +5,7 @@ enum StationAttr { eco, heat, cool, unknown }
 
 class Station extends AbstractModel  {
   late final int code;
-  late final String id;
+  late final int id;
   late final String name;
   late final String originalName;
   late final String nameKana;
@@ -18,7 +18,7 @@ class Station extends AbstractModel  {
   late final String postalCode;
   late final String address;
   late final Map<String, dynamic> voronoi;
-  late final List<String> delaunay;
+  late final List<int> delaunay;
 
   @override
   Station fromMap(Map<String, dynamic> map) {
@@ -35,7 +35,7 @@ class Station extends AbstractModel  {
     station.lines = jsonDecode(map['lines']).cast<int>() as List<int>;
     station.attr = StationAttr.values.byName(map['attr']);
     station.voronoi = jsonDecode(map['voronoi']).cast<String, dynamic>() as Map<String, dynamic>;
-    station.delaunay = jsonDecode(map['delaunay']).cast<String>() as List<String>;
+    station.delaunay = jsonDecode(map['delaunay']).cast<int>() as List<int>;
     return station;
   }
 
@@ -54,7 +54,7 @@ class Station extends AbstractModel  {
     station.lines = json['lines'].cast<int>() as List<int>;
     station.attr = StationAttr.values.byName(json['attr']);
     station.voronoi = json['voronoi'].cast<String, dynamic>() as Map<String, dynamic>;
-    station.delaunay = json['delaunay'].cast<String>() as List<String>;
+    station.delaunay = json['delaunay'].cast<int>() as List<int>;
     return station;
   }
 

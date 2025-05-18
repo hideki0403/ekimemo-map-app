@@ -1,9 +1,9 @@
 import '_abstract.dart';
 
 class TreeNode extends AbstractModel {
-  late final String id;
-  late final String? left;
-  late final String? right;
+  late final int id;
+  late final int? left;
+  late final int? right;
 
   @override
   TreeNode fromMap(Map<String, dynamic> map) {

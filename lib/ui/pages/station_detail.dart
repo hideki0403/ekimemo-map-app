@@ -18,7 +18,7 @@ final _stationRepository = StationRepository();
 final _lineRepository = LineRepository();
 
 class StationDetailView extends StatefulWidget {
-  final String? stationId;
+  final int? stationId;
   const StationDetailView({this.stationId, super.key});
 
   @override
@@ -91,14 +91,14 @@ class _StationDetailViewState extends State<StationDetailView> {
                   children: [
                     ElevatedButton.icon(
                       onPressed: () {
-                        context.push(Uri(path: '/map', queryParameters: {'station-id': widget.stationId}).toString());
+                        context.push(Uri(path: '/map', queryParameters: {'station-id': widget.stationId.toString()}).toString());
                       },
                       icon: const Icon(Icons.map),
                       label: const Text('マップ'),
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
-                        context.push(Uri(path: '/map', queryParameters: {'radar-id': widget.stationId}).toString());
+                        context.push(Uri(path: '/map', queryParameters: {'radar-id': widget.stationId.toString()}).toString());
                       },
                       icon: const Icon(Icons.radar),
                       label: const Text('レーダー範囲'),

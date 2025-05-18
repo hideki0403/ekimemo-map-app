@@ -14,7 +14,7 @@ class StationCard extends StatefulWidget {
   final bool viewOnly;
 
   const StationCard({required this.stationData, required this.index, this.viewOnly = false, super.key});
-  
+
   @override
   State<StationCard> createState() => _StationCardState();
 }
@@ -64,7 +64,7 @@ class _StationCardState extends State<StationCard> {
           borderRadius: BorderRadius.circular(16),
         ),
         onTap: () {
-          context.push(Uri(path: '/station', queryParameters: {'id': widget.stationData.station.id}).toString());
+          context.push(Uri(path: '/station', queryParameters: {'id': widget.stationData.station.id.toString()}).toString());
         },
         onLongPress: widget.viewOnly ? null : () async {
           final rebuild = await showDialog<bool?>(context: context, builder: (context) => _StationMenu(station: widget.stationData.station, index: widget.index, lineName: widget.stationData.lineName));
@@ -162,7 +162,7 @@ class _StationMenu extends StatelessWidget {
             leading: const Icon(Icons.radar),
             onTap: () async {
               if (context.mounted) Navigator.of(context).pop(true);
-              await context.push(Uri(path: '/map', queryParameters: {'radar-id': station.id}).toString());
+              await context.push(Uri(path: '/map', queryParameters: {'radar-id': station.id.toString()}).toString());
             },
           ),
         ],

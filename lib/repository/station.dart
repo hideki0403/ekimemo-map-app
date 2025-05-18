@@ -13,7 +13,7 @@ class StationRepository extends AbstractRepository<Station> {
   }
 
   static final _useCache = !Config.disableDbCache;
-  static final _cache = SplayTreeMap<String, Station>();
+  static final _cache = SplayTreeMap<int, Station>();
 
   Future<void> buildCache() async {
     if (!_useCache) return;
@@ -28,7 +28,7 @@ class StationRepository extends AbstractRepository<Station> {
   Future<List<Station>> get(List<dynamic> keys, {String? column}) async {
     if (_useCache) {
       if (column == null) {
-        return keys.map((key) => _cache[key.toString()]).whereType<Station>().toList();
+        return keys.map((key) => _cache[key]).whereType<Station>().toList();
       } else {
         logger.info('column is specified, fallback to database');
       }
@@ -40,7 +40,7 @@ class StationRepository extends AbstractRepository<Station> {
   Future<Station?> getOne(dynamic key, {String? column}) async {
     if (_useCache) {
       if (column == null) {
-        return _cache[key.toString()];
+        return _cache[key];
       } else {
         logger.info('column is specified, fallback to database');
       }

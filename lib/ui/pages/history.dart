@@ -135,7 +135,7 @@ class _StationHistoryState extends State<_StationHistory> {
           borderRadius: BorderRadius.circular(16),
         ),
         onTap: () {
-          context.push(Uri(path: '/station', queryParameters: {'id': stationData?.id}).toString());
+          context.push(Uri(path: '/station', queryParameters: {'id': stationData?.id.toString()}).toString());
         },
         child: Padding(
           padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12, right: 20),

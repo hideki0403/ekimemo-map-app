@@ -136,19 +136,19 @@ class Root extends StatelessWidget {
         path: '/map',
         builder: (context, state) {
           final params = state.uri.queryParameters;
-          return MapView(stationId: params['station-id'], lineId: params['line-id'], radarId: params['radar-id']);
+          return MapView(stationId: int.tryParse(params['station-id'] ?? ''), lineId: int.tryParse(params['line-id'] ?? ''), radarId: int.tryParse(params['radar-id'] ?? ''));
         },
       ),
       GoRoute(
         path: '/station',
         builder: (context, state) {
-          return StationDetailView(stationId: state.uri.queryParameters['id']);
+          return StationDetailView(stationId: int.tryParse(state.uri.queryParameters['id'] ?? ''));
         },
       ),
       GoRoute(
         path: '/line',
         builder: (context, state) {
-          return LineDetailView(lineId: state.uri.queryParameters['id']);
+          return LineDetailView(lineId: int.tryParse(state.uri.queryParameters['id'] ?? ''));
         },
       ),
     ],

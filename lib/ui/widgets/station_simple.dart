@@ -18,7 +18,7 @@ class StationSimple extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         onTap: () {
-          context.push(Uri(path: '/station', queryParameters: {'id': station.id}).toString());
+          context.push(Uri(path: '/station', queryParameters: {'id': station.id.toString()}).toString());
         },
         child: Padding(
           padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12, right: 20),
