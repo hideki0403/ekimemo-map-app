@@ -430,10 +430,6 @@ class _SettingsViewState extends State<SettingsView> {
                   title: const Text('App commit hash'),
                   subtitle: Text(_commitHash),
                 ),
-                ListTile(
-                  title: const Text('App build number'),
-                  subtitle: Text(_buildNumber),
-                ),
                 if (_hasPermission) ...[
                   const SectionTitle(title: 'アシスタント (デバッグ用)'),
                   ListTile(

@@ -17,12 +17,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Get commit count
-        id: commit_count
-        run: echo "number=$(git rev-list HEAD --count)" >> $GITHUB_OUTPUT
+      - name: Setup yq
+        uses: vegardit/gha-setup-yq@v1
+
+      - name: Setup zx
+        uses: johngeorgewright/zx-action@v1.0.0
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -36,6 +36,28 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Get release version
+        id: app_version
+        shell: zx --install {0}
+        run: | # javascript
+          // Format: <YYYY>.<MM>.<MICRO>
+          // Example: 2023.10.0, 2025.2.3, 2024.1.12, ...
+          import core from '@actions/core'
+          const { stdout: currentVersion } = await $`yq '.version' pubspec.yaml`
+          const { stdout: head } = await $`date +'%Y.%-m.'`
+          const isPatchRelease = currentVersion.startsWith(head)
+          const patch = isPatchRelease ? Number.parseInt(currentVersion.split('.').pop()) + 1 : 0
+          core.setOutput('release', ${head}${patch})
+
+      - name: Rewrite pubspec.yaml
+        run: | # shell
+          sed -i 's/version:.*/version: ${{ steps.app_version.outputs.release }}/' pubspec.yaml
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add pubspec.yaml
+          git commit -m "release: ${{ steps.app_version.outputs.release }}"
+          git push
+
       - name: Get dependencies
         run: flutter pub get
 
@@ -45,14 +67,7 @@ jobs:
           export STORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}'
           export KEY_ALIAS='${{ secrets.KEY_ALIAS }}'
           export KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}'
-          export GOOGLE_MAPS_API_KEY='${{ secrets.GOOGLE_MAPS_API_KEY }}'
-          flutter build apk --release --build-number=${{ steps.commit_count.outputs.number }}
-
-      - name: Get flutter version
-        id: flutter_version
-        run: |
-          VERSION=$(cat pubspec.yaml | grep 'version:' | awk '{print $2}' | awk -F '+' '{print $1}')
-          echo "version_number=$VERSION" >> $GITHUB_OUTPUT
+          flutter build apk --release
 
       - name: Prepare deploy
         run: |
@@ -62,8 +77,8 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          name: v${{ steps.flutter_version.outputs.version_number }}+${{ steps.commit_count.outputs.number }}
-          tag_name: v${{ steps.flutter_version.outputs.version_number }}+${{ steps.commit_count.outputs.number }}
+          name: v${{ steps.app_version.outputs.release }}
+          tag_name: v${{ steps.app_version.outputs.release }}
           files: app-release.apk
           token: ${{ secrets.GITHUB_TOKEN }}
           generate_release_notes: true

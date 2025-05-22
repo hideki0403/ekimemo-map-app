@@ -143,7 +143,7 @@ class AppUpdater {
 
     final resource = await _UpdateUtils.getLatestRelease('hideki0403/ekimemo-map-app', 'app-release.apk');
     final packageInfo = await PackageInfo.fromPlatform();
-    final currentVersion = 'v${packageInfo.version}+${packageInfo.buildNumber}';
+    final currentVersion = 'v${packageInfo.version}';
 
     if (currentVersion != resource.version) updateAvailable = true;
 
