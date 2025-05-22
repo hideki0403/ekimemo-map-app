@@ -50,11 +50,6 @@ jobs:
       - name: Rewrite pubspec.yaml
         run: | # shell
           sed -i 's/version:.*/version: ${{ steps.app_version.outputs.release }}/' pubspec.yaml
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add pubspec.yaml
-          git commit -m "release: ${{ steps.app_version.outputs.release }}"
-          git push
 
       - name: Get dependencies
         run: flutter pub get
@@ -71,6 +66,14 @@ jobs:
         run: |
           mkdir dist
           cp ./build/app/outputs/flutter-apk/app-release.apk ./
+
+      - name: Push pubspec.yaml changes
+        run: | # shell
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add pubspec.yaml
+          git commit -m "release: ${{ steps.app_version.outputs.release }}"
+          git push
 
       - name: Release
         uses: softprops/action-gh-release@v2
