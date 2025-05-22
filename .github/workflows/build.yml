@@ -35,18 +35,17 @@ jobs:
 
       - name: Get release version
         id: app_version
-        uses: aliuq/script-action@v1
-        with:
-          bun: false
-          zx: true
-          script: | # javascript
-            // Format: <YYYY>.<MM>.<MICRO>
-            // Example: 2023.10.0, 2025.2.3, 2024.1.12, ...
-            const { stdout: currentVersion } = await $`yq '.version' pubspec.yaml`
-            const { stdout: head } = await $`date +'%Y.%-m.'`
-            const isPatchRelease = currentVersion.startsWith(head)
-            const patch = isPatchRelease ? Number.parseInt(currentVersion.split('.').pop()) + 1 : 0
-            output('release', ${head}${patch})
+        env:
+          TZ: 'Asia/Tokyo'
+        run: | # shell
+          CURRENT_VERSION=$(yq '.version' pubspec.yaml)
+          HEAD=$(date +'%Y.%-m.')
+          if [[ "$CURRENT_VERSION" == "$HEAD"* ]]; then
+            PATCH=$(echo "$CURRENT_VERSION" | awk -F. '{print $NF}' | awk '{print $1 + 1}')
+          else
+            PATCH=0
+          fi
+          echo "release=$HEAD$PATCH" >> $GITHUB_OUTPUT
 
       - name: Rewrite pubspec.yaml
         run: | # shell
