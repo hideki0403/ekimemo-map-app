@@ -96,7 +96,6 @@ android {
         buildConfigField('String', 'COMMIT_HASH', "\"${getCommitHash()}\"")
         manifestPlaceholders = [
             'applicationName': 'android.app.Application',
-            'GOOGLE_MAPS_API_KEY': isExistTokenProperties ? tokenProperties.getProperty('googleMapsApiKey') : (System.getenv('GOOGLE_MAPS_API_KEY') ?: 'DUMMY_API_KEY'),
         ]
     }
 
