@@ -88,9 +88,9 @@ class AssetUpdater {
       receiver: (ctx) => popContext(ctx),
       content: const Column(
         mainAxisSize: MainAxisSize.min,
+        spacing: 16,
         children: [
           Text('適用しています...\n(時間がかかる場合があります)'),
-          SizedBox(height: 16),
           LinearProgressIndicator(),
         ],
       ),

@@ -124,6 +124,7 @@ class _LogObject extends StatelessWidget {
         padding: const EdgeInsets.only(left: 12, top: 6, bottom: 6, right: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 4,
           children: [
             Row(
               children: [
@@ -133,7 +134,6 @@ class _LogObject extends StatelessWidget {
                 Text(_dateFormat.format(log.time), style: const TextStyle(color: Colors.grey), textScaler: const TextScaler.linear(0.9)),
               ],
             ),
-            const SizedBox(height: 4),
             Text(log.object.toString()),
           ],
         ),

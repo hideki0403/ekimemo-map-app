@@ -152,11 +152,13 @@ class CoreMapAdapter extends MapAdapter {
                           },
                           icon: const Padding(
                             padding: EdgeInsets.all(4),
-                            child: Column(children: [
-                              Icon(Icons.radar),
-                              SizedBox(height: 4),
-                              Text('レーダー範囲'),
-                            ]),
+                            child: Column(
+                              spacing: 4,
+                              children: [
+                                Icon(Icons.radar),
+                                Text('レーダー範囲'),
+                              ]
+                            ),
                           ),
                         )),
                         Expanded(child: IconButton(
@@ -165,11 +167,13 @@ class CoreMapAdapter extends MapAdapter {
                           },
                           icon: const Padding(
                             padding: EdgeInsets.all(4),
-                            child: Column(children: [
-                              Icon(Icons.pending),
-                              SizedBox(height: 4),
-                              Text('詳細'),
-                            ]),
+                            child: Column(
+                              spacing: 4,
+                              children: [
+                                Icon(Icons.pending),
+                                Text('詳細'),
+                              ]
+                            ),
                           ),
                         )),
                         Expanded(child: IconButton(
@@ -182,9 +186,9 @@ class CoreMapAdapter extends MapAdapter {
                           icon: Padding(
                             padding: const EdgeInsets.all(4),
                             child: Column(
+                              spacing: 4,
                               children: [
                                 Icon(accessed ? Icons.cancel : Icons.check_circle),
-                                const SizedBox(height: 4),
                                 const Text('アクセス状態切替', textAlign: TextAlign.center),
                               ],
                             ),
@@ -197,19 +201,21 @@ class CoreMapAdapter extends MapAdapter {
                   const SizedBox(height: 4),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Column(children: [
-                      const Text('タップした地点からレーダーで届く駅'),
-                      const SizedBox(height: 8),
-                      ListView.builder(
-                        padding: EdgeInsets.zero,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: stations.length,
-                        itemBuilder: (context, index) {
-                          return _StationSimple(stations[index], index);
-                        },
-                      ),
-                    ]),
+                    child: Column(
+                      spacing: 8,
+                      children: [
+                        const Text('タップした地点からレーダーで届く駅'),
+                        ListView.builder(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: stations.length,
+                          itemBuilder: (context, index) {
+                            return _StationSimple(stations[index], index);
+                          },
+                        ),
+                      ]
+                    ),
                   ),
                 ],
               ),
@@ -229,9 +235,9 @@ class CoreMapAdapter extends MapAdapter {
     if (_hideAccessState) {
       parent.setOverlay(Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 4,
           children: [
             getAttrIcon(data.station.attr, context: parent.context.mounted ? parent.context : null),
-            const SizedBox(width: 4),
             Text(data.station.name),
           ]
       ));

@@ -59,9 +59,9 @@ class HomeView extends StatelessWidget {
                     )
                 ),
                 Row(
+                  spacing: 8,
                   children: [
                     Text(gps.isEnabled ? '探索 ON' : '探索 OFF'),
-                    const SizedBox(width: 8),
                     Switch(
                       value: gps.isEnabled,
                       onChanged: state.stationDataVersion == '' ? null : (value) {

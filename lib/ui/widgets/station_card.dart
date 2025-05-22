@@ -78,9 +78,9 @@ class _StationCardState extends State<StationCard> {
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 4,
                 children: [
                   Text('${widget.index + 1}'),
-                  const SizedBox(height: 4),
                   getAttrIcon(widget.stationData.station.attr, context: context),
                 ],
               ),
@@ -88,9 +88,9 @@ class _StationCardState extends State<StationCard> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 4,
                   children: [
                     Text(widget.stationData.station.name, textScaler: const TextScaler.linear(1.2), overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 4),
                     Opacity(opacity: 0.8, child: Text(widget.stationData.lineName ?? '', overflow: TextOverflow.ellipsis)),
                   ],
                 ),

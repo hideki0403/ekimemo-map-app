@@ -140,14 +140,14 @@ class _StationHistoryState extends State<_StationHistory> {
         child: Padding(
           padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12, right: 20),
           child: Row(
+            spacing: 20,
             children: stationData == null ? [] : [
               getAttrIcon(stationData!.attr, context: context),
-              const SizedBox(width: 20),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 2,
                 children: [
                   Text(stationData!.name, textScaler: const TextScaler.linear(1.2), overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 2),
                   Wrap(
                     direction: Axis.horizontal,
                     alignment: WrapAlignment.end,
@@ -158,7 +158,6 @@ class _StationHistoryState extends State<_StationHistory> {
                       Text('速度: ${widget.data.speed.toStringAsFixed(1)}km/h'),
                     ],
                   ),
-                  const SizedBox(height: 2),
                   Opacity(
                     opacity: 0.8,
                     child: Text(DateFormat('yyyy/MM/dd HH:mm:ss').format(widget.data.timestamp), textScaler: const TextScaler.linear(0.9)),

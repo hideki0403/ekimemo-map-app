@@ -103,13 +103,13 @@ class MapViewState extends State<MapView> {
 
   void showLoading([String? message]) {
     setOverlay(Row(
+      spacing: 32,
       children: [
         const SizedBox(
           width: 24,
           height: 24,
           child: CircularProgressIndicator(),
         ),
-        const SizedBox(width: 32),
         Text(message ?? '計算中...', style: const TextStyle(fontSize: 18)),
       ],
     ));

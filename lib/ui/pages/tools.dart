@@ -56,15 +56,15 @@ class _ToolItem extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 12,
             children: [
               Row(
+                spacing: 12,
                 children: [
                   Icon(icon, size: 24),
-                  const SizedBox(width: 12),
                   Text(title, textScaler: const TextScaler.linear(1.2)),
                 ],
               ),
-              const SizedBox(height: 12),
               Text(description),
             ],
           ),
