@@ -21,9 +21,6 @@ jobs:
       - name: Setup yq
         uses: vegardit/gha-setup-yq@v1
 
-      - name: Setup zx
-        uses: johngeorgewright/zx-action@v1.0.0
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -38,16 +35,18 @@ jobs:
 
       - name: Get release version
         id: app_version
-        shell: zx --install {0}
-        run: | # javascript
-          // Format: <YYYY>.<MM>.<MICRO>
-          // Example: 2023.10.0, 2025.2.3, 2024.1.12, ...
-          import core from '@actions/core'
-          const { stdout: currentVersion } = await $`yq '.version' pubspec.yaml`
-          const { stdout: head } = await $`date +'%Y.%-m.'`
-          const isPatchRelease = currentVersion.startsWith(head)
-          const patch = isPatchRelease ? Number.parseInt(currentVersion.split('.').pop()) + 1 : 0
-          core.setOutput('release', ${head}${patch})
+        uses: aliuq/script-action@v1
+        with:
+          bun: false
+          zx: true
+          script: | # javascript
+            // Format: <YYYY>.<MM>.<MICRO>
+            // Example: 2023.10.0, 2025.2.3, 2024.1.12, ...
+            const { stdout: currentVersion } = await $`yq '.version' pubspec.yaml`
+            const { stdout: head } = await $`date +'%Y.%-m.'`
+            const isPatchRelease = currentVersion.startsWith(head)
+            const patch = isPatchRelease ? Number.parseInt(currentVersion.split('.').pop()) + 1 : 0
+            output('release', ${head}${patch})
 
       - name: Rewrite pubspec.yaml
         run: | # shell
