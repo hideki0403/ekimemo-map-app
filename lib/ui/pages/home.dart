@@ -94,7 +94,7 @@ class HomeView extends StatelessWidget {
           SliverPadding(
             padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 32),
             sliver: SliverList(
-              delegate: SliverChildListDelegate.fixed(state.stationDataVersion != '' ? [
+              delegate: SliverChildListDelegate.fixed(state.stationDataVersion != '' && station.list.isNotEmpty ? [
                 ListView.builder(
                     padding: EdgeInsets.zero,
                     shrinkWrap: true,
@@ -115,7 +115,8 @@ class HomeView extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 36, bottom: 24, left: 12, right: 12),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      spacing: 16,
+                      children: state.stationDataVersion == '' ? [
                         const Text('駅データがありません', textScaler: TextScaler.linear(1.2)),
                         const Text('下のボタンから駅データを更新することで、利用できるようになります。'),
                         ElevatedButton(
@@ -124,6 +125,9 @@ class HomeView extends StatelessWidget {
                           },
                           child: const Text('駅データを更新'),
                         ),
+                      ] : [
+                        const Text('探索がOFFになっています', textScaler: TextScaler.linear(1.2)),
+                        const Text('右上のスイッチで探索をはじめることができます。'),
                       ],
                     ),
                   ),
