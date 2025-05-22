@@ -78,7 +78,7 @@ class _LogViewState extends State<LogView> {
               break;
           }
         },
-        child: const Icon(Icons.filter_list),
+        child: const Icon(Icons.filter_list_rounded),
       ),
       body: CustomScrollView(
         slivers: [

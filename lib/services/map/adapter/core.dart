@@ -155,7 +155,7 @@ class CoreMapAdapter extends MapAdapter {
                             child: Column(
                               spacing: 4,
                               children: [
-                                Icon(Icons.radar),
+                                Icon(Icons.radar_rounded),
                                 Text('レーダー範囲'),
                               ]
                             ),
@@ -170,7 +170,7 @@ class CoreMapAdapter extends MapAdapter {
                             child: Column(
                               spacing: 4,
                               children: [
-                                Icon(Icons.pending),
+                                Icon(Icons.pending_rounded),
                                 Text('詳細'),
                               ]
                             ),
@@ -188,7 +188,7 @@ class CoreMapAdapter extends MapAdapter {
                             child: Column(
                               spacing: 4,
                               children: [
-                                Icon(accessed ? Icons.cancel : Icons.check_circle),
+                                Icon(accessed ? Icons.cancel_rounded : Icons.check_circle_rounded),
                                 const Text('アクセス状態切替', textAlign: TextAlign.center),
                               ],
                             ),

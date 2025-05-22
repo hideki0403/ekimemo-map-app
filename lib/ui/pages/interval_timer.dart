@@ -37,7 +37,7 @@ class _IntervalTimerViewState extends State<IntervalTimerView> {
         title: const Text('インターバルタイマー'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.help),
+            icon: const Icon(Icons.help_rounded),
             onPressed: () {
               showMessageDialog(
                 title: 'インターバルタイマーについて',
@@ -53,7 +53,7 @@ class _IntervalTimerViewState extends State<IntervalTimerView> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add_rounded),
         onPressed: () async {
           await IntervalTimerManager.addTimer();
           await _loadTimers();
@@ -182,7 +182,7 @@ class _IntervalTimerItemState extends State<IntervalTimerItem> {
                       child: Text(_name, textScaler: const TextScaler.linear(1.1)),
                     )),
                     IconButton(
-                      icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
+                      icon: Icon(_isExpanded ? Icons.expand_less_rounded : Icons.expand_more_rounded),
                       onPressed: () {
                         _expandableController.toggle();
                         setState(() {
@@ -221,27 +221,27 @@ class _IntervalTimerItemState extends State<IntervalTimerItem> {
                           onPressed: () {
                             widget.item.start();
                           },
-                          child: const Icon(Icons.play_arrow),
+                          child: const Icon(Icons.play_arrow_rounded),
                         ),
                       ] else ...[
                         FilledButton(
                           onPressed: () {
                             widget.item.pause();
                           },
-                          child: const Icon(Icons.pause),
+                          child: const Icon(Icons.pause_rounded),
                         ),
                       ],
                       FilledButton.tonal(
                         onPressed: () {
                           widget.item.stop();
                         },
-                        child: const Icon(Icons.stop),
+                        child: const Icon(Icons.stop_rounded),
                       ),
                       FilledButton.tonal(
                         onPressed: _isStopped ? null : () {
                           widget.item.reset();
                         },
-                        child: const Icon(Icons.restart_alt),
+                        child: const Icon(Icons.restart_alt_rounded),
                       ),
                     ],
                   ),

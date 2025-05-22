@@ -96,7 +96,7 @@ class _AssistantFlowViewState extends State<AssistantFlowView> {
             }
           }
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add_rounded),
       ),
       body: CustomScrollView(
         slivers: [
@@ -104,7 +104,7 @@ class _AssistantFlowViewState extends State<AssistantFlowView> {
             title: const Text('Assistant Flow'),
             actions: [
               IconButton(
-                icon: const Icon(Icons.file_upload),
+                icon: const Icon(Icons.file_upload_rounded),
                 onPressed: () async {
                   final result = await showYesNoDialog(
                     title: 'Export',
@@ -123,7 +123,7 @@ class _AssistantFlowViewState extends State<AssistantFlowView> {
                 }
               ),
               IconButton(
-                icon: const Icon(Icons.file_download),
+                icon: const Icon(Icons.file_download_rounded),
                 onPressed: () async {
                   final result = await showEditorDialog(
                     title: 'Import',

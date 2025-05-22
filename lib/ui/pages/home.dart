@@ -28,19 +28,19 @@ class HomeView extends StatelessWidget {
             onPressed: () {
               context.push('/tools');
             },
-            icon: const Icon(Icons.build),
+            icon: const Icon(Icons.widgets_rounded),
           ),
           IconButton(
             onPressed: state.stationDataVersion == '' ? null : () {
               context.push('/map');
             },
-            icon: const Icon(Icons.map),
+            icon: const Icon(Icons.map_rounded),
           ),
           IconButton(
             onPressed: () {
               context.push('/settings');
             },
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_rounded),
           ),
         ],
         bottom: PreferredSize(

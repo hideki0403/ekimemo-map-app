@@ -140,7 +140,7 @@ class _StationMenu extends StatelessWidget {
           if (index != 0) ...[
             ListTile(
               title: Text(isAccessed ? '未アクセスにする' : 'アクセス済みにする'),
-              leading: Icon(isAccessed ? Icons.cancel : Icons.check_circle),
+              leading: Icon(isAccessed ? Icons.cancel_rounded : Icons.check_circle_rounded),
               onTap: () async {
                 await AccessCacheManager.setAccessState(station.id, !isAccessed);
                 if (context.mounted) Navigator.of(context).pop(true);
@@ -148,7 +148,7 @@ class _StationMenu extends StatelessWidget {
             ),
             if (Config.enableReminder) ListTile(
               title: Text(cooldown == 0 ? 'タイマーをセットする' : 'タイマーをリセットする'),
-              leading: Icon(cooldown == 0 ? Icons.timer : Icons.timer_off),
+              leading: Icon(cooldown == 0 ? Icons.timer_rounded : Icons.timer_off_rounded),
               onTap: () async {
                 final lastAccessedTime = AccessCacheManager.getTime(station.id) ?? DateTime.now();
                 final time = cooldown == 0 ? DateTime.now() : lastAccessedTime.subtract(Duration(seconds: cooldown));
@@ -159,7 +159,7 @@ class _StationMenu extends StatelessWidget {
           ],
           ListTile(
             title: const Text('この駅のレーダー範囲を見る'),
-            leading: const Icon(Icons.radar),
+            leading: const Icon(Icons.radar_rounded),
             onTap: () async {
               if (context.mounted) Navigator.of(context).pop(true);
               await context.push(Uri(path: '/map', queryParameters: {'radar-id': station.id.toString()}).toString());

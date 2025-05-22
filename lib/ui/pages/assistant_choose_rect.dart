@@ -28,7 +28,7 @@ class _AssistantChooseRectViewState extends State<AssistantChooseRectView> {
         title: const Text('Choose Rect'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.check),
+            icon: const Icon(Icons.check_rounded),
             onPressed: _image != null ? () {
               _controller.crop();
             } : null,
@@ -36,7 +36,7 @@ class _AssistantChooseRectViewState extends State<AssistantChooseRectView> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.image),
+        child: const Icon(Icons.image_rounded),
         onPressed: () async {
           final image = await ImagePicker().pickImage(source: ImageSource.gallery);
           if (image == null) return;

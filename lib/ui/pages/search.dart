@@ -66,9 +66,9 @@ class _SearchViewState extends State<SearchView> {
                   onChanged: _search,
                   decoration: InputDecoration(
                     hintText: '駅名または路線名を入力してください',
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search_rounded),
                     suffixIcon: resultText.isEmpty ? null : IconButton(
-                      icon: const Icon(Icons.clear),
+                      icon: const Icon(Icons.clear_rounded),
                       onPressed: () {
                         controller.clear();
                         _search();

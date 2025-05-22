@@ -149,7 +149,7 @@ class MapViewState extends State<MapView> {
           });
         },
         foregroundColor: _trackingMode != MyLocationTrackingMode.none ? Theme.of(context).colorScheme.primary : null,
-        child: Icon(_trackingMode != MyLocationTrackingMode.none ? Icons.gps_fixed : Icons.gps_not_fixed),
+        child: Icon(_trackingMode != MyLocationTrackingMode.none ? Icons.gps_fixed_rounded : Icons.gps_not_fixed_rounded),
       ),
       bottomNavigationBar: _adapterBottomWidgets.isEmpty ? null : Container(
         color: Theme.of(context).colorScheme.surfaceContainer,

@@ -31,7 +31,7 @@ class StationSimple extends StatelessWidget {
               Expanded(
                 child: Text(station.name, textScaler: const TextScaler.linear(1.2)),
               ),
-              if (isAccessed) const Icon(Icons.check, color: Colors.green),
+              if (isAccessed) const Icon(Icons.check_rounded, color: Colors.green),
             ],
           ),
         ),

@@ -93,14 +93,14 @@ class _StationDetailViewState extends State<StationDetailView> {
                       onPressed: () {
                         context.push(Uri(path: '/map', queryParameters: {'station-id': widget.stationId.toString()}).toString());
                       },
-                      icon: const Icon(Icons.map),
+                      icon: const Icon(Icons.map_rounded),
                       label: const Text('マップ'),
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
                         context.push(Uri(path: '/map', queryParameters: {'radar-id': widget.stationId.toString()}).toString());
                       },
-                      icon: const Icon(Icons.radar),
+                      icon: const Icon(Icons.radar_rounded),
                       label: const Text('レーダー範囲'),
                     ),
                   ]

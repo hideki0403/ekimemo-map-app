@@ -34,9 +34,9 @@ class ReorderableItem extends StatelessWidget {
                     onDeleted!(id!);
                   }
                 },
-                icon: const Icon(Icons.delete),
+                icon: const Icon(Icons.delete_rounded),
               ),
-              const Icon(Icons.drag_handle),
+              const Icon(Icons.drag_handle_rounded),
             ],
           ),
         ),

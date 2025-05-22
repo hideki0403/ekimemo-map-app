@@ -53,13 +53,13 @@ Icon getAttrIcon(StationAttr attr, { BuildContext? context }) {
 
   switch (attr) {
     case StationAttr.eco:
-      return Icon(Icons.energy_savings_leaf, color: !isDark ? Colors.green.shade400 : Colors.green.shade300, size: scale);
+      return Icon(Icons.energy_savings_leaf_rounded, color: !isDark ? Colors.green.shade400 : Colors.green.shade300, size: scale);
     case StationAttr.heat:
-      return Icon(Icons.whatshot, color: !isDark ? Colors.red.shade400 : Colors.red.shade300, size: scale);
+      return Icon(Icons.whatshot_rounded, color: !isDark ? Colors.red.shade400 : Colors.red.shade300, size: scale);
     case StationAttr.cool:
-      return Icon(Icons.water_drop, color: !isDark ? Colors.blue.shade400 : Colors.blue.shade300, size: scale);
+      return Icon(Icons.water_drop_rounded, color: !isDark ? Colors.blue.shade400 : Colors.blue.shade300, size: scale);
     default:
-      return Icon(Icons.adjust, color: !isDark ? Colors.grey.shade600 : Colors.grey.shade400, size: scale);
+      return Icon(Icons.adjust_rounded, color: !isDark ? Colors.grey.shade600 : Colors.grey.shade400, size: scale);
   }
 }
 

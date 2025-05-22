@@ -46,7 +46,7 @@ class HistoryViewState extends State<HistoryView> {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('最新のアクセス履歴を読み込みました'), duration: Duration(seconds: 1)));
               }
             },
-            icon: const Icon(Icons.sync),
+            icon: const Icon(Icons.sync_rounded),
           ),
           IconButton(
             onPressed: () async {
@@ -63,7 +63,7 @@ class HistoryViewState extends State<HistoryView> {
                 }
               }
             },
-            icon: const Icon(Icons.delete_forever),
+            icon: const Icon(Icons.delete_forever_rounded),
           ),
         ],
       ),
