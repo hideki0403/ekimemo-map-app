@@ -39,6 +39,24 @@ class _LogViewState extends State<LogView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('ログ'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              showYesNoDialog(
+                title: 'ログの削除',
+                message: 'ログを削除しますか？\nこの操作は取り消せません。',
+              ).then((value) async {
+                if (value == true) {
+                  manager.clear();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ログを削除しました')));
+                  }
+                }
+              });
+            },
+            icon: const Icon(Icons.delete_forever_rounded),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -49,7 +67,7 @@ class _LogViewState extends State<LogView> {
             noRadio: true,
           );
 
-          switch(result) {
+          switch (result) {
             case 'type':
               final type = await showCheckboxDialog(
                 title: 'Type filter',
@@ -98,7 +116,7 @@ class _LogViewState extends State<LogView> {
 class _LogObject extends StatelessWidget {
   final LogObject log;
 
-  const _LogObject({ required this.log });
+  const _LogObject({required this.log});
 
   @override
   Widget build(BuildContext context) {
