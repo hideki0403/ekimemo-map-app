@@ -79,7 +79,7 @@ class CoreMapAdapter extends MapAdapter {
   void onMapClick(Point<double> point, LatLng latLng) async {
     parent.setOverlay(const Text('駅情報を取得中...'));
 
-    final stations = await StationSearchService.getNearestStations(latLng.latitude, latLng.longitude, maxResults: Config.maxResults + 1);
+    final stations = await StationSearchService.getNearestStations(latLng.latitude, latLng.longitude, maxResults: Config.maxResults);
     for (final data in stations) {
       data.distance = beautifyDistance(measure(latLng.latitude, latLng.longitude, data.station.lat, data.station.lng));
     }
@@ -211,7 +211,7 @@ class CoreMapAdapter extends MapAdapter {
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: stations.length,
                           itemBuilder: (context, index) {
-                            return _StationSimple(stations[index], index);
+                            return _StationSimple(stations[index], index + 1);
                           },
                         ),
                       ]
