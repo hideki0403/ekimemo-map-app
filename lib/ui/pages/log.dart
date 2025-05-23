@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
+import 'package:ekimemo_map/ui/widgets/scrollview_template.dart';
 import 'package:ekimemo_map/services/log.dart';
 import 'package:ekimemo_map/services/utils.dart';
 
@@ -80,26 +81,15 @@ class _LogViewState extends State<LogView> {
         },
         child: const Icon(Icons.filter_list_rounded),
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverList(
-            delegate: SliverChildListDelegate.fixed([
-              ListView.separated(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                reverse: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: logs.length,
-                itemBuilder: (context, index) {
-                  return _LogObject(log: logs[index]);
-                },
-                separatorBuilder: (context, index) {
-                  return const Divider(height: 8);
-                },
-              ),
-            ]),
-          ),
-        ],
+      body: ScrollViewTemplate(
+        delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+          final itemIndex = logs.length - 1 - (index ~/ 2);
+          return index % 2 == 0 ? _LogObject(log: logs[itemIndex]) : const Divider(height: 8);
+        }, childCount: logs.length * 2),
+        empty: const Center(
+          child: Text('No logs found'),
+        ),
+        isEmpty: logs.isEmpty,
       ),
     );
   }

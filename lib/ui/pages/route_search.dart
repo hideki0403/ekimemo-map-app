@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 
 import 'package:ekimemo_map/services/search.dart';
 import 'package:ekimemo_map/ui/widgets/station_card.dart';
+import 'package:ekimemo_map/ui/widgets/scrollview_template.dart';
 
 class RouteSearchView extends StatefulWidget {
   const RouteSearchView({super.key});
@@ -41,10 +42,10 @@ class RouteSearchViewState extends State<RouteSearchView> {
       appBar: AppBar(
         title: const Text('ルート探索'),
       ),
-      body: CustomScrollView(
+      body: ScrollViewTemplate(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 64),
+            padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 const Text('ルート探索に使用するGPXファイルを選択してください。'),
@@ -101,20 +102,15 @@ class RouteSearchViewState extends State<RouteSearchView> {
                 ),
                 const Divider(),
                 Text('探索結果: ${stations.length}駅 (${calcTime}ms)'),
-                const SizedBox(height: 8),
-                ListView.builder(
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: stations.length,
-                  itemBuilder: (context, index) {
-                    return StationCard(stationData: stations.values.elementAt(index), index: index, viewOnly: true);
-                  }
-                ),
               ]),
             ),
           ),
         ],
+        delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+          return StationCard(stationData: stations.values.elementAt(index), index: index, viewOnly: true);
+        }, childCount: stations.length),
+        empty: const SizedBox(),
+        isEmpty: stations.isEmpty,
       ),
     );
   }

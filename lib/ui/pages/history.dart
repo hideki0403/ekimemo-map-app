@@ -7,6 +7,7 @@ import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/passing_log.dart';
 import 'package:ekimemo_map/repository/station.dart';
 import 'package:ekimemo_map/repository/passing_log.dart';
+import 'package:ekimemo_map/ui/widgets/scrollview_template.dart';
 
 class HistoryView extends StatefulWidget {
   const HistoryView({super.key});
@@ -67,36 +68,19 @@ class HistoryViewState extends State<HistoryView> {
           ),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 32),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate.fixed(passingLog.isNotEmpty ? [
-                ListView.builder(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    reverse: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: passingLog.length,
-                    itemBuilder: (context, index) {
-                      return _StationHistory(data: passingLog[index]);
-                    }
-                )
-              ] : [
-                const SizedBox(
-                  width: double.infinity,
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 36, bottom: 24, left: 12, right: 12),
-                    child: Center(
-                      child: Text('アクセス履歴がありません'),
-                    ),
-                  ),
-                ),
-              ]),
-            ),
+      body: RefreshIndicator(
+        onRefresh: () async => await _refreshHistory(context),
+        child: ScrollViewTemplate(
+          delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+            final itemIndex = passingLog.length - 1 - index;
+            return _StationHistory(data: passingLog[itemIndex]);
+          }, childCount: passingLog.length),
+          empty: const Center(
+            child: Text('アクセス履歴がありません'),
           ),
-        ],
+          isEmpty: passingLog.isEmpty,
+          itemHeight: 100,
+        ),
       ),
     );
   }

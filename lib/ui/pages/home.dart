@@ -9,6 +9,7 @@ import 'package:ekimemo_map/services/updater.dart';
 import 'package:ekimemo_map/services/assistant.dart';
 import 'package:ekimemo_map/ui/widgets/station_card.dart';
 import 'package:ekimemo_map/ui/widgets/relative_time.dart';
+import 'package:ekimemo_map/ui/widgets/scrollview_template.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -89,53 +90,32 @@ class HomeView extends StatelessWidget {
           ]),
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 32),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate.fixed(state.stationDataVersion != '' && station.list.isNotEmpty ? [
-                ListView.builder(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: station.list.length,
-                    itemBuilder: (context, index) {
-                      return StationCard(
-                        key: ValueKey(station.list[index].station.id),
-                        stationData: station.list[index],
-                        index: index,
-                      );
-                    }
-                )
-              ] : [
-                SizedBox(
-                  width: double.infinity,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 36, bottom: 24, left: 12, right: 12),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: 16,
-                      children: state.stationDataVersion == '' ? [
-                        const Text('駅データがありません', textScaler: TextScaler.linear(1.2)),
-                        const Text('下のボタンから駅データを更新することで、利用できるようになります。'),
-                        ElevatedButton(
-                          onPressed: () {
-                            AssetUpdater.check(force: true);
-                          },
-                          child: const Text('駅データを更新'),
-                        ),
-                      ] : [
-                        const Text('探索がOFFになっています', textScaler: TextScaler.linear(1.2)),
-                        const Text('右上のスイッチで探索をはじめることができます。'),
-                      ],
-                    ),
-                  ),
-                ),
-              ]),
+      body: ScrollViewTemplate(
+        delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+          return StationCard(
+            key: ValueKey(station.list[index].station.id),
+            stationData: station.list[index],
+            index: index,
+          );
+        }, childCount: station.list.length),
+        empty: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 16,
+          children: state.stationDataVersion == '' ? [
+            const Text('駅データがありません', textScaler: TextScaler.linear(1.2)),
+            const Text('下のボタンから駅データを更新することで、利用できるようになります。'),
+            ElevatedButton(
+              onPressed: () {
+                AssetUpdater.check(force: true);
+              },
+              child: const Text('駅データを更新'),
             ),
-          ),
-        ],
+          ] : [
+            const Text('探索がOFFになっています', textScaler: TextScaler.linear(1.2)),
+            const Text('右上のスイッチで探索をはじめることができます。'),
+          ],
+        ),
+        isEmpty: state.stationDataVersion == '' || station.list.isEmpty,
       ),
     );
   }

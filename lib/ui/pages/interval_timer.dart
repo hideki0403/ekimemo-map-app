@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:expandable/expandable.dart';
 import 'package:ekimemo_map/ui/widgets/blink.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
+import 'package:ekimemo_map/ui/widgets/scrollview_template.dart';
 import 'package:ekimemo_map/services/interval_timer.dart';
 import 'package:ekimemo_map/services/notification.dart';
 import 'package:ekimemo_map/services/utils.dart';
@@ -59,43 +60,21 @@ class _IntervalTimerViewState extends State<IntervalTimerView> {
           await _loadTimers();
         }
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate.fixed(_timers.isNotEmpty ? [
-                ListView.separated(
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  reverse: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _timers.length,
-                  itemBuilder: (context, index) {
-                    return IntervalTimerItem(
-                      key: ValueKey(_timers[index].timer.id),
-                      item: _timers[index],
-                      deleteCallback: _loadTimers,
-                    );
-                  },
-                  separatorBuilder: (BuildContext context, int index) {
-                    return const SizedBox(height: 12);
-                  },
-                )
-              ] : [
-                const SizedBox(
-                  width: double.infinity,
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 36, bottom: 24, left: 12, right: 12),
-                    child: Center(
-                      child: Text('インターバルタイマーがありません'),
-                    ),
-                  ),
-                ),
-              ]),
-            ),
-          ),
-        ],
+      body: ScrollViewTemplate(
+        delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+          final i = index ~/ 2;
+          return index % 2 == 0 ? IntervalTimerItem(
+            key: ValueKey(_timers[i].timer.id),
+            item: _timers[i],
+            deleteCallback: _loadTimers,
+          ) : const SizedBox(
+            height: 12,
+          );
+        }, childCount: _timers.length * 2 - 1),
+        empty: Center(
+          child: Text('インターバルタイマーがありません'),
+        ),
+        isEmpty: _timers.isEmpty,
       ),
     );
   }
