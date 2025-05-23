@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nil/nil.dart';
 
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/models/station.dart';
@@ -34,6 +35,13 @@ class HistoryViewState extends State<HistoryView> {
     });
   }
 
+  Future<void> _refreshHistory(BuildContext ctx) async {
+    await _loadHistory();
+    if (ctx.mounted) {
+      ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('最新のアクセス履歴を読み込みました'), duration: Duration(seconds: 1)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,12 +49,7 @@ class HistoryViewState extends State<HistoryView> {
         title: const Text('アクセス履歴'),
         actions: [
           IconButton(
-            onPressed: () async {
-              await _loadHistory();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('最新のアクセス履歴を読み込みました'), duration: Duration(seconds: 1)));
-              }
-            },
+            onPressed: () async => await _refreshHistory(context),
             icon: const Icon(Icons.sync_rounded),
           ),
           IconButton(
@@ -123,30 +126,30 @@ class _StationHistoryState extends State<_StationHistory> {
         },
         child: Padding(
           padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12, right: 20),
-          child: Row(
-            spacing: 20,
-            children: stationData == null ? [] : [
-              getAttrIcon(stationData!.attr, context: context),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 2,
+          child: stationData == null ? nil : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 2,
+            children: [
+              Row(
+                spacing: 8,
                 children: [
+                  getAttrIcon(stationData!.attr, context: context),
                   Text(stationData!.name, textScaler: const TextScaler.linear(1.2), overflow: TextOverflow.ellipsis),
-                  Wrap(
-                    direction: Axis.horizontal,
-                    alignment: WrapAlignment.end,
-                    spacing: 8,
-                    children: [
-                      Text('距離: ${beautifyDistance(widget.data.distance)}'),
-                      Text('精度: ${widget.data.accuracy.toStringAsFixed(1)}m'),
-                      Text('速度: ${widget.data.speed.toStringAsFixed(1)}km/h'),
-                    ],
-                  ),
-                  Opacity(
-                    opacity: 0.8,
-                    child: Text(DateFormat('yyyy/MM/dd HH:mm:ss').format(widget.data.timestamp), textScaler: const TextScaler.linear(0.9)),
-                  ),
                 ],
+              ),
+              Wrap(
+                direction: Axis.horizontal,
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                children: [
+                  Text('距離: ${beautifyDistance(widget.data.distance)}'),
+                  Text('精度: ${widget.data.accuracy.toStringAsFixed(1)}m'),
+                  Text('速度: ${widget.data.speed.toStringAsFixed(1)}km/h'),
+                ],
+              ),
+              Opacity(
+                opacity: 0.8,
+                child: Text(DateFormat('yyyy/MM/dd HH:mm:ss').format(widget.data.timestamp), textScaler: const TextScaler.linear(0.9)),
               ),
             ],
           ),
