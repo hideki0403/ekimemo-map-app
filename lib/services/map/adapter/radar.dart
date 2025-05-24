@@ -34,6 +34,7 @@ class RadarMapAdapter extends MapAdapter {
           ポリゴン (線で囲まれている範囲) 内であれば理論上レーダーでアクセスすることができます。
           初期状態ではレーダーの検知数が$_maxRange駅の場合の範囲が表示されますが、これはマップ下部のスライダーで変更可能です。
           '''.replaceAll(RegExp(r' {2,}'), ''),
+          icon: Icons.info_rounded,
         );
       },
     ),

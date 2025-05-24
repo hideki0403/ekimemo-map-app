@@ -54,9 +54,9 @@ class HistoryViewState extends State<HistoryView> {
           ),
           IconButton(
             onPressed: () async {
-              final result = await showYesNoDialog(
+              final result = await showConfirmDialog(
                 title: 'アクセス履歴の削除',
-                message: 'アクセス履歴を全て削除しますか？\nこの操作は取り消せません。',
+                caption: 'アクセス履歴を全て削除しますか？\nこの操作は取り消せません。',
               );
 
               if (result == true) {

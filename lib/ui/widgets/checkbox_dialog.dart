@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'dialog_template.dart';
 
 class CheckboxDialog extends StatefulWidget {
   final String? title;
   final Map<String, bool> data;
   final String? caption;
+  final IconData? icon;
 
-  const CheckboxDialog({super.key, required this.data, this.title, this.caption});
+  const CheckboxDialog({super.key, required this.data, this.title, this.caption, this.icon});
 
   @override
   State<CheckboxDialog> createState() => _CheckboxDialogState();
@@ -24,9 +26,10 @@ class _CheckboxDialogState extends State<CheckboxDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: widget.title != null ? Text(widget.title!) : null,
-      contentPadding: const EdgeInsets.fromLTRB(0, 16, 0, 24),
+    return DialogTemplate(
+      title: widget.title,
+      icon: widget.icon,
+      padding: const EdgeInsets.fromLTRB(0, 16, 0, 24),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

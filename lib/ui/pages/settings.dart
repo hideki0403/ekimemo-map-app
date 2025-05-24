@@ -109,7 +109,8 @@ class _SettingsViewState extends State<SettingsView> {
                       caption: '探索する最大駅数を指定できます。1以上で指定してください。',
                       data: config.maxResults.toString(),
                       suffix: '駅',
-                      type: EditorDialogType.integer
+                      type: EditorDialogType.integer,
+                      icon: Icons.search_rounded
                   );
 
                   if (result != null) {
@@ -126,7 +127,8 @@ class _SettingsViewState extends State<SettingsView> {
                       caption: '最高更新頻度を指定できます。1.0秒以上で指定してください。',
                       data: config.updateFrequency.toString(),
                       suffix: '秒',
-                      type: EditorDialogType.double
+                      type: EditorDialogType.double,
+                      icon: Icons.update_rounded
                   );
 
                   if (result != null) {
@@ -143,7 +145,8 @@ class _SettingsViewState extends State<SettingsView> {
                       caption: 'GPSの精度がここで入力した値を超えた場合に、取得した位置情報を無視します。0mで無効になります。',
                       data: config.maxAcceptableAccuracy.toString(),
                       suffix: 'm',
-                      type: EditorDialogType.integer
+                      type: EditorDialogType.integer,
+                      icon: Icons.place_rounded
                   );
 
                   if (result != null) {
@@ -177,7 +180,8 @@ class _SettingsViewState extends State<SettingsView> {
                       caption: '秒数を指定してください',
                       data: config.cooldownTime.toString(),
                       suffix: '秒',
-                      type: EditorDialogType.integer
+                      type: EditorDialogType.integer,
+                      icon: Icons.alarm_rounded
                   );
 
                   if (result != null) {
@@ -219,7 +223,8 @@ class _SettingsViewState extends State<SettingsView> {
                       title: '通知音量',
                       data: config.notificationSoundVolume.toString(),
                       suffix: '%',
-                      type: EditorDialogType.integer
+                      type: EditorDialogType.integer,
+                      icon: Icons.volume_up_rounded
                   );
 
                   if (result != null) {
@@ -262,6 +267,7 @@ class _SettingsViewState extends State<SettingsView> {
                     title: 'テーマ',
                     data: _themeMode.map((key, value) => MapEntry(key.name, value)),
                     defaultValue: config.themeMode.name,
+                    icon: Icons.color_lens_rounded,
                   );
 
                   if (result != null) {
@@ -304,6 +310,7 @@ class _SettingsViewState extends State<SettingsView> {
                     title: 'フォント',
                     data: _fontFamily,
                     defaultValue: config.fontFamily,
+                    icon: Icons.font_download_rounded,
                   );
 
                   if (result != null) {
@@ -319,6 +326,7 @@ class _SettingsViewState extends State<SettingsView> {
                     title: 'マップのスタイル',
                     data: Map.fromEntries(MapStyle.values.map((e) => MapEntry(e.name, e.displayName))),
                     defaultValue: config.mapStyle.name,
+                    icon: Icons.map_rounded,
                   );
 
                   if (result != null) {
@@ -335,7 +343,8 @@ class _SettingsViewState extends State<SettingsView> {
                       caption: '描画する最大駅数を指定できます。上限を上げすぎるとパフォーマンスが低下する可能性があります。',
                       data: config.mapRenderingLimit.toString(),
                       suffix: '駅',
-                      type: EditorDialogType.integer
+                      type: EditorDialogType.integer,
+                      icon: Icons.map_rounded
                   );
 
                   if (result != null) {

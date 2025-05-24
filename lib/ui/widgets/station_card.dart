@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'dialog_template.dart';
+
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/search.dart';
@@ -123,15 +125,17 @@ class _StationMenu extends StatelessWidget {
     final accessLog = AccessCacheManager.get(station.id);
     final isAccessed = accessLog != null && accessLog.accessed;
 
-    return AlertDialog(
-      title: Text(station.name),
-      contentPadding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+    return DialogTemplate(
+      title: station.name,
+      icon: Icons.pin_drop_rounded,
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (lineName != null) ...[
             Container(
+              alignment: Alignment.topCenter,
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Opacity(opacity: 0.8, child: Text(lineName!)),
             ),

@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:msgpack_dart/msgpack_dart.dart';
 import 'package:file_picker/file_picker.dart';
@@ -26,7 +26,7 @@ class BackupService {
     );
 
     if (result != null) {
-      showMessageDialog(message: 'バックアップに成功しました');
+      showMessageDialog(message: 'バックアップに成功しました', icon: Icons.check_circle_rounded);
       logger.info('Backup success: $result');
     }
   }
@@ -53,7 +53,7 @@ class BackupService {
       final data = deserialize(bytes!);
       accessLogs = data.map((e) => AccessLog().fromMap(e.cast<String, dynamic>())).toList().cast<AccessLog>() as List<AccessLog>;
     } catch (e) {
-      showMessageDialog(message: 'バックアップファイルの読み込みに失敗しました');
+      showMessageDialog(message: 'バックアップファイルの読み込みに失敗しました', icon: Icons.error_rounded);
       logger.warning('Restore failed: $e');
       return;
     }
@@ -65,7 +65,7 @@ class BackupService {
     await _repository.bulkInsertModel(accessLogs);
     await AccessCacheManager.initialize(force: true);
 
-    showMessageDialog(message: 'データの復元に成功しました');
+    showMessageDialog(message: 'データの復元に成功しました', icon: Icons.check_circle_rounded);
   }
 
   static Future<void> importCsv() async {
@@ -85,7 +85,7 @@ class BackupService {
 
     final file = result.files.first;
     if (file.extension != 'csv') {
-      showMessageDialog(message: '非対応のファイルです。\nCSVファイルを選択してください。');
+      showMessageDialog(message: '非対応のファイルです。\nCSVファイルを選択してください。', icon: Icons.error_rounded);
       return;
     }
 
@@ -99,7 +99,7 @@ class BackupService {
 
       final stationCache = await StationRepository().getAll();
       if (stationCache.isEmpty) {
-        showMessageDialog(message: 'インポート中にエラーが発生しました');
+        showMessageDialog(message: 'インポート中にエラーが発生しました', icon: Icons.error_rounded);
         return;
       }
 
@@ -125,7 +125,7 @@ class BackupService {
         accessLogs.add(accessLog);
       }
     } catch (e) {
-      showMessageDialog(message: 'CSVファイルの読み込みに失敗しました');
+      showMessageDialog(message: 'CSVファイルの読み込みに失敗しました', icon: Icons.error_rounded);
       logger.warning('Import failed: $e');
       return;
     }
@@ -142,6 +142,6 @@ class BackupService {
       message += '\n\n以下の駅のインポートに失敗しました:\n${failedStations.join(', ')}';
     }
 
-    showMessageDialog(title: 'インポート', message: message);
+    showMessageDialog(title: 'インポート', message: message, icon: Icons.check_circle_rounded);
   }
 }

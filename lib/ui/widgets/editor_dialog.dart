@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dialog_template.dart';
 
 enum EditorDialogType {
   text,
@@ -13,8 +14,9 @@ class EditorDialog extends StatefulWidget {
   final String? caption;
   final String? suffix;
   final EditorDialogType? type;
+  final IconData? icon;
 
-  const EditorDialog({super.key, required this.data, this.title, this.caption, this.suffix, this.type});
+  const EditorDialog({super.key, required this.data, this.title, this.caption, this.suffix, this.type, this.icon});
 
   @override
   State<EditorDialog> createState() => _EditorDialogState();
@@ -61,8 +63,9 @@ class _EditorDialogState extends State<EditorDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: widget.title != null ? Text(widget.title!) : null,
+    return DialogTemplate(
+      title: widget.title,
+      icon: widget.icon,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

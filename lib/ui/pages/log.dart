@@ -42,9 +42,9 @@ class _LogViewState extends State<LogView> {
         actions: [
           IconButton(
             onPressed: () {
-              showYesNoDialog(
+              showConfirmDialog(
                 title: 'ログの削除',
-                message: 'ログを削除しますか？\nこの操作は取り消せません。',
+                caption: 'ログを削除しますか？\nこの操作は取り消せません。',
               ).then((value) async {
                 if (value == true) {
                   manager.clear();
@@ -65,6 +65,7 @@ class _LogViewState extends State<LogView> {
             caption: 'Select filter type',
             data: Map.fromEntries(['type', 'tag'].map((e) => MapEntry(e, e))),
             noRadio: true,
+            icon: Icons.filter_list_rounded,
           );
 
           switch (result) {
@@ -73,6 +74,7 @@ class _LogViewState extends State<LogView> {
                 title: 'Type filter',
                 caption: 'Select types to show',
                 data: Map.fromEntries(LogType.values.map((e) => MapEntry(e.name, _filterTypes.contains(e)))),
+                icon: Icons.list_rounded,
               );
 
               if (type != null && context.mounted) {
@@ -87,6 +89,7 @@ class _LogViewState extends State<LogView> {
               final tag = await showEditorDialog(
                 title: 'Tag filter',
                 type: EditorDialogType.text,
+                icon: Icons.label_rounded,
               );
 
               if (tag != null && context.mounted) {

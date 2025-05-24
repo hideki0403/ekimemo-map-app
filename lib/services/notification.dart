@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -64,6 +65,7 @@ Future<(bool, NotificationSound?)> notificationSoundSelector(String? defaultValu
         NotificationManager.playSound(NotificationSound.values.byName(value));
       }
     },
+    icon: Icons.notifications_active_rounded,
   );
 
   if (result == null) return (true, null);
@@ -86,6 +88,7 @@ Future<(bool, VibrationPattern?)> vibrationPatternSelector(String? defaultValue,
         NotificationManager.playVibration(VibrationPattern.values.byName(value));
       }
     },
+    icon: Icons.vibration_rounded,
   );
 
   if (result == null) return (true, null);

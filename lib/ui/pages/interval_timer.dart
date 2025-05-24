@@ -48,6 +48,7 @@ class _IntervalTimerViewState extends State<IntervalTimerView> {
                   表示されている時間をタップすることで、通知を行う間隔を変更可能です。
                   また、タイトル(タイマー名)をタップすることでタイトルを編集することができます。
                 '''.replaceAll(RegExp(r' {2,}'), ''),
+                icon: Icons.info_rounded,
               );
             },
           ),

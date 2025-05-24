@@ -38,6 +38,7 @@ class GpsManager {
         showMessageDialog(
           title: '権限が必要です',
           message: '通知の許可がないため、最寄り駅の通知を行うことが出来ません。',
+          icon: Icons.notifications_off_rounded,
         );
       }
       if (!(await _checkPermission())) return;
@@ -81,6 +82,7 @@ class GpsManager {
       showMessageDialog(
         title: '位置情報が無効です',
         message: '位置情報が無効になっているため、駅の探索を行うことが出来ません。',
+        icon: Icons.location_disabled_rounded,
       );
 
       return false;
@@ -93,6 +95,7 @@ class GpsManager {
       showMessageDialog(
         title: '権限が必要です',
         message: '位置情報を取得する権限がないため、駅の探索を行うことが出来ません。',
+        icon: Icons.location_off_rounded,
       );
 
       return false;

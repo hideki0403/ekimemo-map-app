@@ -66,7 +66,7 @@ class UpdateManager {
     if (!_StationSourceUpdater.hasUpdate) {
       final hasUpdate = manual && await _StationSourceUpdater.fetch();
       if (!hasUpdate) {
-        if (manual) showMessageDialog(title: '駅データ更新', message: '最新の駅データです。');
+        if (manual) showMessageDialog(title: '駅データ更新', message: '最新の駅データです。', icon: Icons.download_rounded);
         return;
       }
     }
@@ -76,6 +76,7 @@ class UpdateManager {
       message: '新しい駅データ (${_StationSourceUpdater.resource?.version}) が利用可能です。更新しますか？',
       yesText: '更新',
       noText: 'キャンセル',
+      icon: Icons.download_rounded
     );
 
     if (result == true) _StationSourceUpdater.update();
@@ -85,7 +86,7 @@ class UpdateManager {
     if (!_AppUpdater.hasUpdate) {
       final hasUpdate = manual && await _AppUpdater.fetch();
       if (!hasUpdate) {
-        if (manual) showMessageDialog(title: 'アプリ更新', message: '最新のアプリです。');
+        if (manual) showMessageDialog(title: 'アプリ更新', message: '最新のアプリです。', icon: Icons.system_update_rounded);
         return;
       }
     }
@@ -95,6 +96,7 @@ class UpdateManager {
       message: '新しいバージョン (${_AppUpdater.resource?.version}) が利用可能です。更新しますか？',
       yesText: '更新',
       noText: 'キャンセル',
+      icon: Icons.system_update_rounded
     );
 
     if (result == true) _AppUpdater.update();
@@ -139,6 +141,7 @@ class _AppUpdater {
         message: 'ダウンロードキャッシュがあります。\n再度ダウンロードしますか？',
         yesText: 'キャッシュを使用',
         noText: 'ダウンロード',
+        icon: Icons.system_update_rounded
       );
 
       if (result == null) return;
@@ -158,7 +161,7 @@ class _AppUpdater {
           return;
         }
         logger.error('Failed to download app: $e');
-        showMessageDialog(title: 'アプリ更新', message: 'ダウンロード中にエラーが発生しました');
+        showMessageDialog(title: 'アプリ更新', message: 'ダウンロード中にエラーが発生しました', icon: Icons.error_rounded);
         return;
       }
     }
@@ -204,7 +207,7 @@ class _StationSourceUpdater {
         return;
       }
       logger.error('Failed to download station database: $e');
-      showMessageDialog(title: '駅データ更新', message: 'ダウンロード中にエラーが発生しました');
+      showMessageDialog(title: '駅データ更新', message: 'ダウンロード中にエラーが発生しました' , icon: Icons.error_rounded);
       return;
     }
 
@@ -226,6 +229,7 @@ class _StationSourceUpdater {
       disableActions: true,
       disableClose: true,
       receiver: (ctx) => popContext(ctx),
+      icon: Icons.download_rounded,
       content: const Column(
         mainAxisSize: MainAxisSize.min,
         spacing: 16,
@@ -270,7 +274,7 @@ class _StationSourceUpdater {
 
     logger.debug('Applied latest station database');
 
-    showMessageDialog(title: '駅データ更新', message: '駅データを更新しました');
+    showMessageDialog(title: '駅データ更新', message: '駅データを更新しました', icon: Icons.download_done_rounded);
     UpdateManager.notify();
   }
 }
@@ -314,6 +318,7 @@ class _UpdateUtils {
       title: title,
       disableClose: true,
       receiver: (ctx) => popContext(ctx),
+      icon: Icons.download_rounded,
       actions: [
         TextButton(
           child: const Text('キャンセル'),

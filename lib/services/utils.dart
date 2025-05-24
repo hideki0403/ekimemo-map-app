@@ -8,6 +8,7 @@ import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
 import 'package:ekimemo_map/models/access_log.dart';
+import 'package:ekimemo_map/ui/widgets/dialog_template.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
 import 'package:ekimemo_map/ui/widgets/select_dialog.dart';
 import 'package:ekimemo_map/ui/widgets/checkbox_dialog.dart';
@@ -152,6 +153,7 @@ Future<void> showMessageDialog({
   String? title,
   String? message,
   Widget? content,
+  IconData? icon,
   ContextReceiver? receiver,
   List<Widget>? actions,
   bool disableClose = false,
@@ -164,8 +166,9 @@ Future<void> showMessageDialog({
       receiver?.call(context);
       return PopScope(
         canPop: !disableClose,
-        child: AlertDialog(
-          title: title != null ? Text(title) : null,
+        child: DialogTemplate(
+          title: title,
+          icon: icon,
           content: content ?? (message != null ? Text(message) : null),
           actions: disableActions ? null : actions ?? [
             ElevatedButton(
@@ -181,13 +184,14 @@ Future<void> showMessageDialog({
   );
 }
 
-Future<bool?> showYesNoDialog({String? title, String? message, String? yesText, String? noText}) async {
+Future<bool?> showYesNoDialog({String? title, String? message, String? yesText, String? noText, IconData? icon}) async {
   return await showDialog(
     context: navigatorKey.currentContext!,
     builder: (context) {
-      return AlertDialog(
-        title: title != null ? Text(title) : null,
+      return DialogTemplate(
+        title: title,
         content: message != null ? Text(message) : null,
+        icon: icon ?? Icons.help_rounded,
         actions: [
           TextButton(
             onPressed: () {
@@ -207,11 +211,11 @@ Future<bool?> showYesNoDialog({String? title, String? message, String? yesText, 
   );
 }
 
-Future<String?> showEditorDialog({String? data, String? title, String? caption, String? suffix, EditorDialogType? type}) async {
+Future<String?> showEditorDialog({String? data, String? title, String? caption, String? suffix, EditorDialogType? type, IconData? icon}) async {
   return showDialog(
     context: navigatorKey.currentContext!,
     builder: (context) {
-      return EditorDialog(data: data, title: title, caption: caption, suffix: suffix, type: type);
+      return EditorDialog(data: data, title: title, caption: caption, suffix: suffix, type: type, icon: icon);
     },
   );
 }
@@ -223,21 +227,22 @@ Future<String?> showSelectDialog({
   String? caption,
   bool? noRadio,
   bool? showOkButton,
+  IconData? icon,
   Function(String?)? onChanged,
 }) async {
   return showDialog(
     context: navigatorKey.currentContext!,
     builder: (context) {
-      return SelectDialog(data: data, defaultValue: defaultValue, title: title, caption: caption, noRadio: noRadio, showOkButton: showOkButton, onChanged: onChanged);
+      return SelectDialog(data: data, defaultValue: defaultValue, title: title, caption: caption, noRadio: noRadio, showOkButton: showOkButton, onChanged: onChanged, icon: icon);
     },
   );
 }
 
-Future<Map<String, bool>?> showCheckboxDialog({required Map<String, bool> data, String? title, String? caption}) async {
+Future<Map<String, bool>?> showCheckboxDialog({required Map<String, bool> data, String? title, String? caption, IconData? icon}) async {
   return showDialog(
     context: navigatorKey.currentContext!,
     builder: (context) {
-      return CheckboxDialog(data: data, title: title, caption: caption);
+      return CheckboxDialog(data: data, title: title, caption: caption, icon: icon);
     },
   );
 }
@@ -246,8 +251,9 @@ Future<bool?> showConfirmDialog({String? title, String? caption}) async {
   return showDialog(
     context: navigatorKey.currentContext!,
     builder: (context) {
-      return AlertDialog(
-        title: title != null ? Text(title) : null,
+      return DialogTemplate(
+        title: title,
+        icon: Icons.warning_rounded,
         content: caption != null ? Text(caption) : null,
         actions: [
           TextButton(
@@ -273,8 +279,9 @@ Future<Color?> showColorPickerDialog({List<Color>? defaultColor, String? title})
   return await showDialog(
     context: navigatorKey.currentContext!,
     builder: (context) {
-      return AlertDialog(
-        title: Text(title ?? 'カラーピッカー'),
+      return DialogTemplate(
+        title: title ?? 'カラーピッカー',
+        icon: Icons.color_lens_rounded,
         content: SizedBox(
           width: double.maxFinite,
           child: GridView.builder(
