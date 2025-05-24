@@ -396,26 +396,7 @@ class _SettingsViewState extends State<SettingsView> {
                 },
               ),
               if (_isDebug) ...[
-                const SectionTitle(title: 'デバッグ'),
-                ListTile(
-                  title: const Text('駅データのバージョンをリセットする'),
-                  onTap: () {
-                    state.setStationDataVersion('');
-                  },
-                ),
-                ListTile(
-                  title: const Text('データベースを消し飛ばす'),
-                  onTap: () async {
-                    final result = await showConfirmDialog(
-                        title: 'データベースのリセット',
-                        caption: '本当にデータベースを吹き飛ばしますか？'
-                    );
-
-                    if (result == true) {
-                      DatabaseHandler.reset();
-                    }
-                  },
-                ),
+                const SectionTitle(title: 'Dev Utilities'),
                 ListTile(
                   title: const Text('Log Viewer'),
                   onTap: () {
@@ -423,12 +404,43 @@ class _SettingsViewState extends State<SettingsView> {
                   },
                 ),
                 ListTile(
-                  title: const Text('Tree node root'),
-                  subtitle: Text(state.treeNodeRoot),
+                  title: const Text('Reset StationData Version'),
+                  onTap: () async {
+                    final result = await showConfirmDialog(
+                      title: 'リセット',
+                      caption: '駅データのバージョンをリセットしますか？',
+                    );
+
+                    if (result == true) {
+                      state.setStationDataVersion('');
+                    }
+                  },
                 ),
                 ListTile(
-                  title: const Text('App commit hash'),
+                  title: const Text('Delete Database'),
+                  onTap: () async {
+                    final result = await showConfirmDialog(
+                        title: 'リセット',
+                        caption: '本当にデータベースを削除しますか？\nこの操作は取り消せません。'
+                    );
+
+                    if (result == true) {
+                      DatabaseHandler.reset();
+                    }
+                  },
+                ),
+                const SectionTitle(title: 'State'),
+                ListTile(
+                  title: const Text('AppCommitHash'),
                   subtitle: Text(_commitHash),
+                ),
+                ListTile(
+                  title: const Text('AppBuildNumber'),
+                  subtitle: Text(_buildNumber),
+                ),
+                ListTile(
+                  title: const Text('RootTreeNodeID'),
+                  subtitle: Text(state.treeNodeRoot),
                 ),
                 if (_hasPermission) ...[
                   const SectionTitle(title: 'アシスタント (デバッグ用)'),
@@ -465,6 +477,7 @@ class _SettingsViewState extends State<SettingsView> {
                 // End of _hasPermission
               ],
               // End of _isDebug
+              const SizedBox(height: 32),
             ]),
           ),
         ],
