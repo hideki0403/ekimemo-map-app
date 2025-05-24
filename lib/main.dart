@@ -12,6 +12,7 @@ import 'services/gps.dart';
 import 'services/station.dart';
 import 'services/notification.dart';
 import 'services/log.dart';
+import 'services/updater.dart';
 
 import 'repository/station.dart';
 import 'repository/line.dart';
@@ -66,6 +67,8 @@ void main() async {
   NotificationManager.initialize();
   await StationManager.initialize();
 
+  UpdateManager.checkForUpdates();
+
   logger.info('App initialized');
 
   runApp(
@@ -76,6 +79,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => StationStateNotifier()),
         ChangeNotifierProvider(create: (_) => GpsStateNotifier()),
         ChangeNotifierProvider(create: (_) => LogStateNotifier()),
+        ChangeNotifierProvider(create: (_) => UpdateStateNotifier()),
       ],
       child: Root(),
     ),

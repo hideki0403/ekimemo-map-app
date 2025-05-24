@@ -374,7 +374,7 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: Text('v$_version'),
                 trailing: ElevatedButton(
                   onPressed: kDebugMode ? null : () {
-                    AppUpdater.check();
+                    UpdateManager.updateApp();
                   },
                   child: const Text('更新を確認'),
                 ),
@@ -384,7 +384,7 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: Text(state.stationDataVersion != '' ? state.stationDataVersion : '不明'),
                 trailing: ElevatedButton(
                   onPressed: () {
-                    AssetUpdater.check();
+                    UpdateManager.updateStationSource();
                   },
                   child: const Text('更新を確認'),
                 ),

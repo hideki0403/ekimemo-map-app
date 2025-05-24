@@ -20,44 +20,184 @@ import 'package:ekimemo_map/services/utils.dart';
 
 final logger = Logger('Updater');
 
-class AssetUpdater {
-  static bool _isInitialized = false;
+class UpdateStateNotifier extends ChangeNotifier {
+  static final _instance = UpdateStateNotifier._internal();
+  factory UpdateStateNotifier() => _instance;
 
-  static void check({force = false, silent = false, first = false}) async {
-    if (first) {
-      if (_isInitialized) return;
-      _isInitialized = true;
+  UpdateStateNotifier._internal() {
+    UpdateManager.init(this);
+  }
+
+  bool get hasUpdate => UpdateManager.hasUpdate;
+
+  void updateStatus() {
+    notifyListeners();
+  }
+}
+
+class UpdateManager {
+  static UpdateStateNotifier? _updateStateNotifier;
+
+  static bool get hasUpdate => _StationSourceUpdater.hasUpdate || _AppUpdater.hasUpdate;
+
+  static void init(UpdateStateNotifier notifier) {
+    _updateStateNotifier = notifier;
+  }
+
+  static void notify() {
+    _updateStateNotifier?.updateStatus();
+  }
+
+  static Future<void> checkForUpdates() async {
+    await _AppUpdater.fetch(withNotify: false);
+    await _StationSourceUpdater.fetch(withNotify: false);
+    notify();
+  }
+
+  static Future<void> updateAppOrStationSource() async {
+    if (_AppUpdater.hasUpdate) {
+      await updateApp(manual: false);
+    } else if (_StationSourceUpdater.hasUpdate) {
+      await updateStationSource(manual: false);
     }
+  }
 
-    logger.debug('Checking for station-database updates');
-    var updateAvailable = false;
-
-    final resource = await _UpdateUtils.getLatestRelease('hideki0403/ekimemo-map-database', 'station_database.msgpack');
-    if (SystemState.getString('station_data_version') != resource.version) updateAvailable = true;
-
-    logger.debug('Latest version: ${resource.version}, Current version: ${SystemState.getString('station_data_version')}');
-
-    if (force) return _update(resource);
-
-    if (!updateAvailable) {
-      if (!silent) showMessageDialog(title: '駅データ更新', message: '最新の駅データです。');
-      return;
+  static Future<void> updateStationSource({manual = true}) async {
+    if (!_StationSourceUpdater.hasUpdate) {
+      final hasUpdate = manual && await _StationSourceUpdater.fetch();
+      if (!hasUpdate) {
+        if (manual) showMessageDialog(title: '駅データ更新', message: '最新の駅データです。');
+        return;
+      }
     }
 
     final result = await showYesNoDialog(
       title: '駅データ更新',
-      message: '新しい駅データ (${resource.version}) が利用可能です。更新しますか？',
+      message: '新しい駅データ (${_StationSourceUpdater.resource?.version}) が利用可能です。更新しますか？',
       yesText: '更新',
       noText: 'キャンセル',
     );
 
-    if (result == true) _update(resource);
+    if (result == true) _StationSourceUpdater.update();
   }
 
-  static Future<void> _update(_GitHubResource resource) async {
+  static Future<void> updateApp({manual = true}) async {
+    if (!_AppUpdater.hasUpdate) {
+      final hasUpdate = manual && await _AppUpdater.fetch();
+      if (!hasUpdate) {
+        if (manual) showMessageDialog(title: 'アプリ更新', message: '最新のアプリです。');
+        return;
+      }
+    }
+
+    final result = await showYesNoDialog(
+      title: 'アプリ更新',
+      message: '新しいバージョン (${_AppUpdater.resource?.version}) が利用可能です。更新しますか？',
+      yesText: '更新',
+      noText: 'キャンセル',
+    );
+
+    if (result == true) _AppUpdater.update();
+  }
+}
+
+class _AppUpdater {
+  static String? _cachePath;
+  static String? _currentVersion;
+  static _GitHubResource? _resource;
+
+  static _GitHubResource? get resource => _resource;
+  static bool get hasUpdate => _resource != null && _currentVersion != null && _currentVersion != _resource!.version;
+
+  static Future<bool> fetch({withNotify = true}) async {
+    logger.debug('Checking for app updates');
+
+    final resource = await _UpdateUtils.getLatestRelease('hideki0403/ekimemo-map-app', 'app-release.apk');
+    final packageInfo = await PackageInfo.fromPlatform();
+    _currentVersion = 'v${packageInfo.version}';
+
+    logger.debug('[App] Latest: ${resource.version}, Current: $_currentVersion');
+
+    if (!withNotify) {
+      UpdateManager.notify();
+    }
+
+    return hasUpdate;
+  }
+
+  static void update() async {
+    if (_resource == null) {
+      throw Exception('No resource available for app update');
+    }
+
+    final downloadPath = '${(await getTemporaryDirectory()).path}/app-release.apk';
+    String? path;
+
+    if (_cachePath != null) {
+      final result = await showYesNoDialog(
+        title: 'アプリ更新',
+        message: 'ダウンロードキャッシュがあります。\n再度ダウンロードしますか？',
+        yesText: 'キャッシュを使用',
+        noText: 'ダウンロード',
+      );
+
+      if (result == null) return;
+      if (result) {
+        path = _cachePath;
+      }
+    }
+
+    if (path == null) {
+      try {
+        await _UpdateUtils.downloadResource(_resource!, 'アプリ更新', path: downloadPath);
+        _cachePath = downloadPath;
+        path = downloadPath;
+      } catch (e) {
+        if (e is DioException && e.type == DioExceptionType.cancel) {
+          logger.debug('Download canceled');
+          return;
+        }
+        logger.error('Failed to download app: $e');
+        showMessageDialog(title: 'アプリ更新', message: 'ダウンロード中にエラーが発生しました');
+        return;
+      }
+    }
+
+    await AndroidPackageInstaller.installApk(
+      apkFilePath: path,
+    );
+  }
+}
+
+class _StationSourceUpdater {
+  static _GitHubResource? _resource;
+
+  static _GitHubResource? get resource => _resource;
+  static bool get hasUpdate => _resource != null && SystemState.getString('station_data_version') != _resource!.version;
+
+  static Future<bool> fetch({withNotify = true}) async {
+    logger.debug('Checking for station-database updates');
+
+    _resource = await _UpdateUtils.getLatestRelease('hideki0403/ekimemo-map-database', 'station_database.msgpack');
+
+    final currentVersion = SystemState.getString('station_data_version');
+    logger.debug('[StationSource] Latest: ${_resource!.version}, Current: ${currentVersion.isEmpty ? 'N/A' : currentVersion}');
+
+    if (withNotify) {
+      UpdateManager.notify();
+    }
+
+    return hasUpdate;
+  }
+
+  static Future<void> update() async {
+    if (_resource == null) {
+      throw Exception('No resource available for source update');
+    }
+
     dynamic data;
     try {
-      data = await _UpdateUtils.downloadResource(resource, '駅データ更新');
+      data = await _UpdateUtils.downloadResource(_resource!, '駅データ更新');
     } catch (e) {
       if (e is DioException && e.type == DioExceptionType.cancel) {
         logger.debug('Download canceled');
@@ -68,7 +208,7 @@ class AssetUpdater {
       return;
     }
 
-    _apply(deserialize(data).cast<String, dynamic>(), resource.version);
+    _apply(deserialize(data).cast<String, dynamic>(), _resource!.version);
   }
 
   static void _apply(Map<String, dynamic> data, String version) async {
@@ -131,76 +271,7 @@ class AssetUpdater {
     logger.debug('Applied latest station database');
 
     showMessageDialog(title: '駅データ更新', message: '駅データを更新しました');
-  }
-}
-
-class AppUpdater {
-  static String? cachePath;
-
-  static void check({silent = false}) async {
-    logger.debug('Checking for app updates');
-    var updateAvailable = false;
-
-    final resource = await _UpdateUtils.getLatestRelease('hideki0403/ekimemo-map-app', 'app-release.apk');
-    final packageInfo = await PackageInfo.fromPlatform();
-    final currentVersion = 'v${packageInfo.version}';
-
-    if (currentVersion != resource.version) updateAvailable = true;
-
-    logger.debug('Latest version: ${resource.version}, Current version: $currentVersion');
-
-    if (!updateAvailable) {
-      if (!silent) showMessageDialog(title: 'アプリ更新', message: '更新はありませんでした');
-      return;
-    }
-
-    final result = await showYesNoDialog(
-      title: 'アプリ更新',
-      message: '新しいバージョン (${resource.version}) が利用可能です。更新しますか？',
-      yesText: '更新',
-      noText: 'キャンセル',
-    );
-
-    if (result == true) _update(resource);
-  }
-
-  static void _update(_GitHubResource resource) async {
-    final downloadPath = '${(await getTemporaryDirectory()).path}/app-release.apk';
-    String? path;
-
-    if (cachePath != null) {
-      final result = await showYesNoDialog(
-        title: 'アプリ更新',
-        message: 'ダウンロードキャッシュがあります。\n再度ダウンロードしますか？',
-        yesText: 'キャッシュを使用',
-        noText: 'ダウンロード',
-      );
-
-      if (result == null) return;
-      if (result) {
-        path = cachePath;
-      }
-    }
-
-    if (path == null) {
-      try {
-        await _UpdateUtils.downloadResource(resource, 'アプリ更新', path: downloadPath);
-        cachePath = downloadPath;
-        path = downloadPath;
-      } catch (e) {
-        if (e is DioException && e.type == DioExceptionType.cancel) {
-          logger.debug('Download canceled');
-          return;
-        }
-        logger.error('Failed to download app: $e');
-        showMessageDialog(title: 'アプリ更新', message: 'ダウンロード中にエラーが発生しました');
-        return;
-      }
-    }
-
-    await AndroidPackageInstaller.installApk(
-      apkFilePath: path,
-    );
+    UpdateManager.notify();
   }
 }
 
@@ -223,7 +294,7 @@ class _UpdateUtils {
     return _GitHubResource(release['tag_name'].toString(), resource['browser_download_url'], resource['size']);
   }
 
-  static Future<T?> downloadResource<T extends dynamic>(_GitHubResource resource, String title, { String? path }) async {
+  static Future<T?> downloadResource<T extends dynamic>(_GitHubResource resource, String title, {String? path}) async {
     final key = 'download:${resource.downloadUrl}';
     if (checking.contains(key)) throw Exception('Already downloading');
     checking.add(key);

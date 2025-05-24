@@ -16,15 +16,24 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AssetUpdater.check(silent: true, first: true);
-
     final station = Provider.of<StationStateNotifier>(context);
     final gps = Provider.of<GpsStateNotifier>(context);
     final state = Provider.of<SystemStateProvider>(context);
+    final updater = Provider.of<UpdateStateNotifier>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('駅メモマップ'),
         actions: [
+          if (updater.hasUpdate) IconButton(
+            onPressed: () {
+              UpdateManager.updateAppOrStationSource();
+            },
+            icon: Badge(
+              child: const Icon(Icons.system_update_rounded),
+            ),
+            color: Theme.of(context).colorScheme.primary,
+          ),
           IconButton(
             onPressed: () {
               context.push('/tools');
@@ -106,7 +115,7 @@ class HomeView extends StatelessWidget {
             const Text('下のボタンから駅データを更新することで、利用できるようになります。'),
             ElevatedButton(
               onPressed: () {
-                AssetUpdater.check(force: true);
+                UpdateManager.updateStationSource();
               },
               child: const Text('駅データを更新'),
             ),
