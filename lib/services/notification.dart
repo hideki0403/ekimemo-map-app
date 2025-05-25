@@ -51,7 +51,7 @@ enum VibrationPattern {
 }
 
 /// returns (isCanceled, selectedValue)
-Future<(bool, NotificationSound?)> notificationSoundSelector(String? defaultValue, { bool withNone = false }) async {
+Future<(bool, NotificationSound?)> notificationSoundSelector(String? defaultValue, {bool withNone = false}) async {
   final entries = Map.fromEntries(NotificationSound.values.map((e) => MapEntry(e.name, e.displayName)));
   if (withNone) entries[''] = 'なし';
 
@@ -74,7 +74,7 @@ Future<(bool, NotificationSound?)> notificationSoundSelector(String? defaultValu
 }
 
 /// returns (isCanceled, selectedValue)
-Future<(bool, VibrationPattern?)> vibrationPatternSelector(String? defaultValue, { bool withNone = false }) async {
+Future<(bool, VibrationPattern?)> vibrationPatternSelector(String? defaultValue, {bool withNone = false}) async {
   final entries = Map.fromEntries(VibrationPattern.values.map((e) => MapEntry(e.name, e.displayName)));
   if (withNone) entries[''] = 'なし';
 
@@ -104,48 +104,67 @@ class NotificationManager {
   static Future<void> initialize() async {
     await _notification.initialize(const InitializationSettings(android: AndroidInitializationSettings('@mipmap/ic_launcher')));
     await _tts.setLanguage('ja-JP');
+    await AudioPlayer.global.setAudioContext(AudioContext(
+      android: AudioContextAndroid(
+        stayAwake: true,
+        audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+        usageType: AndroidUsageType.notification,
+      ),
+    ));
   }
 
-  static Future<void> showNotification(String title, String body, { bool silent = false, String? icon, String? ttsText }) async {
+  static Future<void> showNotification(String title, String body, {bool silent = false, String? icon, String? ttsText}) async {
     if (!Config.enableNotification) return;
 
-    final platform = NotificationDetails(android: AndroidNotificationDetails('nearest_station', '最寄り駅通知',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: false,
-      enableVibration: false,
-      silent: silent,
-      icon: icon,
-    ));
+    final platform = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'nearest_station',
+        '最寄り駅通知',
+        importance: Importance.high,
+        priority: Priority.high,
+        playSound: false,
+        enableVibration: false,
+        silent: silent,
+        icon: icon,
+      ),
+    );
 
     await _notification.show(0, title, body, platform);
 
     if (!silent) {
       if (Config.enableVibration) playVibration(Config.vibrationPattern);
-      if (Config.enableNotificationSound) await playSound(Config.notificationSound);
-      if (Config.enableTts && ttsText != null) await playTTS(ttsText);
+      final durationMs = Config.enableNotificationSound ? (await playSound(Config.notificationSound)).inMilliseconds + 500 : null;
+
+      if (Config.enableTts && ttsText != null) {
+        if (durationMs != null) {
+          await Future.delayed(Duration(milliseconds: durationMs));
+        }
+        await playTTS(ttsText);
+      }
     }
   }
 
   static Future<void> showIntervalNotification(String title, String body) async {
-    const platform = NotificationDetails(android: AndroidNotificationDetails('interval_timer', 'インターバルタイマー',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: false,
-      enableVibration: false,
-      icon: 'ic_timer',
-    ));
+    const platform = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'interval_timer',
+        'インターバルタイマー',
+        importance: Importance.high,
+        priority: Priority.high,
+        playSound: false,
+        enableVibration: false,
+        icon: 'ic_timer',
+      ),
+    );
 
     await _notification.show(1, title, body, platform);
   }
 
-  static Future<void> playSound(NotificationSound sound) async {
-    await _audioPlayer.setVolume(Config.notificationSoundVolume / 100);
-    await _audioPlayer.setSource(AssetSource('sound/${sound.toString()}.mp3'));
-    final waitTime = await _audioPlayer.getDuration() ?? Duration.zero;
-    await _audioPlayer.resume();
-    await Future.delayed(Duration(milliseconds: waitTime.inMilliseconds + 500));
+  static Future<Duration> playSound(NotificationSound sound) async {
     await _audioPlayer.stop();
+    await _audioPlayer.setVolume(Config.notificationSoundVolume / 100);
+    await _audioPlayer.play(AssetSource('sound/${sound.toString()}.mp3'));
+    return await _audioPlayer.getDuration() ?? Duration.zero;
   }
 
   static Future<void> playVibration(VibrationPattern pattern) async {
