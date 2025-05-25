@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:msgpack_dart/msgpack_dart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -109,16 +110,17 @@ class _AppUpdater {
   static _GitHubResource? _resource;
 
   static _GitHubResource? get resource => _resource;
-  static bool get hasUpdate => _resource != null && _currentVersion != null && _currentVersion != _resource!.version;
+  static bool get hasUpdate => !kDebugMode && _resource != null && _currentVersion != null && _currentVersion != _resource!.version;
 
   static Future<bool> fetch({withNotify = true}) async {
     logger.debug('Checking for app updates');
 
-    final resource = await _UpdateUtils.getLatestRelease('hideki0403/ekimemo-map-app', 'app-release.apk');
+    _resource = await _UpdateUtils.getLatestRelease('hideki0403/ekimemo-map-app', 'app-release.apk');
+
     final packageInfo = await PackageInfo.fromPlatform();
     _currentVersion = 'v${packageInfo.version}';
 
-    logger.debug('[App] Latest: ${resource.version}, Current: $_currentVersion');
+    logger.debug('[App] Latest: ${_resource!.version}, Current: $_currentVersion');
 
     if (!withNotify) {
       UpdateManager.notify();
