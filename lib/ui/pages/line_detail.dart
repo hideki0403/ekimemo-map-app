@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+import 'package:bottom_sheet/bottom_sheet.dart';
 
 import 'package:ekimemo_map/models/station.dart';
 import 'package:ekimemo_map/models/line.dart';
@@ -52,51 +54,99 @@ class _LineDetailViewState extends State<LineDetailView> {
     });
   }
 
+  void showToolsSheet() async {
+    await showFlexibleBottomSheet(
+      context: context,
+      maxHeight: 0.35,
+      initHeight: 0.35,
+      anchors: [0, 0.35],
+      isSafeArea: true,
+      bottomSheetBorderRadius: const BorderRadius.vertical(top: Radius.circular(25.0)),
+      builder: (context, scrollController, _) {
+        return ListView(
+          controller: scrollController,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).dividerColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+            ),
+            Text('ツール', textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge),
+            ListTile(
+              title: const Text('マップで見る'),
+              leading: const Icon(Icons.map_rounded),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Uri(path: '/map', queryParameters: {'line-id': widget.lineId.toString()}).toString());
+              },
+            ),
+            ListTile(
+              title: const Text('路線情報 (公式サイト)'),
+              leading: const Icon(Icons.train_rounded),
+              onTap: () async {
+                Navigator.pop(context);
+                final url = 'https://ekimemo.com/database/line/${line?.id}';
+                if (await canLaunchUrlString(url)) {
+                  await launchUrlString(url);
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('路線情報')),
-      body: CustomScrollView(
+      floatingActionButton: FloatingActionButton(
+        onPressed: showToolsSheet,
+        child: const Icon(Icons.menu_rounded),
+      ),
+      body: line == null ? const Center(child: CircularProgressIndicator()) : CustomScrollView(
         slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate(line == null ? [
-                const Center(child: CircularProgressIndicator()),
-              ] : [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Text(line!.name, textScaler: const TextScaler.linear(1.5)),
-                        Text(line!.nameKana),
-                        const SizedBox(height: 16),
-                        CustomPaint(
-                          painter: _TrianglePainter(color: line?.color != null ? hexToColor(line?.color) : Theme.of(context).colorScheme.onSurface),
-                          child: const SizedBox(
-                            width: double.infinity,
-                            height: 12,
-                          ),
-                        ),
-                        if (line!.nameFormal != null) ...[
-                          const SizedBox(height: 16),
-                          Text(line!.nameFormal!),
-                        ],
-                      ],
+          SliverToBoxAdapter(
+            child: Container(
+              width: double.infinity,
+              color: Theme.of(context).colorScheme.surfaceContainer,
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                spacing: 4,
+                children: [
+                  Text(line!.name, textScaler: const TextScaler.linear(1.5)),
+                  Text(line!.nameKana),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    height: 12,
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    decoration: BoxDecoration(
+                      color: line?.color != null ? hexToColor(line?.color) : Theme.of(context).colorScheme.surfaceBright,
+                      borderRadius: BorderRadius.circular(256),
                     ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.center,
-                  child: ElevatedButton(
-                    onPressed: line?.polylineList != null ? () {
-                      context.push(Uri(path: '/map', queryParameters: {'line-id': widget.lineId.toString()}).toString());
-                    } : null,
-                    child: const Text('マップで見る'),
-                  ),
-                ),
+                  if (line!.nameFormal != null) ...[
+                    const SizedBox(height: 8),
+                    Text(line!.nameFormal!),
+                  ],
+                ],
+              ),
+            )
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 12),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
                 const SectionTitle(title: '路線情報'),
                 Padding(
                   padding: const EdgeInsets.only(left: 16, right: 16),
@@ -114,18 +164,18 @@ class _LineDetailViewState extends State<LineDetailView> {
                 ),
                 const SectionTitle(title: '駅情報'),
                 ListView.builder(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: stations.length,
-                    itemBuilder: (context, index) {
-                      final station = stations[index];
-                      return StationSimple(
-                        station: station,
-                        isAccessed: accessedStation.contains(station.id),
-                        showAttr: true,
-                      );
-                    }
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: stations.length,
+                  itemBuilder: (context, index) {
+                    final station = stations[index];
+                    return StationSimple(
+                      station: station,
+                      isAccessed: accessedStation.contains(station.id),
+                      showAttr: true,
+                    );
+                  }
                 )
               ]),
             ),
@@ -133,32 +183,5 @@ class _LineDetailViewState extends State<LineDetailView> {
         ],
       ),
     );
-  }
-}
-
-class _TrianglePainter extends CustomPainter {
-  Color color;
-  _TrianglePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final path = Path()
-      ..moveTo(0, size.height / 2)
-      ..lineTo(10, 0)
-      ..lineTo(size.width, 0)
-      ..lineTo(size.width, size.height)
-      ..lineTo(10, size.height)
-      ..close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
   }
 }
