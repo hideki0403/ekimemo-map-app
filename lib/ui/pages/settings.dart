@@ -45,11 +45,13 @@ class _SettingsViewState extends State<SettingsView> {
   String _commitHash = '';
   bool _hasPermission = false;
   bool _isDebug = kDebugMode;
+  bool _isAvailableTTS = false;
 
   Future<void> _fetchAppInfo() async {
     final packageInfo = await PackageInfo.fromPlatform();
     final commitHash = await NativeMethods.getCommitHash();
     final hasPermission = await NativeMethods.hasPermission();
+    final isAvailableTTS = await NotificationManager.isTTSAvailable;
 
     if (!context.mounted) return;
     setState(() {
@@ -57,6 +59,7 @@ class _SettingsViewState extends State<SettingsView> {
       _buildNumber = packageInfo.buildNumber;
       _commitHash = commitHash;
       _hasPermission = hasPermission;
+      _isAvailableTTS = isAvailableTTS;
     });
   }
 
@@ -252,11 +255,11 @@ class _SettingsViewState extends State<SettingsView> {
               ),
               SwitchListTile(
                 title: const Text('駅名読み上げ'),
-                subtitle: const Text('通知時に駅名の読み上げを行います。'),
+                subtitle: Text(_isAvailableTTS ? '通知時に駅名の読み上げを行います。' : '言語パックがインストールされていないため、読み上げは利用できません。'),
                 value: config.enableTts,
-                onChanged: (value) {
+                onChanged: _isAvailableTTS ? (value) {
                   config.setEnableTts(value);
-                },
+                } : null,
               ),
               const SectionTitle(title: 'その他'),
               ListTile(

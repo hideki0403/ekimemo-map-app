@@ -101,6 +101,8 @@ class NotificationManager {
   static final _audioPlayer = AudioPlayer();
   static final _tts = FlutterTts();
 
+  static Future<bool> get isTTSAvailable async => await _tts.isLanguageAvailable('ja-JP') && await _tts.isLanguageInstalled('ja-JP');
+
   static Future<void> initialize() async {
     await _notification.initialize(const InitializationSettings(android: AndroidInitializationSettings('@mipmap/ic_launcher')));
     await _tts.setLanguage('ja-JP');
