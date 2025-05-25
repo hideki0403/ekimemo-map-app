@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -46,6 +47,7 @@ class ConfigProvider extends ChangeNotifier {
   bool get disableDbCache => _config?.getBool('disable_db_cache') ?? false;
   bool get useMaterialYou => _config?.getBool('use_material_you') ?? false;
   Color get themeSeedColor => hexToColor(_config?.getString('theme_seed_color') ?? Colors.blue.toHexStringRGB());
+  bool get enableDebugMode => kDebugMode || (_config?.getBool('enable_debug_mode') ?? false);
 
   void notify() {
     notifyListeners();
@@ -150,6 +152,11 @@ class ConfigProvider extends ChangeNotifier {
     _config?.setString('theme_seed_color', value.toHexStringRGB());
     notifyListeners();
   }
+
+  void setEnableDebugMode(bool value) {
+    _config?.setBool('enable_debug_mode', value);
+    notifyListeners();
+  }
 }
 
 class Config {
@@ -179,6 +186,7 @@ class Config {
   static bool get disableDbCache => _configProvider?.disableDbCache ?? false;
   static bool get useMaterialYou => _configProvider?.useMaterialYou ?? false;
   static Color get themeSeedColor => _configProvider?.themeSeedColor ?? Colors.blue;
+  static bool get enableDebugMode => _configProvider?.enableDebugMode ?? false;
 
   static String getString(String key, {String defaultValue = ''}) {
     return _configProvider?.config?.getString(key) ?? defaultValue;

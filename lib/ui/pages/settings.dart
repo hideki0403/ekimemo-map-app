@@ -44,8 +44,8 @@ class _SettingsViewState extends State<SettingsView> {
   String _buildNumber = '';
   String _commitHash = '';
   bool _hasPermission = false;
-  bool _isDebug = kDebugMode;
   bool _isAvailableTTS = false;
+  int _counter = 0;
 
   Future<void> _fetchAppInfo() async {
     final packageInfo = await PackageInfo.fromPlatform();
@@ -78,27 +78,6 @@ class _SettingsViewState extends State<SettingsView> {
         slivers: [
           SliverAppBar.large(
             title: const Text('設定'),
-            actions: [
-              // More Vert Icon
-              PopupMenuButton(
-                itemBuilder: (BuildContext context) {
-                  return [
-                    PopupMenuItem(
-                      value: 'enableDebug',
-                      enabled: !_isDebug,
-                      child: Text(_isDebug ? 'デバッグモードが有効になっています' : 'デバッグモードを有効化'),
-                    ),
-                  ];
-                },
-                onSelected: (String s) {
-                  if (s == 'enableDebug') {
-                    setState(() {
-                      _isDebug = true;
-                    });
-                  }
-                },
-              )
-            ],
           ),
           SliverList(
             delegate: SliverChildListDelegate([
@@ -380,7 +359,11 @@ class _SettingsViewState extends State<SettingsView> {
                   config.setDisableDbCache(value);
                 },
               ),
-              const SectionTitle(title: 'アプリ'),
+              SectionTitle(title: 'アプリ', onTap: () {
+                setState(() {
+                  _counter++;
+                });
+              }),
               ListTile(
                 title: const Text('アプリバージョン'),
                 subtitle: Text('v$_version'),
@@ -407,7 +390,15 @@ class _SettingsViewState extends State<SettingsView> {
                   context.push('/license');
                 },
               ),
-              if (_isDebug) ...[
+              if (config.enableDebugMode || _counter >= 10) SwitchListTile(
+                title: const Text('デバッグモード'),
+                subtitle: kDebugMode ? const Text('デバッグビルドでは切り替えることができません') : null,
+                value: config.enableDebugMode,
+                onChanged: kDebugMode ? null : (value) {
+                  config.setEnableDebugMode(value);
+                },
+              ),
+              if (config.enableDebugMode) ...[
                 const SectionTitle(title: 'Dev Utilities'),
                 ListTile(
                   title: const Text('Log Viewer'),

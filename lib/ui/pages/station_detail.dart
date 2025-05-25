@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +12,7 @@ import 'package:ekimemo_map/repository/line.dart';
 import 'package:ekimemo_map/repository/access_log.dart';
 import 'package:ekimemo_map/services/const.dart';
 import 'package:ekimemo_map/services/utils.dart';
+import 'package:ekimemo_map/services/config.dart';
 import 'package:ekimemo_map/ui/widgets/line_simple.dart';
 import 'package:ekimemo_map/ui/widgets/section_title.dart';
 
@@ -161,7 +161,7 @@ class _StationDetailViewState extends State<StationDetailView> {
             padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 12),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                if (kDebugMode) ...[
+                if (Config.enableDebugMode) ...[
                   const SectionTitle(title: 'Station Info (Debug)'),
                   Padding(
                     padding: const EdgeInsets.only(left: 16, right: 16),
