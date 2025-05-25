@@ -64,6 +64,7 @@ dependencies:
   image: ^4.5.4
   expandable: ^5.0.1
   nil: ^1.1.1
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:
