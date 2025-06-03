@@ -25,11 +25,12 @@ class GpsStateNotifier extends ChangeNotifier {
 
 class GpsManager {
   static final GpsStateNotifier _stateNotifier = GpsStateNotifier();
-  static final List<Function(double latitude, double longitude, double accuracy)> _listeners = [];
-  static StreamSubscription? _locationListener;
+  static final List<Function(double latitude, double longitude, double accuracy)> _locationListeners = [];
+  static final List<Function(bool isEnabled)> _gpsToggleListeners = [];
+  static StreamSubscription? _positionStream;
   static Position? _lastLocation;
 
-  static bool get isEnabled => _locationListener != null;
+  static bool get isEnabled => _positionStream != null;
   static Position? get lastLocation => _lastLocation;
 
   static Future<void> setGpsEnabled(bool value) async {
@@ -56,10 +57,14 @@ class GpsManager {
         ),
       );
 
-      _locationListener = Geolocator.getPositionStream(locationSettings: locationSettings).listen(_updateHandler);
+      _positionStream = Geolocator.getPositionStream(locationSettings: locationSettings).listen(_updateHandler);
     } else {
-      _locationListener?.cancel();
-      _locationListener = null;
+      _positionStream?.cancel();
+      _positionStream = null;
+    }
+
+    for (var listener in _gpsToggleListeners) {
+      listener(value);
     }
 
     logger.info('GPS ${value ? 'enabled' : 'disabled'}');
@@ -68,11 +73,19 @@ class GpsManager {
   }
 
   static void addLocationListener(Function(double latitude, double longitude, double accuracy) listener) {
-    _listeners.add(listener);
+    _locationListeners.add(listener);
   }
 
   static void removeLocationListener(Function(double latitude, double longitude, double accuracy) listener) {
-    _listeners.remove(listener);
+    _locationListeners.remove(listener);
+  }
+
+  static void addGpsToggleListener(Function(bool isEnabled) listener) {
+    _gpsToggleListeners.add(listener);
+  }
+
+  static void removeGpsToggleListener(Function(bool isEnabled) listener) {
+    _gpsToggleListeners.remove(listener);
   }
 
   static Future<bool> _checkPermission() async {
@@ -106,7 +119,7 @@ class GpsManager {
 
   static void _updateHandler(Position location) {
     _lastLocation = location;
-    for (var listener in _listeners) {
+    for (var listener in _locationListeners) {
       listener(location.latitude, location.longitude, location.accuracy);
     }
   }
