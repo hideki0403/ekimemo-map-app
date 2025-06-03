@@ -39,6 +39,12 @@ class MoveLog extends AbstractModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      ...toMapWithoutId(),
+    };
+  }
+
+  Map<String, dynamic> toMapWithoutId() {
+    return {
       'session_id': sessionId,
       'timestamp': timestamp.millisecondsSinceEpoch,
       'latitude': latitude,
