@@ -8,7 +8,7 @@ class MoveLogSession extends AbstractModel {
   MoveLogSession fromMap(Map<String, dynamic> map) {
     final session = MoveLogSession();
     session.id = map['id'];
-    session.startTime = DateTime.parse(map['start_time']);
+    session.startTime = DateTime.fromMillisecondsSinceEpoch(map['start_time']);
     return session;
   }
 
@@ -16,7 +16,7 @@ class MoveLogSession extends AbstractModel {
   MoveLogSession fromJson(Map<String, dynamic> json) {
     final session = MoveLogSession();
     session.id = json['id'];
-    session.startTime = DateTime.parse(json['start_time']);
+    session.startTime = DateTime.fromMillisecondsSinceEpoch(json['start_time']);
     return session;
   }
 
@@ -24,7 +24,7 @@ class MoveLogSession extends AbstractModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'start_time': startTime.toIso8601String(),
+      'start_time': startTime.millisecondsSinceEpoch,
     };
   }
 }

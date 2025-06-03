@@ -14,7 +14,7 @@ class MoveLog extends AbstractModel {
     final moveLog = MoveLog();
     moveLog.id = map['id'];
     moveLog.sessionId = map['session_id'];
-    moveLog.timestamp = DateTime.parse(map['timestamp']);
+    moveLog.timestamp = DateTime.fromMillisecondsSinceEpoch(map['timestamp']);
     moveLog.latitude = map['latitude'];
     moveLog.longitude = map['longitude'];
     moveLog.speed = map['speed'];
@@ -27,7 +27,7 @@ class MoveLog extends AbstractModel {
     final moveLog = MoveLog();
     moveLog.id = json['id'];
     moveLog.sessionId = json['session_id'];
-    moveLog.timestamp = DateTime.parse(json['timestamp']);
+    moveLog.timestamp = DateTime.fromMillisecondsSinceEpoch(json['timestamp']);
     moveLog.latitude = json['latitude'];
     moveLog.longitude = json['longitude'];
     moveLog.speed = json['speed'];
@@ -40,7 +40,7 @@ class MoveLog extends AbstractModel {
     return {
       'id': id,
       'session_id': sessionId,
-      'timestamp': timestamp.toIso8601String(),
+      'timestamp': timestamp.millisecondsSinceEpoch,
       'latitude': latitude,
       'longitude': longitude,
       'speed': speed,
