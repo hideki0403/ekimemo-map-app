@@ -50,8 +50,11 @@ class UpdateManager {
   }
 
   static Future<void> checkForUpdates() async {
-    await _AppUpdater.fetch(withNotify: false);
-    await _StationSourceUpdater.fetch(withNotify: false);
+    await Future.wait([
+      _AppUpdater.fetch(withNotify: false),
+      _StationSourceUpdater.fetch(withNotify: false),
+    ]);
+
     notify();
   }
 
