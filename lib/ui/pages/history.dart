@@ -71,6 +71,13 @@ class HistoryViewState extends State<HistoryView> {
           ),
         ],
       ),
+      bottomNavigationBar: Container(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Text('履歴: ${passingLog.length}件'),
+        ),
+      ),
       body: RefreshIndicator(
         onRefresh: () async => await _refreshHistory(context),
         child: ScrollViewTemplate(
