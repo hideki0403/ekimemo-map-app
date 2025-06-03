@@ -14,7 +14,7 @@ enum DatabaseType {
 }
 
 class DatabaseHandler {
-  static const int _version = 9;
+  static const int _version = 10;
   static final Map<String, List<dynamic>> _migration = {
     '1': [
       // create table
