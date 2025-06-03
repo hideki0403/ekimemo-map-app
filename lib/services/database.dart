@@ -102,6 +102,15 @@ class DatabaseHandler {
       // - drop _temp_id_mapping_table
       'DROP TABLE IF EXISTS _temp_id_mapping_table;',
     ],
+    '10': [
+      // create 'move_log', 'move_log_session' table
+      'CREATE TABLE IF NOT EXISTS move_log (id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT, timestamp INTEGER, latitude REAL, longitude REAL, speed REAL, accuracy REAL);',
+      'CREATE TABLE IF NOT EXISTS move_log_session (id TEXT PRIMARY KEY, start_time INTEGER);',
+
+      // create index for 'move_log', 'move_log_session'
+      'CREATE INDEX idx_move_log ON move_log (session_id, timestamp);',
+      'CREATE INDEX idx_move_log_session ON move_log_session (start_time);',
+    ]
   };
 
   static Future<void> _migrate(Database db, int previousVersion, int oldVersion) async {
