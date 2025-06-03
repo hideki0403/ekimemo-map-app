@@ -13,6 +13,7 @@ import 'services/station.dart';
 import 'services/notification.dart';
 import 'services/log.dart';
 import 'services/updater.dart';
+import 'services/movement_log.dart';
 
 import 'repository/station.dart';
 import 'repository/line.dart';
@@ -31,6 +32,7 @@ import 'ui/pages/search.dart';
 import 'ui/pages/history.dart';
 import 'ui/pages/route_search.dart';
 import 'ui/pages/interval_timer.dart';
+import 'ui/pages/movement_log.dart';
 import 'ui/pages/license.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -64,7 +66,9 @@ void main() async {
   await TreeNodeRepository().buildCache();
 
   SystemState.init(systemStateProvider);
+
   NotificationManager.initialize();
+  MovementLogService.initialize();
   await StationManager.initialize();
 
   UpdateManager.checkForUpdates();
@@ -133,6 +137,10 @@ class Root extends StatelessWidget {
         builder: (context, state) => const IntervalTimerView(),
       ),
       GoRoute(
+        path: '/movement-log',
+        builder: (context, state) => const MovementLogView(),
+      ),
+      GoRoute(
         path: '/license',
         builder: (context, state) => const LicenseView(),
       ),
@@ -140,7 +148,12 @@ class Root extends StatelessWidget {
         path: '/map',
         builder: (context, state) {
           final params = state.uri.queryParameters;
-          return MapView(stationId: int.tryParse(params['station-id'] ?? ''), lineId: int.tryParse(params['line-id'] ?? ''), radarId: int.tryParse(params['radar-id'] ?? ''));
+          return MapView(
+            stationId: int.tryParse(params['station-id'] ?? ''),
+            lineId: int.tryParse(params['line-id'] ?? ''),
+            radarId: int.tryParse(params['radar-id'] ?? ''),
+            sessionIds: params['session-ids']?.split(',').where((e) => e.isNotEmpty).toList(),
+          );
         },
       ),
       GoRoute(

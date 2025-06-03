@@ -334,6 +334,14 @@ class _SettingsViewState extends State<SettingsView> {
                   }
                 },
               ),
+              SwitchListTile(
+                title: const Text('移動ログ'),
+                subtitle: const Text('探索をONにしているときに移動ログを記録します。\n記録された移動ログはツール→移動ログから確認できます。'),
+                value: config.enableMovementLog,
+                onChanged: (value) {
+                  config.setEnableMovementLog(value);
+                },
+              ),
               const SectionTitle(title: 'データ管理'),
               ListTile(
                 title: const Text('バックアップ'),

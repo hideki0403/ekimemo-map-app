@@ -16,12 +16,13 @@ final logger = Logger('MapView');
 
 typedef MapAdapterBuilder<T extends MapAdapter> = T Function(MapViewState parent);
 
-enum MapAdapterType { core, viewer, attribute, radar }
+enum MapAdapterType { core, viewer, attribute, radar, movementLog }
 final mapAdapters = <MapAdapterType, MapAdapterBuilder>{
   MapAdapterType.core: (parent) => CoreMapAdapter(parent),
   MapAdapterType.viewer: (parent) => ViewerMapAdapter(parent),
   MapAdapterType.attribute: (parent) => AttributeMapAdapter(parent),
   MapAdapterType.radar: (parent) => RadarMapAdapter(parent),
+  MapAdapterType.movementLog: (parent) => MovementLogMapAdapter(parent),
 };
 
 enum MapStyle {
@@ -46,8 +47,9 @@ class MapView extends StatefulWidget {
   final int? stationId;
   final int? lineId;
   final int? radarId;
+  final List<String>? sessionIds;
 
-  const MapView({this.stationId, this.lineId, this.radarId, super.key});
+  const MapView({this.stationId, this.lineId, this.radarId, this.sessionIds, super.key});
 
   @override
   State<StatefulWidget> createState() => MapViewState();
@@ -190,6 +192,8 @@ class MapViewState extends State<MapView> {
                 useAdapter(MapAdapterType.viewer);
               } else if(widget.radarId != null) {
                 useAdapter(MapAdapterType.radar);
+              } else if(widget.sessionIds != null) {
+                useAdapter(MapAdapterType.movementLog);
               } else {
                 await useAdapter(MapAdapterType.core);
                 final location = await Geolocator.getCurrentPosition();

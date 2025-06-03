@@ -7,6 +7,7 @@ export 'adapter/core.dart';
 export 'adapter/viewer.dart';
 export 'adapter/attribute.dart';
 export 'adapter/radar.dart';
+export 'adapter/movement_log.dart';
 
 abstract class MapAdapter {
   late final MapLibreMapController controller;

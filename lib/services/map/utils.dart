@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 import 'package:ekimemo_map/models/station.dart';
+import 'package:ekimemo_map/models/move_log.dart';
 import 'package:ekimemo_map/services/station.dart';
 import 'package:ekimemo_map/services/utils.dart';
 
@@ -50,6 +51,23 @@ Map<String, dynamic> buildPoint(List<Station> stations, { bool useAttr = false, 
   return {
     'type': 'FeatureCollection',
     'features': point,
+  };
+}
+
+Map<String, dynamic> buildLine(List<MoveLog> movelogs) {
+  final List<List<double>> coordinates = [];
+
+  for (var log in movelogs) {
+    coordinates.add([log.longitude, log.latitude]);
+  }
+
+  return {
+    'type': 'Feature',
+    'geometry': {
+      'type': 'LineString',
+      'coordinates': coordinates,
+    },
+    'properties': {}
   };
 }
 

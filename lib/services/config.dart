@@ -47,6 +47,7 @@ class ConfigProvider extends ChangeNotifier {
   bool get disableDbCache => _config?.getBool('disable_db_cache') ?? false;
   bool get useMaterialYou => _config?.getBool('use_material_you') ?? false;
   Color get themeSeedColor => hexToColor(_config?.getString('theme_seed_color') ?? Colors.blue.toHexStringRGB());
+  bool get enableMovementLog => _config?.getBool('enable_movement_log') ?? false;
   bool get enableDebugMode => kDebugMode || (_config?.getBool('enable_debug_mode') ?? false);
 
   void notify() {
@@ -153,6 +154,11 @@ class ConfigProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setEnableMovementLog(bool value) {
+    _config?.setBool('enable_movement_log', value);
+    notifyListeners();
+  }
+
   void setEnableDebugMode(bool value) {
     _config?.setBool('enable_debug_mode', value);
     notifyListeners();
@@ -186,6 +192,7 @@ class Config {
   static bool get disableDbCache => _configProvider?.disableDbCache ?? false;
   static bool get useMaterialYou => _configProvider?.useMaterialYou ?? false;
   static Color get themeSeedColor => _configProvider?.themeSeedColor ?? Colors.blue;
+  static bool get enableMovementLog => _configProvider?.enableMovementLog ?? false;
   static bool get enableDebugMode => _configProvider?.enableDebugMode ?? false;
 
   static String getString(String key, {String defaultValue = ''}) {

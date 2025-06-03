@@ -20,6 +20,8 @@ class ToolsView extends StatelessWidget {
                 SizedBox(height: 12),
                 _ToolItem(title: 'アクセス履歴', description: 'アクセスした駅の履歴を確認することが出来ます', icon: Icons.history_rounded, path: '/history'),
                 SizedBox(height: 12),
+                _ToolItem(title: '移動ログ', description: '移動ログを確認することが出来ます', icon: Icons.route_rounded, path: '/movement-log'),
+                SizedBox(height: 12),
                 _ToolItem(title: 'ルート探索', description: 'GPXファイルを読み込み、通過する駅の一覧を表示することが出来ます', icon: Icons.directions_rounded, path: '/route-search'),
                 SizedBox(height: 12),
                 _ToolItem(title: 'インターバルタイマー', description: 'インターバルタイマーを設定することが出来ます', icon: Icons.timer_rounded, path: '/interval-timer'),
