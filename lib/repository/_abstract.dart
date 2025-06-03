@@ -174,16 +174,17 @@ abstract class AbstractRepository<T extends AbstractModel> {
   }
 
   /// データベースのレコードを削除します。
-  Future<void> delete(dynamic key) async {
+  Future<void> delete(dynamic key, {String? column}) async {
     if (_database == null) await _initialize();
+    final targetColumn = column ?? _primaryKey;
     try {
       await _database!.delete(
         _tableName,
-        where: '$_primaryKey = ?',
+        where: '$targetColumn = ?',
         whereArgs: [key],
       );
     } catch (e) {
-      logger.error('Failed to delete record from $_tableName');
+      logger.error('Failed to delete record from $_tableName, column: $targetColumn, key: $key');
     }
   }
 
