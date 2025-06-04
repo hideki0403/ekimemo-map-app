@@ -12,6 +12,7 @@ import 'package:ekimemo_map/ui/widgets/dialog_template.dart';
 import 'package:ekimemo_map/ui/widgets/editor_dialog.dart';
 import 'package:ekimemo_map/ui/widgets/select_dialog.dart';
 import 'package:ekimemo_map/ui/widgets/checkbox_dialog.dart';
+import 'package:ekimemo_map/ui/widgets/delete_dialog.dart';
 import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
 
 int measure(double plat1, double plng1, double plat2, double plng2) {
@@ -40,9 +41,7 @@ String beautifySeconds(int seconds, {bool jp = false}) {
   }
 }
 
-Icon getAttrIcon(StationAttr attr, { BuildContext? context }) {
-  const scale = 20.0;
-
+bool isDarkMode(BuildContext? context) {
   var isDark = false;
   if (context != null) {
     if (Config.themeMode == ThemeMode.system) {
@@ -51,6 +50,13 @@ Icon getAttrIcon(StationAttr attr, { BuildContext? context }) {
       isDark = Config.themeMode == ThemeMode.dark;
     }
   }
+  return isDark;
+}
+
+Icon getAttrIcon(StationAttr attr, { BuildContext? context }) {
+  const scale = 20.0;
+
+  var isDark = isDarkMode(context);
 
   switch (attr) {
     case StationAttr.eco:
