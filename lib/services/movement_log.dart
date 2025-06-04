@@ -61,6 +61,20 @@ class MovementLogService {
     return await getLogById(session.id);
   }
 
+  static Future<Map<MoveLogSession, List<MoveLog>>> getSessionsWithLogs(List<String> sessionIds) async {
+    final sessionRecords = await Future.wait(
+      sessionIds.map((id) => getSession(id)),
+    ).then((sessions) => sessions.whereType<MoveLogSession>().toList());
+
+    final sessionEntries = await Future.wait(
+      sessionRecords.map((session) {
+        return getLog(session).then((logs) => MapEntry(session, logs));
+      }),
+    );
+
+    return Map.fromEntries(sessionEntries.where((entry) => entry.value.isNotEmpty));
+  }
+
   static Future<void> deleteSession(MoveLogSession session) async {
     await _moveLogRepository.delete(session.id, column: 'session_id');
     await _moveLogSessionRepository.delete(session.id);
