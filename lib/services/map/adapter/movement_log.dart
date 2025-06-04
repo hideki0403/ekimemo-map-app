@@ -1,4 +1,6 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:ekimemo_map/services/movement_log.dart';
@@ -47,11 +49,27 @@ class MovementLogMapAdapter extends MapAdapter {
     IconButton(
       icon: const Icon(Icons.delete_forever_rounded),
       onPressed: () async {
-        // TODO
-        showMessageDialog(
-          title: 'TODO',
-          message: '近日実装予定',
-          icon: Icons.construction_rounded,
+        final sessions = _allSessions.entries.map((entry) => MapEntry(entry.key.id, '${_dateFormat.format(entry.value.first.timestamp)}~${_dateFormat.format(entry.value.last.timestamp)}\n${entry.value.length}地点を含むデータ'));
+        showDeleteDialog(
+          title: '移動ログの削除',
+          data: Map.fromEntries(sessions),
+          icon: Icons.delete_forever_rounded,
+          onDelete: (id) async {
+            final session = _allSessions.entries.firstWhereOrNull((entry) => entry.key.id == id);
+            if (session == null) return false;
+
+            final result = await showConfirmDialog(
+              title: '移動ログの削除',
+              caption: '${session.value.length}件の移動ログを削除しますか？\nこの操作は取り消せません。',
+            );
+            if (result != true) return false;
+
+            _allSessions.remove(session.key);
+            await MovementLogService.deleteSession(session.key);
+            await updateSessions(withRefreshSessions: true);
+
+            return true;
+          },
         );
       },
     ),
