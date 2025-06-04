@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -6,8 +5,6 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:ekimemo_map/services/movement_log.dart';
 import 'package:ekimemo_map/services/utils.dart';
 import 'package:ekimemo_map/services/radar.dart';
-import 'package:ekimemo_map/models/move_log.dart';
-import 'package:ekimemo_map/models/move_log_session.dart';
 import '../map_adapter.dart';
 import '../utils.dart';
 
@@ -16,7 +13,7 @@ class MovementLogMapAdapter extends MapAdapter {
 
   final DateFormat _dateFormat = DateFormat('H時mm分');
 
-  Map<MoveLogSession, List<MoveLog>> _allSessions = {};
+  MoveLogSessionMap _allSessions = {};
   List<String> _ignoredSessionIds = [];
   LatLngBounds? _cameraBounds;
 
@@ -26,7 +23,7 @@ class MovementLogMapAdapter extends MapAdapter {
   @override
   List<Widget> get floatingWidgets => [
     ElevatedButton(
-      onPressed: () => resetCameraBounds(),
+      onPressed: _cameraBounds == null ? null : () => resetCameraBounds(),
       child: Text('表示範囲をリセット'),
     ),
     ElevatedButton(
@@ -49,28 +46,10 @@ class MovementLogMapAdapter extends MapAdapter {
     IconButton(
       icon: const Icon(Icons.delete_forever_rounded),
       onPressed: () async {
-        final sessions = _allSessions.entries.map((entry) => MapEntry(entry.key.id, '${_dateFormat.format(entry.value.first.timestamp)}~${_dateFormat.format(entry.value.last.timestamp)}\n${entry.value.length}地点を含むデータ'));
-        showDeleteDialog(
-          title: '移動ログの削除',
-          data: Map.fromEntries(sessions),
-          icon: Icons.delete_forever_rounded,
-          onDelete: (id) async {
-            final session = _allSessions.entries.firstWhereOrNull((entry) => entry.key.id == id);
-            if (session == null) return false;
-
-            final result = await showConfirmDialog(
-              title: '移動ログの削除',
-              caption: '${session.value.length}件の移動ログを削除しますか？\nこの操作は取り消せません。',
-            );
-            if (result != true) return false;
-
-            _allSessions.remove(session.key);
-            await MovementLogService.deleteSession(session.key);
-            await updateSessions(withRefreshSessions: true);
-
-            return true;
-          },
-        );
+        MovementLogService.deleteSessionsDialog(_allSessions, (session) {
+            _allSessions.remove(session);
+            updateSessions(withRefreshSessions: true);
+        });
       },
     ),
     IconButton(
@@ -126,7 +105,8 @@ class MovementLogMapAdapter extends MapAdapter {
       'features': lineStrings,
     });
 
-    _cameraBounds = getBounds(movementLogs.expand((x) => x).map((x) => LatLngPoint(x.latitude, x.longitude)).toList(), margin: true);
+    _cameraBounds = movementLogs.isEmpty ? null : getBounds(movementLogs.expand((x) => x).map((x) => LatLngPoint(x.latitude, x.longitude)).toList(), margin: true);
+    parent.rebuildWidget();
     resetCameraBounds();
   }
 
