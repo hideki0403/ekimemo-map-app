@@ -315,6 +315,15 @@ Future<Color?> showColorPickerDialog({List<Color>? defaultColor, String? title})
   );
 }
 
+Future<void> showDeleteDialog({required Map<String, String> data, required Future<bool> Function(String onDelete) onDelete, String? title, String? caption, IconData? icon}) async {
+  return showDialog(
+    context: navigatorKey.currentContext!,
+    builder: (context) {
+      return DeleteDialog(data: data, onDelete: onDelete, title: title ?? '削除', caption: caption, icon: icon ?? Icons.delete_forever_rounded);
+    },
+  );
+}
+
 Color hexToColor(String? hex) {
   if (hex == null) return Colors.transparent;
   hex = hex.replaceAll('#', '');
