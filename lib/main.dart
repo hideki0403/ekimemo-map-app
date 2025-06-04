@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:dynamic_system_colors/dynamic_system_colors.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -49,6 +51,9 @@ void main() async {
     logger.error('PlatformError: $error, $stack');
     return false;
   };
+
+  await initializeDateFormatting('ja_JP');
+  Intl.defaultLocale = 'ja_JP';
 
   await DatabaseHandler.init();
 
