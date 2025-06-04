@@ -98,19 +98,21 @@ class MovementLogMapAdapter extends MapAdapter {
     updateSessions(withRefreshSessions: true);
   }
 
-  void updateSessions({bool withRefreshSessions = false}) async {
+  Future<void> updateSessions({bool withRefreshSessions = false}) async {
     if (withRefreshSessions) {
-      final sessionRecords = await Future.wait(
-        parent.widget.sessionIds!.map((id) => MovementLogService.getSession(id)),
-      ).then((sessions) => sessions.whereType<MoveLogSession>().toList());
+      _allSessions = await MovementLogService.getSessionsWithLogs(parent.widget.sessionIds!);
+    }
 
-      final sessionEntries = await Future.wait(
-        sessionRecords.map((session) {
-          return MovementLogService.getLog(session).then((logs) => MapEntry(session, logs));
-        }),
+    if (_allSessions.isEmpty) {
+      if (context.mounted) {
+        context.pop();
+      }
+      showMessageDialog(
+        title: '移動ログがありません',
+        message: '表示できる移動ログがありませんでした',
+        icon: Icons.info_rounded,
       );
-
-      _allSessions = Map.fromEntries(sessionEntries.where((entry) => entry.value.isNotEmpty));
+      return;
     }
 
     final movementLogs = _allSessions.entries
