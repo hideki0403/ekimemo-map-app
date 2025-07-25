@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +14,7 @@ import 'config.dart';
 import 'gps.dart';
 
 typedef MoveLogSessionMap = Map<MoveLogSession, List<MoveLog>>;
+typedef _Point = (double latitude, double longitude);
 
 class MovementLogService {
   static final _moveLogRepository = MoveLogRepository();
@@ -20,6 +22,7 @@ class MovementLogService {
   static final DateFormat _dateFormat = DateFormat('H時mm分');
 
   static String? _currentSessionId;
+  static _Point? _lastLocation;
 
   static void initialize() {
     GpsManager.addLocationListener(_locationHandler);
@@ -36,6 +39,17 @@ class MovementLogService {
       session.startTime = DateTime.now();
       _moveLogSessionRepository.insertModel(session);
     }
+
+    if (_lastLocation != null && Config.minimumMovementDistance != 0) {
+      final distance = _DistanceCalcurator.calculate(
+        _lastLocation!,
+        (latitude, longitude),
+      );
+
+      if (distance < Config.minimumMovementDistance) return;
+    }
+
+    _lastLocation = (latitude, longitude);
 
     final moveLog = MoveLog();
     moveLog.sessionId = _currentSessionId!;
@@ -91,7 +105,8 @@ class MovementLogService {
   }
 
   static Future<void> deleteSessionsDialog(MoveLogSessionMap allSessions, Function(MoveLogSession session) onDeleted) async {
-    final sessions = allSessions.entries.map((entry) => MapEntry(entry.key.id, '${_dateFormat.format(entry.value.first.timestamp)}~${_dateFormat.format(entry.value.last.timestamp)}\n${entry.value.length}地点を含むデータ'));
+    final sessions = allSessions.entries
+        .map((entry) => MapEntry(entry.key.id, '${_dateFormat.format(entry.value.first.timestamp)}~${_dateFormat.format(entry.value.last.timestamp)}\n${entry.value.length}地点を含むデータ'));
     showDeleteDialog(
       title: '移動ログの削除',
       data: Map.fromEntries(sessions),
@@ -111,6 +126,29 @@ class MovementLogService {
 
         return true;
       },
+    );
+  }
+}
+
+class _DistanceCalcurator {
+  static const earthRadius = 6378.137;
+
+  static double deg2rad(double deg) {
+    return deg * (pi / 180);
+  }
+
+  static double calculate(_Point p1, _Point p2) {
+    final (double degLat1, double degLon1) = p1;
+    final (double degLat2, double degLon2) = p2;
+
+    final lat1 = deg2rad(degLat1);
+    final lon1 = deg2rad(degLon1);
+    final lat2 = deg2rad(degLat2);
+    final lon2 = deg2rad(degLon2);
+
+    return 1000 * earthRadius * acos(
+      sin(lat1) * sin(lat2) +
+      cos(lat1) * cos(lat2) * cos(lon2 - lon1),
     );
   }
 }

@@ -48,6 +48,7 @@ class ConfigProvider extends ChangeNotifier {
   bool get useMaterialYou => _config?.getBool('use_material_you') ?? false;
   Color get themeSeedColor => hexToColor(_config?.getString('theme_seed_color') ?? Colors.blue.toHexStringRGB());
   bool get enableMovementLog => _config?.getBool('enable_movement_log') ?? false;
+  int get minimumMovementDistance => _config?.getInt('minimum_movement_distance') ?? 100;
   bool get enableDebugMode => kDebugMode || (_config?.getBool('enable_debug_mode') ?? false);
 
   void notify() {
@@ -159,6 +160,11 @@ class ConfigProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setMinimumMovementDistance(int value) {
+    _config?.setInt('minimum_movement_distance', value);
+    notifyListeners();
+  }
+
   void setEnableDebugMode(bool value) {
     _config?.setBool('enable_debug_mode', value);
     notifyListeners();
@@ -193,6 +199,7 @@ class Config {
   static bool get useMaterialYou => _configProvider?.useMaterialYou ?? false;
   static Color get themeSeedColor => _configProvider?.themeSeedColor ?? Colors.blue;
   static bool get enableMovementLog => _configProvider?.enableMovementLog ?? false;
+  static int get minimumMovementDistance => _configProvider?.minimumMovementDistance ?? 100;
   static bool get enableDebugMode => _configProvider?.enableDebugMode ?? false;
 
   static String getString(String key, {String defaultValue = ''}) {

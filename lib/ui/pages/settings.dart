@@ -240,7 +240,34 @@ class _SettingsViewState extends State<SettingsView> {
                   config.setEnableTts(value);
                 } : null,
               ),
-              const SectionTitle(title: 'その他'),
+              const SectionTitle(title: '移動ログ'),
+              SwitchListTile(
+                title: const Text('移動ログの記録'),
+                subtitle: const Text('探索をONにしているときに移動ログを記録します。\n記録された移動ログはツール→移動ログから確認できます。'),
+                value: config.enableMovementLog,
+                onChanged: (value) {
+                  config.setEnableMovementLog(value);
+                },
+              ),
+              ListTile(
+                title: const Text('最小移動距離'),
+                subtitle: Text(config.minimumMovementDistance == 0 ? 'なし' : '${config.minimumMovementDistance}m'),
+                onTap: () async {
+                  final result = await showEditorDialog(
+                      title: '最小移動距離',
+                      caption: '前回記録された位置から設定された距離以上移動した場合にのみ、移動ログを記録するようにします。\n0mで無効になります。',
+                      data: config.minimumMovementDistance.toString(),
+                      suffix: 'm',
+                      type: EditorDialogType.integer,
+                      icon: Icons.directions_walk_rounded
+                  );
+
+                  if (result != null) {
+                    config.setMinimumMovementDistance(max(0, int.parse(result)));
+                  }
+                },
+              ),
+              const SectionTitle(title: 'テーマ'),
               ListTile(
                 title: const Text('テーマ'),
                 subtitle: Text(_themeMode[config.themeMode] ?? '不明'),
@@ -300,6 +327,7 @@ class _SettingsViewState extends State<SettingsView> {
                   }
                 },
               ),
+              const SectionTitle(title: 'マップ'),
               ListTile(
                 title: const Text('マップのスタイル'),
                 subtitle: Text(config.mapStyle.displayName),
@@ -332,14 +360,6 @@ class _SettingsViewState extends State<SettingsView> {
                   if (result != null) {
                     config.setMapRenderingLimit(max(1, int.parse(result)));
                   }
-                },
-              ),
-              SwitchListTile(
-                title: const Text('移動ログ'),
-                subtitle: const Text('探索をONにしているときに移動ログを記録します。\n記録された移動ログはツール→移動ログから確認できます。'),
-                value: config.enableMovementLog,
-                onChanged: (value) {
-                  config.setEnableMovementLog(value);
                 },
               ),
               const SectionTitle(title: 'データ管理'),
