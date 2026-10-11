@@ -6,6 +6,7 @@ activityCompose = "1.13.0"
 materialKolor = "5.0.1"
 navigationCompose = "2.10.2"
 coroutines = "1.11.0"
+msgpack = "0.9.12"
 junit = "4.13.2"
 
 [libraries]
@@ -19,6 +20,7 @@ androidx-compose-material-icons-core = { group = "androidx.compose.material", na
 androidx-compose-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+msgpack-core = { group = "org.msgpack", name = "msgpack-core", version.ref = "msgpack" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 material-kolor = { group = "com.materialkolor", name = "material-kolor", version.ref = "materialKolor" }
 

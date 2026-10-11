@@ -78,6 +78,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.material.kolor)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.msgpack.core)
     testImplementation(libs.junit)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
