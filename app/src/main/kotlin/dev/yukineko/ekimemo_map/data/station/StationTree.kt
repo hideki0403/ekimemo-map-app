@@ -17,6 +17,24 @@ class StationTree(data: StationData) {
         return result.map { it.station }
     }
 
+    fun inRect(north: Double, east: Double, south: Double, west: Double, maxResults: Int): List<Station> {
+        require(maxResults > 0) { "maxResults must be positive" }
+        val result = mutableListOf<Station>()
+
+        fun searchRect(node: Node, depth: Int) {
+            if (result.size >= maxResults) return
+            val station = node.station
+            if (station.lat in south..north && station.lng in west..east) result.add(station)
+
+            val (min, max, threshold) = if (depth % 2 == 0) Triple(west, east, station.lng) else Triple(south, north, station.lat)
+            if (min <= threshold) node.left?.let { searchRect(it, depth + 1) }
+            if (max >= threshold) node.right?.let { searchRect(it, depth + 1) }
+        }
+
+        searchRect(root, 0)
+        return result
+    }
+
     private fun search(node: Node, depth: Int, lat: Double, lng: Double, maxResults: Int, result: MutableList<Candidate>) {
         val station = node.station
         val dLat = station.lat - lat
