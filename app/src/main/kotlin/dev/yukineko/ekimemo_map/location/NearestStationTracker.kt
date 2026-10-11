@@ -16,6 +16,8 @@ import kotlin.math.roundToLong
 
 data class NearbyStation(val station: Station, val distance: Int, val line: Line?)
 
+data class TrackResult(val stations: List<NearbyStation>, val changed: Boolean, val inCooldown: Boolean)
+
 fun cooldownSeconds(lastAccess: Long?, settings: Settings, now: Long): Int {
     if (lastAccess == null || !settings.enableReminder) return 0
     val elapsed = ((now - lastAccess) / 1000).toInt()
@@ -40,7 +42,7 @@ class NearestStationTracker(
     private var lastPosition: Pair<Long, Long>? = null
     private var nearest: Station? = null
 
-    suspend fun update(data: StationData, tree: StationTree, location: Location, settings: Settings): List<NearbyStation>? {
+    suspend fun update(data: StationData, tree: StationTree, location: Location, settings: Settings): TrackResult? {
         if (settings.maxAcceptableAccuracy != 0 && settings.maxAcceptableAccuracy < location.accuracy) return null
         if (settings.maxResults <= 0) return null
 
@@ -54,19 +56,20 @@ class NearestStationTracker(
         }
 
         val current = result.first()
-        if (current.station.id != nearest?.id) {
-            nearest = current.station
-            logger.info("Nearest station changed: ${current.station.name} (${current.station.id})")
-            record(current, location, settings)
-        }
-        return result
+        if (current.station.id == nearest?.id) return TrackResult(result, changed = false, inCooldown = false)
+
+        nearest = current.station
+        logger.info("Nearest station changed: ${current.station.name} (${current.station.id})")
+        val inCooldown = record(current, location, settings)
+        return TrackResult(result, changed = true, inCooldown = inCooldown)
     }
 
-    private suspend fun record(current: NearbyStation, location: Location, settings: Settings) {
+    private suspend fun record(current: NearbyStation, location: Location, settings: Settings): Boolean {
         val now = System.currentTimeMillis()
         val stationId = current.station.id
         val log = accessLogDao.get(stationId)
-        if (cooldownSeconds(log?.lastAccess, settings, now) == 0) {
+        val inCooldown = cooldownSeconds(log?.lastAccess, settings, now) > 0
+        if (!inCooldown) {
             accessLogDao.upsert(
                 log?.copy(lastAccess = now, accessCount = log.accessCount + 1)
                     ?: AccessLog(stationId, firstAccess = now, lastAccess = now, accessCount = 1, accessed = true),
@@ -84,6 +87,7 @@ class NearestStationTracker(
                 isRenotify = false,
             ),
         )
+        return inCooldown
     }
 
     private fun Double.fixed() = (this * 100000).roundToLong()

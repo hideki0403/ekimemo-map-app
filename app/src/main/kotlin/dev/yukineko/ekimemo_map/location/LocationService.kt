@@ -1,7 +1,6 @@
 package dev.yukineko.ekimemo_map.location
 
 import android.annotation.SuppressLint
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -19,10 +18,11 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
-import dev.yukineko.ekimemo_map.MainActivity
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.data.station.StationTree
 import dev.yukineko.ekimemo_map.log.Logger
+import dev.yukineko.ekimemo_map.notification.StationNotifier
+import dev.yukineko.ekimemo_map.notification.openAppIntent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -53,11 +53,7 @@ class LocationService : Service() {
             .setSmallIcon(R.drawable.ic_notification_place)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(getString(R.string.notification_search_text))
-            .setContentIntent(
-                PendingIntent.getActivity(
-                    this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE,
-                ),
-            )
+            .setContentIntent(openAppIntent())
             .setOngoing(true)
             .build()
 
@@ -82,6 +78,7 @@ class LocationService : Service() {
         }
 
         val tracker = NearestStationTracker(app.userDatabase.accessLogDao(), app.userDatabase.passingLogDao())
+        val notifier = StationNotifier(this)
         val trees = app.stationDataRepository.data.filterNotNull()
             .map { it to StationTree(it) }
             .flowOn(Dispatchers.Default)
@@ -89,9 +86,15 @@ class LocationService : Service() {
         scope.launch {
             _location.filterNotNull().collect { location ->
                 val (data, tree) = trees.value ?: return@collect
-                runCatching { tracker.update(data, tree, location, settings.first()) }
-                    .onSuccess { result -> result?.let { _nearbyStations.value = it } }
-                    .onFailure { logger.error("Failed to update nearest station", it) }
+                val current = settings.first()
+                runCatching {
+                    val result = tracker.update(data, tree, location, current) ?: return@runCatching
+                    _nearbyStations.value = result.stations
+                    if (result.changed) {
+                        val silent = result.inCooldown && !current.enableNotificationDuringCooldown
+                        notifier.notifyNearest(result.stations.first(), silent, current)
+                    }
+                }.onFailure { logger.error("Failed to update nearest station", it) }
             }
         }
     }
