@@ -30,6 +30,7 @@ fun AppNavHost() {
             val context = LocalContext.current
             val isRunning by LocationService.isRunning.collectAsState()
             val location by LocationService.location.collectAsState()
+            val nearbyStations by LocationService.nearbyStations.collectAsState()
             var issues by remember { mutableStateOf(emptyList<PermissionIssue>()) }
             val requestPermissions = rememberSearchPermissionRequester {
                 issues = it
@@ -41,6 +42,7 @@ fun AppNavHost() {
                     Text("Search: $isRunning")
                 }
                 Text(location?.let { "${it.latitude}, ${it.longitude} (${it.accuracy}m)" }.toString())
+                nearbyStations.forEach { Text("${it.station.name} ${it.distance}m ${it.line?.name}") }
                 listOf(
                     SettingsRoute, AssistantFlowRoute, AssistantChooseRectRoute, LogRoute, ToolsRoute,
                     SearchRoute, HistoryRoute, RouteSearchRoute, IntervalTimerRoute, MovementLogRoute,

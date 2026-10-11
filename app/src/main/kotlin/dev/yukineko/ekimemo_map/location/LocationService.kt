@@ -21,17 +21,24 @@ import com.google.android.gms.location.Priority
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
 import dev.yukineko.ekimemo_map.MainActivity
 import dev.yukineko.ekimemo_map.R
+import dev.yukineko.ekimemo_map.data.station.StationTree
 import dev.yukineko.ekimemo_map.log.Logger
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class LocationService : Service() {
@@ -66,10 +73,25 @@ class LocationService : Service() {
         _isRunning.value = true
         logger.info("Location service started")
 
-        val settings = (application as EkimemoMapApplication).settings.data
+        val app = application as EkimemoMapApplication
+        val settings = app.settings.data
         scope.launch {
             settings.map { (it.updateFrequency * 1000).toLong() }.distinctUntilChanged().collectLatest { interval ->
                 locationUpdates(interval).collect { _location.value = it }
+            }
+        }
+
+        val tracker = NearestStationTracker(app.userDatabase.accessLogDao(), app.userDatabase.passingLogDao())
+        val trees = app.stationDataRepository.data.filterNotNull()
+            .map { it to StationTree(it) }
+            .flowOn(Dispatchers.Default)
+            .stateIn(scope, SharingStarted.Eagerly, null)
+        scope.launch {
+            _location.filterNotNull().collect { location ->
+                val (data, tree) = trees.value ?: return@collect
+                runCatching { tracker.update(data, tree, location, settings.first()) }
+                    .onSuccess { result -> result?.let { _nearbyStations.value = it } }
+                    .onFailure { logger.error("Failed to update nearest station", it) }
             }
         }
     }
@@ -80,6 +102,7 @@ class LocationService : Service() {
         scope.cancel()
         _isRunning.value = false
         _location.value = null
+        _nearbyStations.value = emptyList()
         logger.info("Location service stopped")
         super.onDestroy()
     }
@@ -115,6 +138,9 @@ class LocationService : Service() {
 
         private val _location = MutableStateFlow<Location?>(null)
         val location: StateFlow<Location?> = _location.asStateFlow()
+
+        private val _nearbyStations = MutableStateFlow<List<NearbyStation>>(emptyList())
+        val nearbyStations: StateFlow<List<NearbyStation>> = _nearbyStations.asStateFlow()
 
         fun start(context: Context) {
             ContextCompat.startForegroundService(context, Intent(context, LocationService::class.java))
