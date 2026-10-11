@@ -16,7 +16,7 @@ import dev.yukineko.ekimemo_map.location.NearbyStation
 fun Context.openAppIntent(): PendingIntent =
     PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
 
-class StationNotifier(private val context: Context) {
+class StationNotifier(private val context: Context, private val notificationPlayer: NotificationPlayer) {
     private val manager = NotificationManagerCompat.from(context)
 
     init {
@@ -29,18 +29,24 @@ class StationNotifier(private val context: Context) {
     }
 
     @SuppressLint("MissingPermission")
-    fun notifyNearest(nearest: NearbyStation, silent: Boolean, settings: Settings) {
-        if (!settings.enableNotification || !manager.areNotificationsEnabled()) return
+    suspend fun notifyNearest(nearest: NearbyStation, silent: Boolean, settings: Settings) {
+        if (!settings.enableNotification) return
 
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification_new)
-            .setContentTitle(nearest.station.name)
-            .setContentText(context.getString(R.string.notification_nearest_changed, formatDistance(nearest.distance)))
-            .setContentIntent(context.openAppIntent())
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setSilent(silent)
-            .build()
-        manager.notify(NOTIFICATION_ID, notification)
+        if (manager.areNotificationsEnabled()) {
+            val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification_new)
+                .setContentTitle(nearest.station.name)
+                .setContentText(context.getString(R.string.notification_nearest_changed, formatDistance(nearest.distance)))
+                .setContentIntent(context.openAppIntent())
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setSilent(silent)
+                .build()
+            manager.notify(NOTIFICATION_ID, notification)
+        }
+
+        if (!silent) {
+            notificationPlayer.playAll(settings, context.getString(R.string.tts_nearest_changed, nearest.station.nameKana))
+        }
     }
 
     companion object {

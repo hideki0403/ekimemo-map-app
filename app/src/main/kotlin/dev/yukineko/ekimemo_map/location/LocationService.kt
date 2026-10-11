@@ -78,7 +78,7 @@ class LocationService : Service() {
         }
 
         val tracker = NearestStationTracker(app.userDatabase.accessLogDao(), app.userDatabase.passingLogDao())
-        val notifier = StationNotifier(this)
+        val notifier = StationNotifier(this, app.notificationPlayer)
         val trees = app.stationDataRepository.data.filterNotNull()
             .map { it to StationTree(it) }
             .flowOn(Dispatchers.Default)
@@ -92,7 +92,10 @@ class LocationService : Service() {
                     _nearbyStations.value = result.stations
                     if (result.changed) {
                         val silent = result.inCooldown && !current.enableNotificationDuringCooldown
-                        notifier.notifyNearest(result.stations.first(), silent, current)
+                        scope.launch {
+                            runCatching { notifier.notifyNearest(result.stations.first(), silent, current) }
+                                .onFailure { logger.error("Failed to notify nearest station", it) }
+                        }
                     }
                 }.onFailure { logger.error("Failed to update nearest station", it) }
             }

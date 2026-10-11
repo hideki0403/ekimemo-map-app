@@ -26,4 +26,5 @@
     <string name="notification_search_text">最寄り駅を探索中</string>
     <string name="notification_channel_nearest_station">最寄り駅通知</string>
     <string name="notification_nearest_changed">%1$sで最寄り駅になりました</string>
+    <string name="tts_nearest_changed">「%1$s」が、最寄り駅になりました</string>
 </resources>

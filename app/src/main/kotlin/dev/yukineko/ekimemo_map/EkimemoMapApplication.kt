@@ -16,6 +16,7 @@ import dev.yukineko.ekimemo_map.data.settings.Settings
 import dev.yukineko.ekimemo_map.data.station.StationDataRepository
 import dev.yukineko.ekimemo_map.data.user.UserDatabase
 import dev.yukineko.ekimemo_map.log.Logger
+import dev.yukineko.ekimemo_map.notification.NotificationPlayer
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
@@ -49,6 +50,7 @@ class EkimemoMapApplication : Application() {
     val userDatabase by lazy {
         Room.databaseBuilder(this, UserDatabase::class.java, "user.db").build()
     }
+    val notificationPlayer by lazy { NotificationPlayer(this) }
 
     lateinit var legacyImport: Deferred<LegacyImportResult>
         private set
