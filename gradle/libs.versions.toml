@@ -14,6 +14,7 @@ room = "2.8.5"
 ksp = "2.3.12"
 desugarJdkLibs = "2.1.5"
 junit = "4.13.2"
+playServicesLocation = "21.4.0"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -36,6 +37,7 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarJdkLibs" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 material-kolor = { group = "com.materialkolor", name = "material-kolor", version.ref = "materialKolor" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
