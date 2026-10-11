@@ -3,8 +3,10 @@ package dev.yukineko.ekimemo_map
 import android.app.Application
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.room.Room
 import dev.yukineko.ekimemo_map.data.github.GitHubReleases
 import dev.yukineko.ekimemo_map.data.station.StationDataRepository
+import dev.yukineko.ekimemo_map.data.user.UserDatabase
 import dev.yukineko.ekimemo_map.log.Logger
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -21,6 +23,9 @@ class EkimemoMapApplication : Application() {
     val gitHubReleases by lazy { GitHubReleases(OkHttpClient()) }
     val stationDataRepository by lazy {
         StationDataRepository(File(filesDir, "station_database.msgpack"), dataStore, gitHubReleases)
+    }
+    val userDatabase by lazy {
+        Room.databaseBuilder(this, UserDatabase::class.java, "user.db").build()
     }
 
     override fun onCreate() {
