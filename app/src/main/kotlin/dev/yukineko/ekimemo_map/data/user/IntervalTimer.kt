@@ -8,6 +8,8 @@ import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Update
+import dev.yukineko.ekimemo_map.notification.NotificationSound
+import dev.yukineko.ekimemo_map.notification.VibrationPattern
 import kotlinx.coroutines.flow.Flow
 
 @Entity(tableName = "interval_timer")
@@ -17,8 +19,8 @@ data class IntervalTimer(
     @ColumnInfo(name = "duration_sec") val durationSec: Int,
     @ColumnInfo(name = "enable_notification") val enableNotification: Boolean,
     @ColumnInfo(name = "enable_tts") val enableTts: Boolean,
-    @ColumnInfo(name = "notification_sound") val notificationSound: String?,
-    @ColumnInfo(name = "vibration_pattern") val vibrationPattern: String?,
+    @ColumnInfo(name = "notification_sound") val notificationSound: NotificationSound?,
+    @ColumnInfo(name = "vibration_pattern") val vibrationPattern: VibrationPattern?,
 )
 
 @Dao
