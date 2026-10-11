@@ -6,10 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.Modifier
+import dev.yukineko.ekimemo_map.ui.navigation.AppNavHost
 import dev.yukineko.ekimemo_map.ui.theme.EkimemoMapTheme
 import dev.yukineko.ekimemo_map.ui.theme.ThemeMode
 import dev.yukineko.ekimemo_map.ui.theme.isDark
@@ -25,7 +23,7 @@ class MainActivity : ComponentActivity() {
                 onDispose {}
             }
             EkimemoMapTheme(darkTheme = darkTheme) {
-                Scaffold(modifier = Modifier.fillMaxSize()) {}
+                AppNavHost()
             }
         }
     }

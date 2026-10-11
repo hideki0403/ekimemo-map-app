@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_home">駅メモマップ</string>
+    <string name="title_settings">設定</string>
+    <string name="title_assistant_flow">Assistant Flow</string>
+    <string name="title_assistant_choose_rect">Choose Rect</string>
+    <string name="title_log">ログ</string>
+    <string name="title_tools">ツール</string>
+    <string name="title_search">検索</string>
+    <string name="title_history">アクセス履歴</string>
+    <string name="title_route_search">ルート探索</string>
+    <string name="title_interval_timer">インターバルタイマー</string>
+    <string name="title_movement_log">移動ログ</string>
+    <string name="title_license">ライセンス</string>
+    <string name="title_map">マップ</string>
+    <string name="title_station_detail">駅情報</string>
+    <string name="title_line_detail">路線情報</string>
+    <string name="back">戻る</string>
+</resources>
