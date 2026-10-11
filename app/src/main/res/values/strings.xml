@@ -16,4 +16,10 @@
     <string name="title_station_detail">駅情報</string>
     <string name="title_line_detail">路線情報</string>
     <string name="back">戻る</string>
+    <string name="ok">OK</string>
+    <string name="permission_required">権限が必要です</string>
+    <string name="notification_permission_denied">通知の許可がないため、最寄り駅の通知を行うことが出来ません。</string>
+    <string name="location_service_disabled">位置情報が無効です</string>
+    <string name="location_service_disabled_message">位置情報が無効になっているため、駅の探索を行うことが出来ません。</string>
+    <string name="location_permission_denied">位置情報を取得する権限がないため、駅の探索を行うことが出来ません。</string>
 </resources>

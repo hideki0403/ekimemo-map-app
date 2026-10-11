@@ -3,12 +3,19 @@ package dev.yukineko.ekimemo_map.ui.navigation
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import dev.yukineko.ekimemo_map.R
+import dev.yukineko.ekimemo_map.ui.PermissionIssue
+import dev.yukineko.ekimemo_map.ui.PermissionIssueDialog
 import dev.yukineko.ekimemo_map.ui.PlaceholderScreen
+import dev.yukineko.ekimemo_map.ui.rememberSearchPermissionRequester
 
 @Composable
 fun AppNavHost() {
@@ -17,7 +24,11 @@ fun AppNavHost() {
 
     NavHost(navController = navController, startDestination = HomeRoute) {
         composable<HomeRoute> {
+            var issues by remember { mutableStateOf(emptyList<PermissionIssue>()) }
+            val requestPermissions = rememberSearchPermissionRequester { issues = it }
+            issues.firstOrNull()?.let { PermissionIssueDialog(it) { issues = issues.drop(1) } }
             PlaceholderScreen(R.string.title_home) {
+                TextButton(onClick = requestPermissions) { Text("RequestSearchPermissions") }
                 listOf(
                     SettingsRoute, AssistantFlowRoute, AssistantChooseRectRoute, LogRoute, ToolsRoute,
                     SearchRoute, HistoryRoute, RouteSearchRoute, IntervalTimerRoute, MovementLogRoute,
