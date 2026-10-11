@@ -9,6 +9,7 @@ import androidx.room.Room
 import dev.yukineko.ekimemo_map.data.github.GitHubReleases
 import dev.yukineko.ekimemo_map.data.legacy.LegacyDatabaseImporter
 import dev.yukineko.ekimemo_map.data.legacy.LegacyImportResult
+import dev.yukineko.ekimemo_map.data.legacy.LegacyPreferencesImporter
 import dev.yukineko.ekimemo_map.data.settings.AssistantSettings
 import dev.yukineko.ekimemo_map.data.settings.JsonSerializer
 import dev.yukineko.ekimemo_map.data.settings.Settings
@@ -54,6 +55,11 @@ class EkimemoMapApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        scope.launch {
+            runCatching { LegacyPreferencesImporter(this@EkimemoMapApplication, settings).import() }
+                .onSuccess { if (it) logger.info("Imported legacy preferences") }
+                .onFailure { logger.error("Failed to import legacy preferences", it) }
+        }
         legacyImport = scope.async {
             val importer = LegacyDatabaseImporter(getDatabasePath("database.db"), userDatabase, assistantSettings)
             runCatching { importer.import() }
