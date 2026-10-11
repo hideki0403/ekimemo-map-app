@@ -26,6 +26,9 @@ interface MoveLogSessionDao {
     @Insert
     suspend fun insert(session: MoveLogSession): Long
 
+    @Insert
+    suspend fun insertAll(sessions: List<MoveLogSession>)
+
     @Query("DELETE FROM move_log_session WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<Long>)
 }
