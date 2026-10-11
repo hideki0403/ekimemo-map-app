@@ -104,6 +104,14 @@ class LocationService : Service() {
             }
         }
 
+        val moveLogRecorder = MoveLogRecorder(app.userDatabase.moveLogSessionDao(), app.userDatabase.moveLogDao())
+        scope.launch {
+            _location.filterNotNull().collect { location ->
+                runCatching { moveLogRecorder.record(location, settings.first()) }
+                    .onFailure { logger.error("Failed to record move log", it) }
+            }
+        }
+
         val accessLogDao = app.userDatabase.accessLogDao()
         scope.launch {
             _nearbyStations.map { it.firstOrNull()?.station }.distinctUntilChangedBy { it?.id }.collectLatest { station ->
