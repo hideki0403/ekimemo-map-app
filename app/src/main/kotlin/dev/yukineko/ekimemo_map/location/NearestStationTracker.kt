@@ -75,19 +75,29 @@ class NearestStationTracker(
                     ?: AccessLog(stationId, firstAccess = now, lastAccess = now, accessCount = 1, accessed = true),
             )
         }
+        insertPassingLog(current.station, location, now, isRenotify = false)
+        return inCooldown
+    }
+
+    suspend fun recordReminder(station: Station, location: Location?) {
+        val now = System.currentTimeMillis()
+        if (location != null) insertPassingLog(station, location, now, isRenotify = true)
+        accessLogDao.get(station.id)?.let { accessLogDao.upsert(it.copy(lastAccess = now)) }
+    }
+
+    private suspend fun insertPassingLog(station: Station, location: Location, now: Long, isRenotify: Boolean) {
         passingLogDao.insert(
             PassingLog(
-                stationId = stationId,
+                stationId = station.id,
                 timestamp = now,
                 latitude = location.latitude,
                 longitude = location.longitude,
                 speed = location.speed.toDouble(),
                 accuracy = location.accuracy.toDouble(),
-                distance = current.distance,
-                isRenotify = false,
+                distance = measureDistance(location.latitude, location.longitude, station.lat, station.lng),
+                isRenotify = isRenotify,
             ),
         )
-        return inCooldown
     }
 
     private fun Double.fixed() = (this * 100000).roundToLong()

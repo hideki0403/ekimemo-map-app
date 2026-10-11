@@ -26,6 +26,7 @@ import dev.yukineko.ekimemo_map.notification.openAppIntent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,7 +34,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
@@ -98,6 +101,25 @@ class LocationService : Service() {
                         }
                     }
                 }.onFailure { logger.error("Failed to update nearest station", it) }
+            }
+        }
+
+        val accessLogDao = app.userDatabase.accessLogDao()
+        scope.launch {
+            _nearbyStations.map { it.firstOrNull()?.station }.distinctUntilChangedBy { it?.id }.collectLatest { station ->
+                station ?: return@collectLatest
+                combine(accessLogDao.observe(station.id), settings, ::Pair).collectLatest { (log, current) ->
+                    val remaining = cooldownSeconds(log?.lastAccess, current, System.currentTimeMillis())
+                    if (remaining == 0) return@collectLatest
+                    delay(remaining * 1000L)
+                    logger.info("Remind: ${station.name} (${station.id})")
+                    scope.launch {
+                        runCatching { notifier.notifyReminder(station, current) }
+                            .onFailure { logger.error("Failed to notify reminder", it) }
+                    }
+                    runCatching { tracker.recordReminder(station, _location.value) }
+                        .onFailure { logger.error("Failed to record reminder", it) }
+                }
             }
         }
     }

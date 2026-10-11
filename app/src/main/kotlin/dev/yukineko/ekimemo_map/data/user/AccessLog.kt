@@ -30,6 +30,9 @@ interface AccessLogDao {
     @Query("SELECT * FROM access_log WHERE station_id = :stationId")
     suspend fun get(stationId: Int): AccessLog?
 
+    @Query("SELECT * FROM access_log WHERE station_id = :stationId")
+    fun observe(stationId: Int): Flow<AccessLog?>
+
     @Query("SELECT * FROM access_log WHERE station_id IN (:stationIds)")
     suspend fun getByStationIds(stationIds: List<Int>): List<AccessLog>
 

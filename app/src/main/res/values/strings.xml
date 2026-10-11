@@ -27,4 +27,6 @@
     <string name="notification_channel_nearest_station">最寄り駅通知</string>
     <string name="notification_nearest_changed">%1$sで最寄り駅になりました</string>
     <string name="tts_nearest_changed">「%1$s」が、最寄り駅になりました</string>
+    <string name="notification_reminder">最後に通知してから%1$d:%2$02dが経過しました</string>
+    <string name="tts_reminder">「%1$s」に、アクセスしてから、%2$d分%3$02d秒が経過しました</string>
 </resources>
