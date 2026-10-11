@@ -1,58 +1,25 @@
 package dev.yukineko.ekimemo_map.ui.navigation
 
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import dev.yukineko.ekimemo_map.R
-import dev.yukineko.ekimemo_map.location.LocationService
-import dev.yukineko.ekimemo_map.ui.PermissionIssue
-import dev.yukineko.ekimemo_map.ui.PermissionIssueDialog
+import dev.yukineko.ekimemo_map.ui.DevScreen
 import dev.yukineko.ekimemo_map.ui.PlaceholderScreen
-import dev.yukineko.ekimemo_map.ui.rememberSearchPermissionRequester
+import dev.yukineko.ekimemo_map.ui.home.HomeScreen
 
 @Composable
 fun AppNavHost() {
     val navController = rememberNavController()
     val back: () -> Unit = { navController.navigateUp() }
+    val navigate: (Any) -> Unit = { navController.navigate(it) }
 
     NavHost(navController = navController, startDestination = HomeRoute) {
-        composable<HomeRoute> {
-            val context = LocalContext.current
-            val isRunning by LocationService.isRunning.collectAsState()
-            val location by LocationService.location.collectAsState()
-            val nearbyStations by LocationService.nearbyStations.collectAsState()
-            var issues by remember { mutableStateOf(emptyList<PermissionIssue>()) }
-            val requestPermissions = rememberSearchPermissionRequester {
-                issues = it
-                if (it.none { issue -> issue.blocksSearch }) LocationService.start(context)
-            }
-            issues.firstOrNull()?.let { PermissionIssueDialog(it) { issues = issues.drop(1) } }
-            PlaceholderScreen(R.string.title_home) {
-                TextButton(onClick = { if (isRunning) LocationService.stop(context) else requestPermissions() }) {
-                    Text("Search: $isRunning")
-                }
-                Text(location?.let { "${it.latitude}, ${it.longitude} (${it.accuracy}m)" }.toString())
-                nearbyStations.forEach { Text("${it.station.name} ${it.distance}m ${it.line?.name}") }
-                listOf(
-                    SettingsRoute, AssistantFlowRoute, AssistantChooseRectRoute, LogRoute, ToolsRoute,
-                    SearchRoute, HistoryRoute, RouteSearchRoute, IntervalTimerRoute, MovementLogRoute,
-                    LicenseRoute, MapRoute(stationId = 1130101, sessionIds = listOf(1, 2)),
-                    StationDetailRoute(1130101), LineDetailRoute(11302),
-                ).forEach { route ->
-                    TextButton(onClick = { navController.navigate(route) }) { Text(route.toString()) }
-                }
-            }
-        }
+        composable<HomeRoute> { HomeScreen(onNavigate = navigate) }
+        composable<DevRoute> { DevScreen(onNavigate = navigate, onBack = back) }
         composable<SettingsRoute> { PlaceholderScreen(R.string.title_settings, back) }
         composable<AssistantFlowRoute> { PlaceholderScreen(R.string.title_assistant_flow, back) }
         composable<AssistantChooseRectRoute> { PlaceholderScreen(R.string.title_assistant_choose_rect, back) }

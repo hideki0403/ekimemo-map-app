@@ -92,7 +92,7 @@ class LocationService : Service() {
                 val current = settings.first()
                 runCatching {
                     val result = tracker.update(data, tree, location, current) ?: return@runCatching
-                    _nearbyStations.value = result.stations
+                    _searchResult.value = SearchResult(result.stations, System.currentTimeMillis(), result.processingMillis)
                     if (result.changed) {
                         val silent = result.inCooldown && !current.enableNotificationDuringCooldown
                         scope.launch {
@@ -114,7 +114,7 @@ class LocationService : Service() {
 
         val accessLogDao = app.userDatabase.accessLogDao()
         scope.launch {
-            _nearbyStations.map { it.firstOrNull()?.station }.distinctUntilChangedBy { it?.id }.collectLatest { station ->
+            _searchResult.map { it?.stations?.firstOrNull()?.station }.distinctUntilChangedBy { it?.id }.collectLatest { station ->
                 station ?: return@collectLatest
                 combine(accessLogDao.observe(station.id), settings, ::Pair).collectLatest { (log, current) ->
                     val remaining = cooldownSeconds(log?.lastAccess, current, System.currentTimeMillis())
@@ -138,7 +138,7 @@ class LocationService : Service() {
         scope.cancel()
         _isRunning.value = false
         _location.value = null
-        _nearbyStations.value = emptyList()
+        _searchResult.value = null
         logger.info("Location service stopped")
         super.onDestroy()
     }
@@ -175,8 +175,8 @@ class LocationService : Service() {
         private val _location = MutableStateFlow<Location?>(null)
         val location: StateFlow<Location?> = _location.asStateFlow()
 
-        private val _nearbyStations = MutableStateFlow<List<NearbyStation>>(emptyList())
-        val nearbyStations: StateFlow<List<NearbyStation>> = _nearbyStations.asStateFlow()
+        private val _searchResult = MutableStateFlow<SearchResult?>(null)
+        val searchResult: StateFlow<SearchResult?> = _searchResult.asStateFlow()
 
         fun start(context: Context) {
             ContextCompat.startForegroundService(context, Intent(context, LocationService::class.java))

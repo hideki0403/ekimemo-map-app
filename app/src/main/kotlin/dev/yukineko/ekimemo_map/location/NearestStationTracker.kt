@@ -16,7 +16,9 @@ import kotlin.math.roundToLong
 
 data class NearbyStation(val station: Station, val distance: Int, val line: Line?)
 
-data class TrackResult(val stations: List<NearbyStation>, val changed: Boolean, val inCooldown: Boolean)
+data class SearchResult(val stations: List<NearbyStation>, val updatedAt: Long, val processingMillis: Long)
+
+data class TrackResult(val stations: List<NearbyStation>, val processingMillis: Long, val changed: Boolean, val inCooldown: Boolean)
 
 fun cooldownSeconds(lastAccess: Long?, settings: Settings, now: Long): Int {
     if (lastAccess == null || !settings.enableReminder) return 0
@@ -50,18 +52,20 @@ class NearestStationTracker(
         if (position == lastPosition) return null
         lastPosition = position
 
+        val start = System.nanoTime()
         val stations = tree.nearest(location.latitude, location.longitude, settings.maxResults)
         val result = stations.zip(selectLines(stations, data.lines)) { station, line ->
             NearbyStation(station, measureDistance(location.latitude, location.longitude, station.lat, station.lng), line)
         }
+        val processingMillis = (System.nanoTime() - start) / 1_000_000
 
         val current = result.first()
-        if (current.station.id == nearest?.id) return TrackResult(result, changed = false, inCooldown = false)
+        if (current.station.id == nearest?.id) return TrackResult(result, processingMillis, changed = false, inCooldown = false)
 
         nearest = current.station
         logger.info("Nearest station changed: ${current.station.name} (${current.station.id})")
         val inCooldown = record(current, location, settings)
-        return TrackResult(result, changed = true, inCooldown = inCooldown)
+        return TrackResult(result, processingMillis, changed = true, inCooldown = inCooldown)
     }
 
     private suspend fun record(current: NearbyStation, location: Location, settings: Settings): Boolean {

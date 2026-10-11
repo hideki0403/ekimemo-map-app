@@ -26,11 +26,17 @@ class StationDataRepository(
     private val mutex = Mutex()
     private val _data = MutableStateFlow<StationData?>(null)
     val data: StateFlow<StationData?> = _data.asStateFlow()
+    private val _loaded = MutableStateFlow(false)
+    val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
     val version: Flow<String?> = dataStore.data.map { it[VERSION] }
 
     suspend fun load() {
         mutex.withLock {
-            if (file.exists()) _data.value = read(file)
+            try {
+                if (file.exists()) _data.value = read(file)
+            } finally {
+                _loaded.value = true
+            }
         }
     }
 
