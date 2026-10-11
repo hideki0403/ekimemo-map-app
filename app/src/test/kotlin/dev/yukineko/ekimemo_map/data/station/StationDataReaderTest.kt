@@ -5,9 +5,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.msgpack.core.MessagePack
-import org.msgpack.core.MessagePacker
-import java.io.ByteArrayOutputStream
 
 class StationDataReaderTest {
     private fun station(id: Int) = mutableMapOf<String, Any?>(
@@ -73,33 +70,7 @@ class StationDataReaderTest {
         ),
     )
 
-    private fun read(value: Any?): StationData {
-        val out = ByteArrayOutputStream()
-        MessagePack.newDefaultPacker(out).use { it.pack(value) }
-        return readStationData(out.toByteArray().inputStream())
-    }
-
-    private fun MessagePacker.pack(value: Any?) {
-        when (value) {
-            null -> packNil()
-            is Boolean -> packBoolean(value)
-            is Int -> packInt(value)
-            is Double -> packDouble(value)
-            is String -> packString(value)
-            is List<*> -> {
-                packArrayHeader(value.size)
-                value.forEach { pack(it) }
-            }
-            is Map<*, *> -> {
-                packMapHeader(value.size)
-                value.forEach { (k, v) ->
-                    pack(k)
-                    pack(v)
-                }
-            }
-            else -> error("Unsupported: $value")
-        }
-    }
+    private fun read(value: Any?) = readStationData(msgpack(value).inputStream())
 
     @Test
     fun readsStations() {
