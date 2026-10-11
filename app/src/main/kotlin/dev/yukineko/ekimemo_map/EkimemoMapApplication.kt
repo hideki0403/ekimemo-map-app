@@ -10,6 +10,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import java.io.File
+import kotlin.system.measureTimeMillis
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
 
@@ -25,7 +26,8 @@ class EkimemoMapApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         scope.launch {
-            runCatching { stationDataRepository.load() }
+            runCatching { measureTimeMillis { stationDataRepository.load() } }
+                .onSuccess { if (stationDataRepository.data.value != null) logger.info("Loaded station data in ${it}ms") }
                 .onFailure { logger.error("Failed to load station data", it) }
         }
     }
