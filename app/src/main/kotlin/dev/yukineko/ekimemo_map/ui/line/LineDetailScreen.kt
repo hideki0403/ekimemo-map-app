@@ -105,6 +105,7 @@ fun LineDetailScreen(
                     LinearWavyProgressIndicator(
                         progress = { if (progress.total == 0) 0f else progress.accessed.toFloat() / progress.total },
                         modifier = Modifier.fillMaxWidth(),
+                        waveSpeed = 0.dp,
                     )
                 }
             }
