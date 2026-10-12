@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
+import dev.yukineko.ekimemo_map.data.settings.Settings
 import kotlinx.coroutines.flow.Flow
 
 @Entity(tableName = "access_log")
@@ -39,6 +40,9 @@ interface AccessLogDao {
     @Query("SELECT * FROM access_log WHERE station_id IN (:stationIds)")
     fun observeByStationIds(stationIds: List<Int>): Flow<List<AccessLog>>
 
+    @Query("SELECT station_id FROM access_log WHERE accessed = 1")
+    fun observeAccessedIds(): Flow<List<Int>>
+
     @Upsert
     suspend fun upsert(log: AccessLog)
 
@@ -47,6 +51,21 @@ interface AccessLogDao {
 
     @Query("DELETE FROM access_log")
     suspend fun deleteAll()
+
+    @Transaction
+    suspend fun updateAccess(stationId: Int, lastAccess: Long, accessed: Boolean?) {
+        val log = get(stationId)
+        upsert(
+            log?.copy(firstAccess = minOf(log.firstAccess, lastAccess), lastAccess = lastAccess, accessed = accessed ?: log.accessed)
+                ?: AccessLog(stationId, firstAccess = lastAccess, lastAccess = lastAccess, accessCount = 0, accessed = accessed ?: false),
+        )
+    }
+
+    suspend fun setAccessed(stationId: Int, accessed: Boolean, settings: Settings) {
+        val now = System.currentTimeMillis()
+        val time = if (settings.enableReminder) now - (settings.cooldownTime + 1) * 1000L else now
+        updateAccess(stationId, time, accessed)
+    }
 
     @Transaction
     suspend fun replaceAll(logs: List<AccessLog>) {

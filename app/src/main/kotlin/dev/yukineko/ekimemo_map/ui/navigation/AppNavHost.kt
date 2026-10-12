@@ -53,7 +53,7 @@ fun AppNavHost() {
         composable<IntervalTimerRoute> { PlaceholderScreen(R.string.title_interval_timer, back) }
         composable<MovementLogRoute> { PlaceholderScreen(R.string.title_movement_log, back) }
         composable<LicenseRoute> { PlaceholderScreen(R.string.title_license, back) }
-        composable<MapRoute> { MapScreen(onBack = back) }
+        composable<MapRoute> { MapScreen(onNavigate = navigate, onBack = back) }
         composable<StationDetailRoute> {
             StationDetailScreen(it.toRoute<StationDetailRoute>().stationId, onNavigate = navigate, onBack = back)
         }

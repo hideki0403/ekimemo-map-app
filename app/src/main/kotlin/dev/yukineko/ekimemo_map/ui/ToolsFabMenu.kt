@@ -8,6 +8,9 @@ import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.FloatingActionButtonMenu
 import androidx.compose.material3.FloatingActionButtonMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleFloatingActionButton
 import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
@@ -50,5 +53,17 @@ fun ToolsFabMenu(actions: List<ToolAction>) {
                 icon = { Icon(action.icon, contentDescription = null) },
             )
         }
+    }
+}
+
+@Composable
+fun ToolActionItem(action: ToolAction, index: Int, count: Int) {
+    SegmentedListItem(
+        onClick = action.onClick,
+        shapes = ListItemDefaults.segmentedShapes(index, count),
+        colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        leadingContent = { Icon(action.icon, contentDescription = null) },
+    ) {
+        Text(stringResource(action.text))
     }
 }

@@ -19,6 +19,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import dev.yukineko.ekimemo_map.location.locationUpdates
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.location.LocationComponentActivationOptions
 import org.maplibre.android.location.OnCameraTrackingChangedListener
 import org.maplibre.android.location.modes.CameraMode
@@ -37,14 +38,22 @@ fun MapLibreMapView(
     tracking: Boolean,
     onTrackingDismissed: () -> Unit,
     modifier: Modifier = Modifier,
+    onMapClick: (LatLng) -> Unit = {},
+    onMapLongClick: (LatLng) -> Unit = {},
+    onCameraIdle: (LatLngBounds) -> Unit = {},
+    content: @Composable (MapLibreMap, Style) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
     val mapView = remember {
         MapView(context, MapLibreMapOptions.createFromAttributes(context).camera(initialCamera).textureMode(true))
     }
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
+    var loadedStyle by remember { mutableStateOf<Style?>(null) }
     var locationReady by remember { mutableStateOf(false) }
     val currentOnTrackingDismissed by rememberUpdatedState(onTrackingDismissed)
+    val currentOnMapClick by rememberUpdatedState(onMapClick)
+    val currentOnMapLongClick by rememberUpdatedState(onMapLongClick)
+    val currentOnCameraIdle by rememberUpdatedState(onCameraIdle)
 
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle) {
@@ -60,7 +69,12 @@ fun MapLibreMapView(
             }
         }
         lifecycle.addObserver(observer)
-        mapView.getMapAsync { map = it }
+        mapView.getMapAsync {
+            it.addOnMapClickListener { latLng -> currentOnMapClick(latLng); true }
+            it.addOnMapLongClickListener { latLng -> currentOnMapLongClick(latLng); true }
+            it.addOnCameraIdleListener { currentOnCameraIdle(it.projection.visibleRegion.latLngBounds) }
+            map = it
+        }
         onDispose {
             lifecycle.removeObserver(observer)
             val state = lifecycle.currentState
@@ -72,7 +86,10 @@ fun MapLibreMapView(
 
     LaunchedEffect(map, style) {
         val map = map ?: return@LaunchedEffect
+        loadedStyle = null
         map.setStyle(Style.Builder().fromUri("asset://${style.assetPath}")) { loaded ->
+            loadedStyle = loaded
+            currentOnCameraIdle(map.projection.visibleRegion.latLngBounds)
             val component = map.locationComponent
             if (!showLocation || component.isLocationComponentActivated) return@setStyle
             component.activateLocationComponent(
@@ -100,4 +117,5 @@ fun MapLibreMapView(
     }
 
     AndroidView(factory = { mapView }, modifier = modifier)
+    map?.let { map -> loadedStyle?.let { content(map, it) } }
 }

@@ -60,10 +60,8 @@ class HomeViewModel(
     val stationDataUpdate: StateFlow<StationDataUpdateState> = _stationDataUpdate.asStateFlow()
 
     fun setAccessed(stationId: Int, accessed: Boolean) = viewModelScope.launch {
-        val current = settingsFlow.first()
-        val now = System.currentTimeMillis()
-        val time = if (current.enableReminder) now - (current.cooldownTime + 1) * 1000L else now
-        updateAccessLog(stationId, time, accessed)
+        runCatching { accessLogDao.setAccessed(stationId, accessed, settingsFlow.first()) }
+            .onFailure { logger.error("Failed to update access log", it) }
     }
 
     fun startTimer(stationId: Int) = viewModelScope.launch {
@@ -75,13 +73,8 @@ class HomeViewModel(
     }
 
     private suspend fun updateAccessLog(stationId: Int, lastAccess: Long, accessed: Boolean?) {
-        runCatching {
-            val log = accessLogDao.get(stationId)
-            accessLogDao.upsert(
-                log?.copy(firstAccess = minOf(log.firstAccess, lastAccess), lastAccess = lastAccess, accessed = accessed ?: log.accessed)
-                    ?: AccessLog(stationId, firstAccess = lastAccess, lastAccess = lastAccess, accessCount = 0, accessed = accessed ?: false),
-            )
-        }.onFailure { logger.error("Failed to update access log", it) }
+        runCatching { accessLogDao.updateAccess(stationId, lastAccess, accessed) }
+            .onFailure { logger.error("Failed to update access log", it) }
     }
 
     fun updateStationData() {

@@ -47,7 +47,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -81,6 +80,7 @@ import dev.yukineko.ekimemo_map.ui.PermissionIssueDialog
 import dev.yukineko.ekimemo_map.ui.StationCard
 import dev.yukineko.ekimemo_map.ui.appBarColors
 import dev.yukineko.ekimemo_map.ui.ToolAction
+import dev.yukineko.ekimemo_map.ui.ToolActionItem
 import dev.yukineko.ekimemo_map.ui.navigation.DevRoute
 import dev.yukineko.ekimemo_map.ui.navigation.MapRoute
 import dev.yukineko.ekimemo_map.ui.navigation.SettingsRoute
@@ -335,20 +335,8 @@ private fun StationMenuSheet(
             item.line?.let { Text(it.name, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             Spacer(Modifier.height(16.dp))
             Column(verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
-                actions.forEachIndexed { index, action -> MenuItem(action, index, actions.size) }
+                actions.forEachIndexed { index, action -> ToolActionItem(action, index, actions.size) }
             }
         }
-    }
-}
-
-@Composable
-private fun MenuItem(action: ToolAction, index: Int, count: Int) {
-    SegmentedListItem(
-        onClick = action.onClick,
-        shapes = ListItemDefaults.segmentedShapes(index, count),
-        colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-        leadingContent = { Icon(action.icon, contentDescription = null) },
-    ) {
-        Text(stringResource(action.text))
     }
 }

@@ -63,6 +63,14 @@
     <string name="station_first_access">初回アクセス: %1$s</string>
     <string name="open_map">マップで見る</string>
     <string name="map_follow_location">現在地に追従</string>
+    <string name="map_show_pins">マップピン</string>
+    <string name="map_show_access_state">アクセス状態</string>
+    <string name="map_too_many_stations">表示範囲内の駅数が多すぎるため、メッシュを描画できませんでした。地図を拡大してください。</string>
+    <string name="map_marked_accessed">%1$sをアクセス済みにしました</string>
+    <string name="map_marked_unaccessed">%1$sを未アクセスにしました</string>
+    <string name="map_distance_from_current">現在地から %1$s</string>
+    <string name="map_reachable_stations">タップした地点からレーダーで届く駅</string>
+    <string name="open_station_detail">駅の詳細を見る</string>
     <string name="station_open_radar">レーダー範囲</string>
     <string name="station_open_activity">駅のにぎわい (公式サイト)</string>
     <string name="line_info">路線情報</string>
