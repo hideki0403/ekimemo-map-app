@@ -17,6 +17,7 @@ import dev.yukineko.ekimemo_map.ui.PlaceholderScreen
 import dev.yukineko.ekimemo_map.ui.history.HistoryScreen
 import dev.yukineko.ekimemo_map.ui.home.HomeScreen
 import dev.yukineko.ekimemo_map.ui.line.LineDetailScreen
+import dev.yukineko.ekimemo_map.ui.log.LogScreen
 import dev.yukineko.ekimemo_map.ui.map.MapScreen
 import dev.yukineko.ekimemo_map.ui.map.MoveLogMapScreen
 import dev.yukineko.ekimemo_map.ui.map.RadarScreen
@@ -51,7 +52,7 @@ fun AppNavHost() {
         composable<SettingsRoute> { PlaceholderScreen(R.string.title_settings, back) }
         composable<AssistantFlowRoute> { PlaceholderScreen(R.string.title_assistant_flow, back) }
         composable<AssistantChooseRectRoute> { PlaceholderScreen(R.string.title_assistant_choose_rect, back) }
-        composable<LogRoute> { PlaceholderScreen(R.string.title_log, back) }
+        composable<LogRoute> { LogScreen(onBack = back) }
         composable<ToolsRoute> { ToolsScreen(onNavigate = navigate, onBack = back) }
         composable<SearchRoute> { SearchScreen(onNavigate = navigate, onBack = back) }
         composable<HistoryRoute> { HistoryScreen(onNavigate = navigate, onBack = back) }

@@ -168,6 +168,14 @@
     <string name="move_log_show_calendar">カレンダー表示</string>
     <string name="calendar_previous_month">前の月</string>
     <string name="calendar_next_month">次の月</string>
+    <string name="log_empty">ログがありません</string>
+    <string name="log_delete_title">ログの削除</string>
+    <string name="log_delete_message">ログを削除しますか？\nこの操作は取り消せません。</string>
+    <string name="log_deleted">ログを削除しました</string>
+    <string name="log_copied">クリップボードにコピーしました</string>
+    <string name="log_filter">フィルター</string>
+    <string name="log_filter_level">Level</string>
+    <string name="log_filter_tag">Tag</string>
     <string-array name="prefectures">
         <item>北海道</item>
         <item>青森県</item>

@@ -11,7 +11,7 @@ class Logger(private val tag: String) {
     private fun log(level: LogLevel, message: String, throwable: Throwable? = null) {
         val text = if (throwable == null) message else "$message\n${throwable.stackTraceToString()}"
         Log.println(level.priority, tag, text)
-        buffer.add(LogEntry(level, tag, text, System.currentTimeMillis()))
+        buffer.add(level, tag, text, System.currentTimeMillis())
     }
 
     private val LogLevel.priority
