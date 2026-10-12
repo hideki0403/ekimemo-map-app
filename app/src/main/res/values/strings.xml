@@ -78,6 +78,7 @@
     <string name="map_distance_from_current">現在地から %1$s</string>
     <string name="map_reset_camera">表示範囲をリセット</string>
     <string name="map_reachable_stations">タップした地点からレーダーで届く駅</string>
+    <string name="map_loading_station">駅情報を取得しています</string>
     <string name="open_station_detail">駅の詳細を見る</string>
     <string name="station_open_radar">レーダー範囲</string>
     <string name="radar_title">%1$sのレーダー範囲</string>

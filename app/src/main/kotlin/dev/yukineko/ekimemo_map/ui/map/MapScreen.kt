@@ -109,7 +109,7 @@ fun MapScreen(
     var mode by rememberSaveable { mutableStateOf(MapMode.NORMAL) }
     var showLayers by rememberSaveable { mutableStateOf(false) }
     var tapped by remember { mutableStateOf<TappedPoint?>(null) }
-    val motion = MaterialTheme.motionScheme
+    var loadingTap by remember { mutableStateOf(false) }
     val cameraPadding = with(LocalDensity.current) { 32.dp.roundToPx() }
 
     fun showMessage(message: String) = scope.launch {
@@ -165,7 +165,12 @@ fun MapScreen(
                 onTrackingDismissed = { tracking = false },
                 modifier = Modifier.fillMaxSize(),
                 onMapClick = { latLng ->
-                    if (focusedStations == null) scope.launch { tapped = viewModel.tap(latLng.latitude, latLng.longitude) }
+                    if (focusedStations != null || loadingTap) return@MapLibreMapView
+                    scope.launch {
+                        loadingTap = true
+                        tapped = viewModel.tap(latLng.latitude, latLng.longitude)
+                        loadingTap = false
+                    }
                 },
                 onMapLongClick = { latLng ->
                     if (focusedStations != null) return@MapLibreMapView
@@ -212,15 +217,12 @@ fun MapScreen(
                     cameraInitialized = true
                 }
             }
-            AnimatedVisibility(
-                visible = focusedStations == null && visibleStations == VisibleStations.TooMany,
-                modifier = Modifier.padding(8.dp),
-                enter = fadeIn(motion.defaultEffectsSpec()) + scaleIn(motion.defaultSpatialSpec(), initialScale = 0.95f),
-                exit = fadeOut(motion.defaultEffectsSpec()) + scaleOut(motion.defaultSpatialSpec(), targetScale = 0.95f),
-            ) {
-                Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainer, shadowElevation = 2.dp) {
-                    Text(stringResource(R.string.map_too_many_stations), modifier = Modifier.padding(16.dp))
-                }
+            Column(Modifier.padding(8.dp)) {
+                MapMessage(loadingTap, stringResource(R.string.map_loading_station))
+                MapMessage(
+                    focusedStations == null && visibleStations == VisibleStations.TooMany,
+                    stringResource(R.string.map_too_many_stations),
+                )
             }
         }
     }
@@ -245,6 +247,25 @@ fun MapScreen(
             onToggleAccessed = { toggleAccessed(point.stations.first().station) },
             onNavigate = onNavigate,
         )
+    }
+}
+
+@Composable
+private fun MapMessage(visible: Boolean, text: String) {
+    val motion = MaterialTheme.motionScheme
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(motion.defaultEffectsSpec()) + scaleIn(motion.defaultSpatialSpec(), initialScale = 0.95f),
+        exit = fadeOut(motion.defaultEffectsSpec()) + scaleOut(motion.defaultSpatialSpec(), targetScale = 0.95f),
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            shadowElevation = 2.dp,
+            modifier = Modifier.padding(bottom = 8.dp),
+        ) {
+            Text(text, modifier = Modifier.padding(16.dp))
+        }
     }
 }
 
@@ -283,13 +304,15 @@ private fun TappedPointSheet(
             verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
         ) {
             item {
-                Column(Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
-                    Text(station.name, style = MaterialTheme.typography.titleLarge)
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        StationAttrIcon(station.attr)
-                        Text(station.nameKana, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-                        point.distanceFromCurrent?.let {
-                            Text(stringResource(R.string.map_distance_from_current, formatDistance(it)), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(Modifier.fillMaxWidth().padding(bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    StationAttrIcon(station.attr, Modifier.padding(top = 4.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(station.name, style = MaterialTheme.typography.titleLarge)
+                        Row {
+                            Text(station.nameKana, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                            point.distanceFromCurrent?.let {
+                                Text(stringResource(R.string.map_distance_from_current, formatDistance(it)), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
                     }
                 }
