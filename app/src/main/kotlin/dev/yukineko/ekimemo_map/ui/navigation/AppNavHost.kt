@@ -22,6 +22,7 @@ import dev.yukineko.ekimemo_map.ui.map.MoveLogMapScreen
 import dev.yukineko.ekimemo_map.ui.map.RadarScreen
 import dev.yukineko.ekimemo_map.ui.search.SearchScreen
 import dev.yukineko.ekimemo_map.ui.station.StationDetailScreen
+import dev.yukineko.ekimemo_map.ui.tools.ToolsScreen
 
 @Composable
 fun AppNavHost() {
@@ -48,7 +49,7 @@ fun AppNavHost() {
         composable<AssistantFlowRoute> { PlaceholderScreen(R.string.title_assistant_flow, back) }
         composable<AssistantChooseRectRoute> { PlaceholderScreen(R.string.title_assistant_choose_rect, back) }
         composable<LogRoute> { PlaceholderScreen(R.string.title_log, back) }
-        composable<ToolsRoute> { PlaceholderScreen(R.string.title_tools, back) }
+        composable<ToolsRoute> { ToolsScreen(onNavigate = navigate, onBack = back) }
         composable<SearchRoute> { SearchScreen(onNavigate = navigate, onBack = back) }
         composable<HistoryRoute> { HistoryScreen(onNavigate = navigate, onBack = back) }
         composable<RouteSearchRoute> { PlaceholderScreen(R.string.title_route_search, back) }
