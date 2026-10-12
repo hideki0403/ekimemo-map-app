@@ -25,6 +25,7 @@ import dev.yukineko.ekimemo_map.ui.map.RadarScreen
 import dev.yukineko.ekimemo_map.ui.movelog.MovementLogScreen
 import dev.yukineko.ekimemo_map.ui.route.RouteSearchScreen
 import dev.yukineko.ekimemo_map.ui.search.SearchScreen
+import dev.yukineko.ekimemo_map.ui.settings.SettingsScreen
 import dev.yukineko.ekimemo_map.ui.station.StationDetailScreen
 import dev.yukineko.ekimemo_map.ui.timer.IntervalTimerScreen
 import dev.yukineko.ekimemo_map.ui.tools.ToolsScreen
@@ -50,7 +51,7 @@ fun AppNavHost() {
     ) {
         composable<HomeRoute> { HomeScreen(onNavigate = navigate) }
         composable<DevRoute> { DevScreen(onNavigate = navigate, onBack = back) }
-        composable<SettingsRoute> { PlaceholderScreen(R.string.title_settings, back) }
+        composable<SettingsRoute> { SettingsScreen(onBack = back) }
         composable<AssistantFlowRoute> { PlaceholderScreen(R.string.title_assistant_flow, back) }
         composable<AssistantChooseRectRoute> { PlaceholderScreen(R.string.title_assistant_choose_rect, back) }
         composable<LogRoute> { LogScreen(onBack = back) }

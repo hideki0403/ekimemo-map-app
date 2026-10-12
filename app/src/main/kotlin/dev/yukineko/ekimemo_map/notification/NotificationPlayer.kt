@@ -75,6 +75,9 @@ class NotificationPlayer(private val context: Context) {
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, params, null)
     }
 
+    suspend fun isTtsAvailable(): Boolean =
+        (tts()?.isLanguageAvailable(Locale.JAPAN) ?: TextToSpeech.LANG_NOT_SUPPORTED) >= TextToSpeech.LANG_AVAILABLE
+
     private fun stopSound() {
         player?.release()
         player = null

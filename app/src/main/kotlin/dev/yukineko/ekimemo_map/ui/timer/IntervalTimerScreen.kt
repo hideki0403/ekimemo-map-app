@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.HelpOutline
@@ -56,8 +54,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.SnackbarHost
@@ -85,7 +81,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -96,8 +91,12 @@ import dev.yukineko.ekimemo_map.data.user.IntervalTimer
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import dev.yukineko.ekimemo_map.notification.VibrationPattern
 import dev.yukineko.ekimemo_map.ui.BackButton
+import dev.yukineko.ekimemo_map.ui.InputDialog
+import dev.yukineko.ekimemo_map.ui.SelectDialog
 import dev.yukineko.ekimemo_map.ui.appBarColors
 import dev.yukineko.ekimemo_map.ui.formatSeconds
+import dev.yukineko.ekimemo_map.ui.soundName
+import dev.yukineko.ekimemo_map.ui.vibrationName
 import dev.yukineko.ekimemo_map.ui.listItemContainerColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -311,6 +310,7 @@ private fun TimerCard(
                 dismiss()
                 onUpdate(timer.copy(notificationSound = it))
             },
+            noneLabel = stringResource(R.string.interval_timer_off),
         )
         TimerDialog.VIBRATION -> SelectDialog(
             title = stringResource(R.string.interval_timer_vibration),
@@ -323,6 +323,7 @@ private fun TimerCard(
                 dismiss()
                 onUpdate(timer.copy(vibrationPattern = it))
             },
+            noneLabel = stringResource(R.string.interval_timer_off),
         )
         TimerDialog.DELETE -> AlertDialog(
             onDismissRequest = dismiss,
@@ -456,90 +457,4 @@ private fun blinkAlpha(enabled: Boolean): Float {
         }
     }
     return if (visible) 1f else 0.65f
-}
-
-@Composable
-private fun soundName(sound: NotificationSound) = stringResource(R.string.notification_sound_name, sound.ordinal + 1)
-
-@Composable
-private fun vibrationName(pattern: VibrationPattern) = stringResource(R.string.vibration_pattern_name, pattern.ordinal + 1)
-
-@Composable
-private fun <T : Any> InputDialog(
-    title: String,
-    initial: String,
-    parse: (String) -> T?,
-    onDismiss: () -> Unit,
-    onConfirm: (T) -> Unit,
-    suffix: String? = null,
-    keyboardType: KeyboardType = KeyboardType.Text,
-) {
-    var text by rememberSaveable { mutableStateOf(initial) }
-    val value = parse(text)
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                singleLine = true,
-                isError = value == null,
-                suffix = suffix?.let { { Text(it) } },
-                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = { value?.let(onConfirm) }, shapes = ButtonDefaults.shapes(), enabled = value != null) {
-                Text(stringResource(R.string.ok))
-            }
-        },
-        dismissButton = { TextButton(onClick = onDismiss, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.cancel)) } },
-    )
-}
-
-@Composable
-private fun <T : Enum<T>> SelectDialog(
-    title: String,
-    options: List<T>,
-    selected: T?,
-    label: @Composable (T) -> String,
-    onPreview: (T) -> Unit,
-    onDismiss: () -> Unit,
-    onConfirm: (T?) -> Unit,
-) {
-    var current by remember { mutableStateOf(selected) }
-
-    @Composable
-    fun Option(option: T?, text: String) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .selectable(option == current, role = Role.RadioButton) {
-                    current = option
-                    option?.let(onPreview)
-                }
-                .padding(vertical = 4.dp),
-        ) {
-            RadioButton(selected = option == current, onClick = null, modifier = Modifier.padding(end = 16.dp))
-            Text(text)
-        }
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                Option(null, stringResource(R.string.interval_timer_off))
-                options.forEach { Option(it, label(it)) }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(current) }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.ok)) }
-        },
-        dismissButton = { TextButton(onClick = onDismiss, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.cancel)) } },
-    )
 }
