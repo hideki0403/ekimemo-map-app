@@ -9,6 +9,7 @@ import androidx.navigation.toRoute
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.ui.DevScreen
 import dev.yukineko.ekimemo_map.ui.PlaceholderScreen
+import dev.yukineko.ekimemo_map.ui.history.HistoryScreen
 import dev.yukineko.ekimemo_map.ui.home.HomeScreen
 import dev.yukineko.ekimemo_map.ui.line.LineDetailScreen
 import dev.yukineko.ekimemo_map.ui.search.SearchScreen
@@ -29,7 +30,7 @@ fun AppNavHost() {
         composable<LogRoute> { PlaceholderScreen(R.string.title_log, back) }
         composable<ToolsRoute> { PlaceholderScreen(R.string.title_tools, back) }
         composable<SearchRoute> { SearchScreen(onNavigate = navigate, onBack = back) }
-        composable<HistoryRoute> { PlaceholderScreen(R.string.title_history, back) }
+        composable<HistoryRoute> { HistoryScreen(onNavigate = navigate, onBack = back) }
         composable<RouteSearchRoute> { PlaceholderScreen(R.string.title_route_search, back) }
         composable<IntervalTimerRoute> { PlaceholderScreen(R.string.title_interval_timer, back) }
         composable<MovementLogRoute> { PlaceholderScreen(R.string.title_movement_log, back) }

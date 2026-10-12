@@ -50,13 +50,9 @@ import dev.yukineko.ekimemo_map.ui.SectionTitle
 import dev.yukineko.ekimemo_map.ui.StationAttrIcon
 import dev.yukineko.ekimemo_map.ui.ToolItem
 import dev.yukineko.ekimemo_map.ui.ToolsSheet
+import dev.yukineko.ekimemo_map.ui.formatDateTime
 import dev.yukineko.ekimemo_map.ui.navigation.LineDetailRoute
 import dev.yukineko.ekimemo_map.ui.navigation.MapRoute
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-
-private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -161,7 +157,7 @@ private fun StationHeader(station: Station, accessed: Boolean) {
 @Composable
 private fun AccessInfo(log: AccessLog?) {
     val notAccessed = stringResource(R.string.not_accessed)
-    fun format(time: Long?) = time?.let { dateTimeFormatter.format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault())) } ?: notAccessed
+    fun format(time: Long?) = time?.let(::formatDateTime) ?: notAccessed
     InfoLines(
         stringResource(R.string.station_access_count, log?.accessCount ?: 0),
         stringResource(R.string.station_last_access, format(log?.lastAccess)),

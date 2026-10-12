@@ -77,6 +77,16 @@
     <string name="search_line_count">%1$d路線</string>
     <string name="search_result">%1$sが見つかりました (%2$dms)</string>
     <string name="search_no_result">該当する駅または路線はありませんでした (%1$dms)</string>
+    <string name="delete">削除</string>
+    <string name="cancel">キャンセル</string>
+    <string name="history_count">履歴: %1$d件</string>
+    <string name="history_empty">アクセス履歴がありません</string>
+    <string name="history_delete_title">アクセス履歴の削除</string>
+    <string name="history_delete_message">アクセス履歴を全て削除しますか？\nこの操作は取り消せません。</string>
+    <string name="history_deleted">アクセス履歴を削除しました</string>
+    <string name="history_distance">距離: %1$s</string>
+    <string name="history_accuracy">精度: %1$s</string>
+    <string name="history_speed">速度: %1$s</string>
     <string-array name="prefectures">
         <item>北海道</item>
         <item>青森県</item>

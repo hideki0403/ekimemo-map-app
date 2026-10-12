@@ -6,6 +6,9 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.res.stringResource
 import dev.yukineko.ekimemo_map.R
 import kotlinx.coroutines.delay
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
@@ -15,6 +18,10 @@ fun rememberNow(): State<Long> = produceState(System.currentTimeMillis()) {
         value = System.currentTimeMillis()
     }
 }
+
+private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+
+fun formatDateTime(epochMillis: Long): String = dateTimeFormatter.format(Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()))
 
 fun formatSeconds(seconds: Int): String = String.format(Locale.ROOT, "%d:%02d", seconds / 60, seconds % 60)
 
