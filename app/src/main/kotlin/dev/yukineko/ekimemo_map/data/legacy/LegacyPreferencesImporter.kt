@@ -50,7 +50,6 @@ internal fun legacySettings(prefs: Map<String, *>): Settings {
         enableVibration = bool("enable_vibration") ?: d.enableVibration,
         vibrationPattern = legacyEnum(string("vibration_pattern")) ?: d.vibrationPattern,
         enableTts = bool("enable_tts") ?: d.enableTts,
-        mapStyle = legacyEnum(string("map_style")) ?: d.mapStyle,
         mapRenderingLimit = int("map_rendering_limit") ?: d.mapRenderingLimit,
         themeMode = legacyEnum(string("theme_mode")) ?: d.themeMode,
         font = AppFont.entries.firstOrNull { it.googleFontName == string("font_family") } ?: d.font,

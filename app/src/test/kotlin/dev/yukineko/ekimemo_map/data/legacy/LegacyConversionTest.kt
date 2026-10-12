@@ -1,8 +1,8 @@
 package dev.yukineko.ekimemo_map.data.legacy
 
-import dev.yukineko.ekimemo_map.map.MapStyle
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import dev.yukineko.ekimemo_map.notification.VibrationPattern
+import dev.yukineko.ekimemo_map.ui.theme.ThemeMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -23,7 +23,7 @@ class LegacyConversionTest {
         assertEquals(NotificationSound.PB_1, legacyEnum<NotificationSound>("sePb1"))
         assertEquals(NotificationSound.SL_4, legacyEnum<NotificationSound>("seSl4"))
         assertEquals(VibrationPattern.PATTERN_5, legacyEnum<VibrationPattern>("pattern5"))
-        assertEquals(MapStyle.FIORD, legacyEnum<MapStyle>("fiord"))
+        assertEquals(ThemeMode.DARK, legacyEnum<ThemeMode>("dark"))
         assertNull(legacyEnum<NotificationSound>("unknown"))
         assertNull(legacyEnum<NotificationSound>(null))
     }

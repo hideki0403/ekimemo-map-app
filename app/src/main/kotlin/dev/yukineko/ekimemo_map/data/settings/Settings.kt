@@ -1,7 +1,6 @@
 package dev.yukineko.ekimemo_map.data.settings
 
 import androidx.compose.ui.graphics.toArgb
-import dev.yukineko.ekimemo_map.map.MapStyle
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import dev.yukineko.ekimemo_map.notification.VibrationPattern
 import dev.yukineko.ekimemo_map.ui.theme.AppFont
@@ -24,7 +23,6 @@ data class Settings(
     val enableVibration: Boolean = true,
     val vibrationPattern: VibrationPattern = VibrationPattern.PATTERN_1,
     val enableTts: Boolean = false,
-    val mapStyle: MapStyle = MapStyle.DEFAULT,
     val mapRenderingLimit: Int = 750,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val font: AppFont = AppFont.NOTO_SANS_JP,

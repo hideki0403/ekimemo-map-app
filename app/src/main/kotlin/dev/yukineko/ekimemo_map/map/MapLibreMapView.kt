@@ -1,6 +1,8 @@
 package dev.yukineko.ekimemo_map.map
 
 import android.annotation.SuppressLint
+import android.graphics.Color
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -10,17 +12,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import dev.yukineko.ekimemo_map.location.locationUpdates
+import dev.yukineko.ekimemo_map.ui.theme.isDark
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.location.LocationComponentActivationOptions
+import org.maplibre.android.location.LocationComponentOptions
 import org.maplibre.android.location.OnCameraTrackingChangedListener
 import org.maplibre.android.location.modes.CameraMode
 import org.maplibre.android.maps.MapLibreMap
@@ -33,7 +40,6 @@ private val initialCamera = CameraPosition.Builder().target(LatLng(35.681236, 13
 @SuppressLint("MissingPermission")
 @Composable
 fun MapLibreMapView(
-    style: MapStyle,
     showLocation: Boolean,
     tracking: Boolean,
     onTrackingDismissed: () -> Unit,
@@ -44,8 +50,17 @@ fun MapLibreMapView(
     content: @Composable (MapLibreMap, Style) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
+    val colors = MaterialTheme.colorScheme
+    val styleUri = mapStyleUri(colors.isDark)
+    val margin = with(LocalDensity.current) { 16.dp.roundToPx() }
     val mapView = remember {
-        MapView(context, MapLibreMapOptions.createFromAttributes(context).camera(initialCamera).textureMode(true))
+        val options = MapLibreMapOptions.createFromAttributes(context)
+            .camera(initialCamera)
+            .textureMode(true)
+            .logoEnabled(false)
+            .localIdeographFontFamilyEnabled(false)
+            .attributionMargins(intArrayOf(margin, 0, 0, margin))
+        MapView(context, options)
     }
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
     var loadedStyle by remember { mutableStateOf<Style?>(null) }
@@ -84,10 +99,10 @@ fun MapLibreMapView(
         }
     }
 
-    LaunchedEffect(map, style) {
+    LaunchedEffect(map, styleUri) {
         val map = map ?: return@LaunchedEffect
         loadedStyle = null
-        map.setStyle(Style.Builder().fromUri("asset://${style.assetPath}")) { loaded ->
+        map.setStyle(Style.Builder().fromUri(styleUri)) { loaded ->
             loadedStyle = loaded
             currentOnCameraIdle(map.projection.visibleRegion.latLngBounds)
             val component = map.locationComponent
@@ -102,6 +117,24 @@ fun MapLibreMapView(
             })
             locationReady = true
         }
+    }
+
+    LaunchedEffect(map, colors.onSurfaceVariant) {
+        map?.uiSettings?.setAttributionTintColor(colors.onSurfaceVariant.toArgb())
+    }
+
+    val puckColor = colors.primary.withTone(45.0).toArgb()
+    LaunchedEffect(locationReady, puckColor) {
+        val component = map?.locationComponent?.takeIf { locationReady } ?: return@LaunchedEffect
+        component.applyStyle(
+            LocationComponentOptions.builder(context)
+                .foregroundTintColor(puckColor)
+                .bearingTintColor(puckColor)
+                .backgroundTintColor(Color.WHITE)
+                .accuracyColor(puckColor)
+                .accuracyAlpha(0.15f)
+                .build(),
+        )
     }
 
     LaunchedEffect(locationReady) {

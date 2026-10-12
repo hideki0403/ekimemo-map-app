@@ -1,5 +1,6 @@
 package dev.yukineko.ekimemo_map.map
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -23,13 +24,13 @@ private const val MOVE_LOG_LAYER = "move_log"
 
 @Composable
 fun MoveLogLayers(style: Style, tracks: List<List<MoveLog>>) {
+    val color = MaterialTheme.colorScheme.primary
     val source = remember(style) { GeoJsonSource(MOVE_LOG_SOURCE) }
 
     DisposableEffect(style) {
         style.addSource(source)
-        style.addLayer(
+        style.addLayerBelowLabels(
             LineLayer(MOVE_LOG_LAYER, MOVE_LOG_SOURCE).withProperties(
-                lineColor("#F44336"),
                 lineWidth(3f),
                 lineCap(Property.LINE_CAP_ROUND),
                 lineJoin(Property.LINE_JOIN_ROUND),
@@ -40,6 +41,10 @@ fun MoveLogLayers(style: Style, tracks: List<List<MoveLog>>) {
             style.removeLayer(MOVE_LOG_LAYER)
             style.removeSource(MOVE_LOG_SOURCE)
         }
+    }
+
+    LaunchedEffect(style, color) {
+        style.getLayer(MOVE_LOG_LAYER)?.setProperties(lineColor(color.toHex()))
     }
 
     LaunchedEffect(source, tracks) {

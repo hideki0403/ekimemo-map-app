@@ -12,11 +12,9 @@ import dev.yukineko.ekimemo_map.data.station.Station
 import dev.yukineko.ekimemo_map.data.station.StationDataRepository
 import dev.yukineko.ekimemo_map.data.station.radar
 import dev.yukineko.ekimemo_map.log.Logger
-import dev.yukineko.ekimemo_map.map.MapStyle
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -25,7 +23,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -47,9 +44,6 @@ class RadarViewModel(
 
     private val _state = MutableStateFlow(RadarState())
     val state: StateFlow<RadarState> = _state.asStateFlow()
-
-    val mapStyle: StateFlow<MapStyle?> = settings.map { it.mapStyle }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     init {
         viewModelScope.launch { compute(settings.first().maxResults.coerceAtLeast(1)) }

@@ -1,7 +1,6 @@
 package dev.yukineko.ekimemo_map.data.legacy
 
 import dev.yukineko.ekimemo_map.data.settings.Settings
-import dev.yukineko.ekimemo_map.map.MapStyle
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import dev.yukineko.ekimemo_map.notification.VibrationPattern
 import dev.yukineko.ekimemo_map.ui.theme.AppFont
@@ -32,7 +31,6 @@ class LegacySettingsTest {
             updateFrequency = 1.5,
             notificationSound = NotificationSound.PS_2,
             vibrationPattern = VibrationPattern.PATTERN_3,
-            mapStyle = MapStyle.FIORD,
             themeMode = ThemeMode.DARK,
             font = AppFont.BIZ_UD_GOTHIC,
             useDynamicColor = true,
@@ -44,7 +42,7 @@ class LegacySettingsTest {
     @Test
     fun fallsBackToDefaults() {
         val prefs = mapOf(
-            "flutter.map_style" to "defaultStyle",
+            "flutter.theme_mode" to "unknown",
             "flutter.font_family" to "",
             "flutter.update_frequency" to "3",
             "flutter.cooldown_time" to "invalid",

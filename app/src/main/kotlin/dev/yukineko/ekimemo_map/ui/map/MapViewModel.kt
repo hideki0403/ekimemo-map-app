@@ -18,7 +18,6 @@ import dev.yukineko.ekimemo_map.location.LocationService
 import dev.yukineko.ekimemo_map.location.NearbyStation
 import dev.yukineko.ekimemo_map.location.selectLines
 import dev.yukineko.ekimemo_map.log.Logger
-import dev.yukineko.ekimemo_map.map.MapStyle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,9 +51,6 @@ class MapViewModel(
     private val settings: Flow<Settings>,
 ) : ViewModel() {
     private val logger = Logger("MapViewModel")
-
-    val mapStyle: StateFlow<MapStyle?> = settings.map { it.mapStyle }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private val trees = stationDataRepository.data.filterNotNull()
         .map { it to StationTree(it) }

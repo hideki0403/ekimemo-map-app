@@ -6,13 +6,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
-import dev.yukineko.ekimemo_map.data.settings.Settings
 import dev.yukineko.ekimemo_map.data.user.MoveLog
 import dev.yukineko.ekimemo_map.data.user.MoveLogDao
 import dev.yukineko.ekimemo_map.data.user.MoveLogSessionDao
 import dev.yukineko.ekimemo_map.log.Logger
-import dev.yukineko.ekimemo_map.map.MapStyle
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -25,12 +22,8 @@ class MoveLogMapViewModel(
     sessionIds: List<Long>,
     private val moveLogSessionDao: MoveLogSessionDao,
     moveLogDao: MoveLogDao,
-    settings: Flow<Settings>,
 ) : ViewModel() {
     private val logger = Logger("MoveLogMapViewModel")
-
-    val mapStyle: StateFlow<MapStyle?> = settings.map { it.mapStyle }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val tracks: StateFlow<List<MoveLogTrack>?> = moveLogDao.observeBySessionIds(sessionIds)
         .map { logs -> logs.groupBy { it.sessionId }.map { (id, logs) -> MoveLogTrack(id, logs) } }
@@ -49,7 +42,7 @@ class MoveLogMapViewModel(
         fun factory(sessionIds: List<Long>) = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as EkimemoMapApplication
-                MoveLogMapViewModel(sessionIds, app.userDatabase.moveLogSessionDao(), app.userDatabase.moveLogDao(), app.settings.data)
+                MoveLogMapViewModel(sessionIds, app.userDatabase.moveLogSessionDao(), app.userDatabase.moveLogDao())
             }
         }
     }

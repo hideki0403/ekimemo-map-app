@@ -75,7 +75,6 @@ fun MoveLogMapScreen(
 ) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    val mapStyle by viewModel.mapStyle.collectAsState()
     val tracks by viewModel.tracks.collectAsState()
     var hiddenIds by rememberSaveable { mutableStateOf(emptySet<Long>()) }
     var resetCount by remember { mutableIntStateOf(0) }
@@ -124,10 +123,8 @@ fun MoveLogMapScreen(
             }
         },
     ) { padding ->
-        val style = mapStyle ?: return@Scaffold
         Box(Modifier.fillMaxSize().padding(padding)) {
             MapLibreMapView(
-                style = style,
                 showLocation = false,
                 tracking = false,
                 onTrackingDismissed = {},

@@ -28,13 +28,12 @@ fun LineLayers(style: Style, polylines: List<List<LatLng>>, color: Color) {
 
     DisposableEffect(style) {
         style.addSource(source)
-        style.addLayerBelow(
+        style.addLayerBelowLabels(
             LineLayer(LINE_LAYER, LINE_SOURCE).withProperties(
                 lineWidth(4f),
                 lineCap(Property.LINE_CAP_ROUND),
                 lineJoin(Property.LINE_JOIN_ROUND),
             ),
-            POINT_LAYER,
         )
         onDispose {
             if (!style.isFullyLoaded) return@onDispose

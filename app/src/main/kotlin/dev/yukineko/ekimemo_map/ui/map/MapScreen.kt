@@ -94,7 +94,6 @@ fun MapScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    val mapStyle by viewModel.mapStyle.collectAsState()
     val visibleStations by viewModel.visibleStations.collectAsState()
     val accessedIds by viewModel.accessedIds.collectAsState()
     val nearbyIds by viewModel.nearbyIds.collectAsState()
@@ -158,11 +157,9 @@ fun MapScreen(
             }
         },
     ) { padding ->
-        val style = mapStyle ?: return@Scaffold
         val focusedStations = focus?.stations
         Box(Modifier.fillMaxSize().padding(padding)) {
             MapLibreMapView(
-                style = style,
                 showLocation = showLocation,
                 tracking = tracking,
                 onTrackingDismissed = { tracking = false },

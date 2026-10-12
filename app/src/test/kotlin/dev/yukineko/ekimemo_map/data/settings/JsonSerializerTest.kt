@@ -1,6 +1,5 @@
 package dev.yukineko.ekimemo_map.data.settings
 
-import dev.yukineko.ekimemo_map.map.MapStyle
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -14,7 +13,7 @@ class JsonSerializerTest {
 
     @Test
     fun roundTrip() {
-        val settings = Settings(cooldownTime = 100, notificationSound = NotificationSound.SL_4, mapStyle = MapStyle.FIORD)
+        val settings = Settings(cooldownTime = 100, notificationSound = NotificationSound.SL_4)
         val output = ByteArrayOutputStream()
         runBlocking { serializer.writeTo(settings, output) }
         assertEquals(settings, read(output.toString()))
@@ -22,7 +21,7 @@ class JsonSerializerTest {
 
     @Test
     fun fallsBackToDefaultsForMissingKeysAndUnknownValues() {
-        val settings = read("""{"cooldownTime":100,"mapStyle":"REMOVED","removedKey":true}""")
+        val settings = read("""{"cooldownTime":100,"notificationSound":"REMOVED","removedKey":true}""")
         assertEquals(Settings(cooldownTime = 100), settings)
     }
 }

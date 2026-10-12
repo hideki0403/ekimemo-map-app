@@ -77,7 +77,6 @@ fun RadarScreen(
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
-    val mapStyle by viewModel.mapStyle.collectAsState()
     val showLocation = remember {
         listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
             .any { ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED }
@@ -130,9 +129,7 @@ fun RadarScreen(
             }
         },
     ) { padding ->
-        val style = mapStyle ?: return@Scaffold
         MapLibreMapView(
-            style = style,
             showLocation = showLocation,
             tracking = tracking,
             onTrackingDismissed = { tracking = false },
