@@ -30,6 +30,7 @@ fun DevScreen(onNavigate: (Any) -> Unit, onBack: () -> Unit) {
 
     PlaceholderScreen(R.string.title_dev, onBack) {
         Text(location.toString())
+        Text("processing: ${searchResult?.processingMillis}ms")
         searchResult?.stations?.forEach { Text("${it.station.name} ${it.distance}m ${it.line?.name}") }
         listOf(
             SettingsRoute, AssistantFlowRoute, AssistantChooseRectRoute, LogRoute, ToolsRoute,

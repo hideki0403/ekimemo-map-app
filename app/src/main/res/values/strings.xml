@@ -36,11 +36,11 @@
     <string name="minutes_ago">%1$d分前</string>
     <string name="hours_ago">%1$d時間前</string>
     <string name="over_a_day_ago">24時間以上前</string>
-    <string name="home_accuracy">精度: %1$s</string>
-    <string name="home_speed">速度: %1$s</string>
+    <string name="home_accuracy">精度</string>
+    <string name="home_speed">速度</string>
     <string name="search_on">探索 ON</string>
     <string name="search_off">探索 OFF</string>
-    <string name="home_last_update">最終更新: %1$s</string>
+    <string name="home_last_update">最終更新</string>
     <string name="home_no_station_data">駅データがありません</string>
     <string name="home_no_station_data_message">下のボタンから駅データを更新することで、利用できるようになります。</string>
     <string name="home_loading_station_data">駅データを読み込んでいます</string>

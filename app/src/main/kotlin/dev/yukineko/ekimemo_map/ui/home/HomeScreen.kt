@@ -1,17 +1,18 @@
 package dev.yukineko.ekimemo_map.ui.home
 
+import android.location.Location
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -21,12 +22,15 @@ import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.GpsFixed
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.PinDrop
 import androidx.compose.material.icons.rounded.Radar
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.TimerOff
+import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.Widgets
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -60,6 +64,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -69,6 +74,7 @@ import dev.yukineko.ekimemo_map.BuildConfig
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.location.LocationService
 import dev.yukineko.ekimemo_map.location.NearbyStation
+import dev.yukineko.ekimemo_map.location.SearchResult
 import dev.yukineko.ekimemo_map.location.cooldownSeconds
 import dev.yukineko.ekimemo_map.ui.PermissionIssue
 import dev.yukineko.ekimemo_map.ui.PermissionIssueDialog
@@ -128,46 +134,14 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
 
     Scaffold(
         topBar = {
-            Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
-                Column {
-                    TopAppBar(title = { Text(stringResource(R.string.title_home)) }, colors = appBarColors())
-                    Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        val unknown = stringResource(R.string.unknown)
-                        Column(Modifier.weight(1f)) {
-                            val accuracy = location?.takeIf { it.hasAccuracy() }?.let { String.format(Locale.ROOT, "%.1fm", it.accuracy) }
-                            val speed = location?.takeIf { it.hasSpeed() }?.let { String.format(Locale.ROOT, "%.1fkm/h", it.speed * 3.6) }
-                            Text(stringResource(R.string.home_accuracy, accuracy ?: unknown))
-                            Text(stringResource(R.string.home_speed, speed ?: unknown))
-                        }
-                        Text(stringResource(if (isRunning) R.string.search_on else R.string.search_off))
-                        Spacer(Modifier.width(8.dp))
-                        Switch(
-                            checked = isRunning,
-                            enabled = hasStationData,
-                            onCheckedChange = { if (it) requestPermissions() else LocationService.stop(context) },
-                            thumbContent = {
-                                Icon(
-                                    if (isRunning) Icons.Rounded.Check else Icons.Rounded.Close,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize),
-                                )
-                            },
-                        )
-                    }
-                }
-            }
-        },
-        bottomBar = {
-            if (isRunning) {
-                Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
-                    Row(Modifier.navigationBarsPadding().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(R.string.home_last_update, relativeTime(searchResult?.updatedAt, now)), Modifier.weight(1f))
-                        searchResult?.let {
-                            Text("${it.processingMillis}ms", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                }
-            }
+            HomeTopBar(
+                location = location,
+                searchResult = searchResult,
+                now = now,
+                isRunning = isRunning,
+                switchEnabled = hasStationData,
+                onSwitchChange = { if (it) requestPermissions() else LocationService.stop(context) },
+            )
         },
         floatingActionButton = {
             HorizontalFloatingToolbar(expanded = true, colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors()) {
@@ -239,6 +213,61 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HomeTopBar(
+    location: Location?,
+    searchResult: SearchResult?,
+    now: Long,
+    isRunning: Boolean,
+    switchEnabled: Boolean,
+    onSwitchChange: (Boolean) -> Unit,
+) {
+    Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
+        Column {
+            TopAppBar(
+                title = { Text(stringResource(R.string.title_home)) },
+                actions = {
+                    Text(stringResource(if (isRunning) R.string.search_on else R.string.search_off))
+                    Switch(
+                        checked = isRunning,
+                        enabled = switchEnabled,
+                        onCheckedChange = onSwitchChange,
+                        modifier = Modifier.padding(start = 8.dp, end = 12.dp),
+                        thumbContent = {
+                            Icon(
+                                if (isRunning) Icons.Rounded.Check else Icons.Rounded.Close,
+                                contentDescription = null,
+                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                            )
+                        },
+                    )
+                },
+                colors = appBarColors(),
+            )
+            AnimatedVisibility(isRunning) {
+                Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    val unknown = stringResource(R.string.unknown)
+                    val accuracy = location?.takeIf { it.hasAccuracy() }?.let { String.format(Locale.ROOT, "%.1fm", it.accuracy) }
+                    val speed = location?.takeIf { it.hasSpeed() }?.let { String.format(Locale.ROOT, "%.1fkm/h", it.speed * 3.6) }
+                    StatusItem(Icons.Rounded.Speed, R.string.home_speed, speed ?: unknown)
+                    StatusItem(Icons.Rounded.GpsFixed, R.string.home_accuracy, accuracy ?: unknown)
+                    Spacer(Modifier.weight(1f))
+                    StatusItem(Icons.Rounded.Update, R.string.home_last_update, relativeTime(searchResult?.updatedAt, now))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatusItem(icon: ImageVector, @StringRes label: Int, value: String) {
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, contentDescription = stringResource(label), modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium, maxLines = 1)
     }
 }
 
