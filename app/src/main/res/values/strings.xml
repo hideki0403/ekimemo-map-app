@@ -69,6 +69,14 @@
     <string name="line_station_count">駅数: %1$d</string>
     <string name="line_accessed_count">アクセス済み駅数: %1$d (%2$s)</string>
     <string name="line_open_official">路線情報 (公式サイト)</string>
+    <string name="clear">クリア</string>
+    <string name="search_hint">駅名または路線名を入力してください</string>
+    <string name="search_stations">駅</string>
+    <string name="search_lines">路線</string>
+    <string name="search_station_count">%1$d駅</string>
+    <string name="search_line_count">%1$d路線</string>
+    <string name="search_result">%1$sが見つかりました (%2$dms)</string>
+    <string name="search_no_result">該当する駅または路線はありませんでした (%1$dms)</string>
     <string-array name="prefectures">
         <item>北海道</item>
         <item>青森県</item>
