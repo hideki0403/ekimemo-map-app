@@ -1,8 +1,6 @@
 package dev.yukineko.ekimemo_map.ui.station
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,10 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -41,8 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -55,6 +48,8 @@ import dev.yukineko.ekimemo_map.data.user.AccessLog
 import dev.yukineko.ekimemo_map.ui.LineCard
 import dev.yukineko.ekimemo_map.ui.SectionTitle
 import dev.yukineko.ekimemo_map.ui.StationAttrIcon
+import dev.yukineko.ekimemo_map.ui.ToolItem
+import dev.yukineko.ekimemo_map.ui.ToolsSheet
 import dev.yukineko.ekimemo_map.ui.navigation.LineDetailRoute
 import dev.yukineko.ekimemo_map.ui.navigation.MapRoute
 import java.time.Instant
@@ -79,7 +74,7 @@ fun StationDetailScreen(
     var showTools by remember { mutableStateOf(false) }
 
     if (showTools) {
-        ToolsSheet(
+        StationToolsSheet(
             stationId = stationId,
             onDismiss = { showTools = false },
             onNavigate = { showTools = false; onNavigate(it) },
@@ -99,7 +94,7 @@ fun StationDetailScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { showTools = true }) {
-                Icon(Icons.Rounded.Menu, contentDescription = stringResource(R.string.station_tools))
+                Icon(Icons.Rounded.Menu, contentDescription = stringResource(R.string.title_tools))
             }
         },
     ) { padding ->
@@ -181,33 +176,15 @@ private fun InfoLines(vararg lines: String) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ToolsSheet(stationId: Int, onDismiss: () -> Unit, onNavigate: (Any) -> Unit) {
+private fun StationToolsSheet(stationId: Int, onDismiss: () -> Unit, onNavigate: (Any) -> Unit) {
     val uriHandler = LocalUriHandler.current
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Text(
-            stringResource(R.string.station_tools),
-            modifier = Modifier.fillMaxWidth(),
-            style = MaterialTheme.typography.titleLarge,
-            textAlign = TextAlign.Center,
-        )
-        ToolItem(R.string.station_open_map, Icons.Rounded.Map) { onNavigate(MapRoute(stationId = stationId)) }
+    ToolsSheet(onDismiss) {
+        ToolItem(R.string.open_map, Icons.Rounded.Map) { onNavigate(MapRoute(stationId = stationId)) }
         ToolItem(R.string.station_open_radar, Icons.Rounded.Radar) { onNavigate(MapRoute(radarId = stationId)) }
         ToolItem(R.string.station_open_activity, Icons.Rounded.Train) {
             onDismiss()
             uriHandler.openUri("https://ekimemo.com/database/station/$stationId/activity")
         }
-        Spacer(Modifier.height(16.dp))
     }
-}
-
-@Composable
-private fun ToolItem(@StringRes text: Int, icon: ImageVector, onClick: () -> Unit) {
-    ListItem(
-        headlineContent = { Text(stringResource(text)) },
-        leadingContent = { Icon(icon, contentDescription = null) },
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        modifier = Modifier.clickable(onClick = onClick),
-    )
 }

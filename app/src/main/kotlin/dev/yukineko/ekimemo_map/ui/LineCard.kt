@@ -24,11 +24,11 @@ import java.util.Locale
 
 data class LineProgress(val accessed: Int, val total: Int) {
     val isComplete get() = accessed == total
+    val percent get() = String.format(Locale.ROOT, "%.1f%%", if (total == 0) 0.0 else accessed * 100.0 / total)
 }
 
-fun parseLineColor(hex: String?): Color =
+fun parseLineColor(hex: String?): Color? =
     hex?.let { runCatching { Color(android.graphics.Color.parseColor("#" + it.removePrefix("#"))) }.getOrNull() }
-        ?: Color.Transparent
 
 @Composable
 fun LineCard(line: Line, onClick: () -> Unit, modifier: Modifier = Modifier, progress: LineProgress? = null) {
@@ -41,15 +41,14 @@ fun LineCard(line: Line, onClick: () -> Unit, modifier: Modifier = Modifier, pro
             Box(
                 Modifier
                     .size(width = 8.dp, height = 30.dp)
-                    .background(parseLineColor(line.color), shape)
+                    .background(parseLineColor(line.color) ?: Color.Transparent, shape)
                     .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), shape),
             )
             Spacer(Modifier.width(12.dp))
             Text(line.name, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
             if (progress != null) {
-                val percent = if (progress.total == 0) 0.0 else progress.accessed * 100.0 / progress.total
                 Text(
-                    String.format(Locale.ROOT, "%d/%d (%.1f%%)", progress.accessed, progress.total, percent),
+                    "${progress.accessed}/${progress.total} (${progress.percent})",
                     color = if (progress.isComplete) MaterialTheme.colorScheme.primary else Color.Unspecified,
                 )
             }
