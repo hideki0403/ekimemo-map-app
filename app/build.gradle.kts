@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.play.services.location)
     implementation(libs.maplibre.android)
+    implementation(libs.calendar.compose)
     ksp(libs.androidx.room.compiler)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     testImplementation(libs.junit)

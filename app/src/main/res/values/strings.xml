@@ -161,6 +161,13 @@
     <string name="move_log_delete_title">移動ログの削除</string>
     <string name="move_log_delete_message">%1$d地点を含む移動ログを削除しますか？\nこの操作は取り消せません。</string>
     <string name="move_log_deleted">移動ログを削除しました</string>
+    <string name="move_log_list_empty">移動ログがありません</string>
+    <string name="move_log_day_empty">%1$sの移動ログはありません</string>
+    <string name="move_log_show_all">全ての移動ログを地図で表示</string>
+    <string name="move_log_show_list">リスト表示</string>
+    <string name="move_log_show_calendar">カレンダー表示</string>
+    <string name="calendar_previous_month">前の月</string>
+    <string name="calendar_next_month">次の月</string>
     <string-array name="prefectures">
         <item>北海道</item>
         <item>青森県</item>
