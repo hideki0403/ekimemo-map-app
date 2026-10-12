@@ -18,6 +18,7 @@ import dev.yukineko.ekimemo_map.ui.history.HistoryScreen
 import dev.yukineko.ekimemo_map.ui.home.HomeScreen
 import dev.yukineko.ekimemo_map.ui.line.LineDetailScreen
 import dev.yukineko.ekimemo_map.ui.map.MapScreen
+import dev.yukineko.ekimemo_map.ui.map.RadarScreen
 import dev.yukineko.ekimemo_map.ui.search.SearchScreen
 import dev.yukineko.ekimemo_map.ui.station.StationDetailScreen
 
@@ -53,7 +54,10 @@ fun AppNavHost() {
         composable<IntervalTimerRoute> { PlaceholderScreen(R.string.title_interval_timer, back) }
         composable<MovementLogRoute> { PlaceholderScreen(R.string.title_movement_log, back) }
         composable<LicenseRoute> { PlaceholderScreen(R.string.title_license, back) }
-        composable<MapRoute> { MapScreen(onNavigate = navigate, onBack = back) }
+        composable<MapRoute> {
+            val radarId = it.toRoute<MapRoute>().radarId
+            if (radarId != null) RadarScreen(radarId, onBack = back) else MapScreen(onNavigate = navigate, onBack = back)
+        }
         composable<StationDetailRoute> {
             StationDetailScreen(it.toRoute<StationDetailRoute>().stationId, onNavigate = navigate, onBack = back)
         }
