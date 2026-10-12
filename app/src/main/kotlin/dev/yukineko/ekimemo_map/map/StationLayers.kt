@@ -46,7 +46,7 @@ private const val VORONOI_SOURCE = "voronoi"
 private const val POINT_SOURCE = "point"
 private const val FILL_LAYER = "fill"
 private const val LINE_LAYER = "line"
-private const val POINT_LAYER = "point"
+internal const val POINT_LAYER = "point"
 private const val PIN_IMAGE = "pin"
 private val ATTR_IMAGES = StationAttr.entries.associateWith { it.name.lowercase() }
 private const val NEARBY_COLOR = "#2196F3"
@@ -61,6 +61,7 @@ fun StationLayers(
     showPins: Boolean,
     showAccessState: Boolean,
     attrMode: Boolean,
+    showVoronoi: Boolean = true,
 ) {
     val context = LocalContext.current
     val voronoiSource = remember(style) { GeoJsonSource(VORONOI_SOURCE) }
@@ -97,7 +98,7 @@ fun StationLayers(
         }
     }
 
-    LaunchedEffect(voronoiSource, stations, accessedIds, nearbyIds, attrMode) {
+    LaunchedEffect(voronoiSource, stations, accessedIds, nearbyIds, attrMode, showVoronoi) {
         val (voronoi, points) = withContext(Dispatchers.Default) {
             val voronoi = mutableListOf<Feature>()
             val points = mutableListOf<Feature>()
@@ -107,11 +108,12 @@ fun StationLayers(
                     station.id in nearbyIds -> NEARBY_COLOR
                     else -> DEFAULT_COLOR
                 }
-                val accessed = station.id in accessedIds
-                val polygon = Polygon.fromLngLats(listOf(station.voronoi.map { Point.fromLngLat(it.lng, it.lat) }))
-                voronoi += Feature.fromGeometry(polygon).apply {
-                    addStringProperty("color", color)
-                    addBooleanProperty("accessed", accessed)
+                if (showVoronoi) {
+                    val polygon = Polygon.fromLngLats(listOf(station.voronoi.map { Point.fromLngLat(it.lng, it.lat) }))
+                    voronoi += Feature.fromGeometry(polygon).apply {
+                        addStringProperty("color", color)
+                        addBooleanProperty("accessed", station.id in accessedIds)
+                    }
                 }
                 points += Feature.fromGeometry(Point.fromLngLat(station.lng, station.lat)).apply {
                     addStringProperty("color", color)
@@ -139,4 +141,4 @@ fun StationLayers(
     }
 }
 
-private fun Color.toHex() = "#%06X".format(toArgb() and 0xFFFFFF)
+internal fun Color.toHex() = "#%06X".format(toArgb() and 0xFFFFFF)

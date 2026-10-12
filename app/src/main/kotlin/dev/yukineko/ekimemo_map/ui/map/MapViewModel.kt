@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
 import dev.yukineko.ekimemo_map.data.settings.Settings
 import dev.yukineko.ekimemo_map.data.station.Bounds
+import dev.yukineko.ekimemo_map.data.station.Line
 import dev.yukineko.ekimemo_map.data.station.Station
 import dev.yukineko.ekimemo_map.data.station.StationDataRepository
 import dev.yukineko.ekimemo_map.data.station.StationTree
@@ -39,9 +40,13 @@ sealed interface VisibleStations {
     data object TooMany : VisibleStations
 }
 
+data class MapFocus(val station: Station?, val line: Line?, val stations: List<Station>?)
+
 data class TappedPoint(val stations: List<NearbyStation>, val distanceFromCurrent: Int?)
 
 class MapViewModel(
+    stationId: Int?,
+    lineId: Int?,
     private val accessLogDao: AccessLogDao,
     stationDataRepository: StationDataRepository,
     private val settings: Flow<Settings>,
@@ -55,6 +60,15 @@ class MapViewModel(
         .map { it to StationTree(it) }
         .flowOn(Dispatchers.Default)
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val focus: StateFlow<MapFocus?> = stationDataRepository.data.filterNotNull()
+        .map { data ->
+            val station = stationId?.let(data.stations::get)
+            val line = lineId?.let(data.lines::get)
+            val stations = station?.let(::listOf) ?: line?.stationList?.mapNotNull(data.stations::get)
+            MapFocus(station, line, stations)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private val bounds = MutableStateFlow<Bounds?>(null)
 
@@ -112,10 +126,10 @@ class MapViewModel(
     }
 
     companion object {
-        val Factory = viewModelFactory {
+        fun factory(stationId: Int?, lineId: Int?) = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as EkimemoMapApplication
-                MapViewModel(app.userDatabase.accessLogDao(), app.stationDataRepository, app.settings.data)
+                MapViewModel(stationId, lineId, app.userDatabase.accessLogDao(), app.stationDataRepository, app.settings.data)
             }
         }
     }

@@ -60,7 +60,7 @@ fun AppNavHost() {
             when {
                 route.radarId != null -> RadarScreen(route.radarId, onBack = back)
                 route.sessionIds.isNotEmpty() -> MoveLogMapScreen(route.sessionIds, onBack = back)
-                else -> MapScreen(onNavigate = navigate, onBack = back)
+                else -> MapScreen(route.stationId, route.lineId, onNavigate = navigate, onBack = back)
             }
         }
         composable<StationDetailRoute> {

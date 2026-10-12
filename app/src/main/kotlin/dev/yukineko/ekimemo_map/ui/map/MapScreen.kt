@@ -54,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -63,6 +64,7 @@ import dev.yukineko.ekimemo_map.data.station.Bounds
 import dev.yukineko.ekimemo_map.data.station.Station
 import dev.yukineko.ekimemo_map.data.station.formatDistance
 import dev.yukineko.ekimemo_map.location.locationUpdates
+import dev.yukineko.ekimemo_map.map.LineLayers
 import dev.yukineko.ekimemo_map.map.MapLibreMapView
 import dev.yukineko.ekimemo_map.map.StationLayers
 import dev.yukineko.ekimemo_map.ui.BackButton
@@ -71,19 +73,23 @@ import dev.yukineko.ekimemo_map.ui.StationCard
 import dev.yukineko.ekimemo_map.ui.ToolAction
 import dev.yukineko.ekimemo_map.ui.ToolActionItem
 import dev.yukineko.ekimemo_map.ui.appBarColors
+import dev.yukineko.ekimemo_map.ui.parseLineColor
 import dev.yukineko.ekimemo_map.ui.navigation.MapRoute
 import dev.yukineko.ekimemo_map.ui.navigation.StationDetailRoute
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.geometry.LatLngBounds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
+    stationId: Int?,
+    lineId: Int?,
     onNavigate: (Any) -> Unit,
     onBack: () -> Unit,
-    viewModel: MapViewModel = viewModel(factory = MapViewModel.Factory),
+    viewModel: MapViewModel = viewModel(factory = MapViewModel.factory(stationId, lineId)),
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -92,18 +98,20 @@ fun MapScreen(
     val visibleStations by viewModel.visibleStations.collectAsState()
     val accessedIds by viewModel.accessedIds.collectAsState()
     val nearbyIds by viewModel.nearbyIds.collectAsState()
+    val focus by viewModel.focus.collectAsState()
     val showLocation = remember {
         listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
             .any { ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED }
     }
     var tracking by rememberSaveable { mutableStateOf(false) }
-    var movedToCurrent by rememberSaveable { mutableStateOf(false) }
+    var cameraInitialized by rememberSaveable { mutableStateOf(false) }
     var showPins by rememberSaveable { mutableStateOf(true) }
-    var showAccessState by rememberSaveable { mutableStateOf(true) }
+    var showAccessState by rememberSaveable { mutableStateOf(stationId == null) }
     var mode by rememberSaveable { mutableStateOf(MapMode.NORMAL) }
     var showLayers by rememberSaveable { mutableStateOf(false) }
     var tapped by remember { mutableStateOf<TappedPoint?>(null) }
     val motion = MaterialTheme.motionScheme
+    val cameraPadding = with(LocalDensity.current) { 32.dp.roundToPx() }
 
     fun showMessage(message: String) = scope.launch {
         snackbarHostState.currentSnackbarData?.dismiss()
@@ -118,7 +126,7 @@ fun MapScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.title_map)) },
+                title = { Text(focus?.station?.name ?: focus?.line?.name ?: stringResource(R.string.title_map)) },
                 navigationIcon = { BackButton(onBack) },
                 colors = appBarColors(),
             )
@@ -151,6 +159,7 @@ fun MapScreen(
         },
     ) { padding ->
         val style = mapStyle ?: return@Scaffold
+        val focusedStations = focus?.stations
         Box(Modifier.fillMaxSize().padding(padding)) {
             MapLibreMapView(
                 style = style,
@@ -158,8 +167,11 @@ fun MapScreen(
                 tracking = tracking,
                 onTrackingDismissed = { tracking = false },
                 modifier = Modifier.fillMaxSize(),
-                onMapClick = { latLng -> scope.launch { tapped = viewModel.tap(latLng.latitude, latLng.longitude) } },
+                onMapClick = { latLng ->
+                    if (focusedStations == null) scope.launch { tapped = viewModel.tap(latLng.latitude, latLng.longitude) }
+                },
                 onMapLongClick = { latLng ->
+                    if (focusedStations != null) return@MapLibreMapView
                     val station = viewModel.nearestStation(latLng.latitude, latLng.longitude) ?: return@MapLibreMapView
                     if (showAccessState) toggleAccessed(station) else showMessage(station.name)
                 },
@@ -167,24 +179,44 @@ fun MapScreen(
             ) { map, loadedStyle ->
                 StationLayers(
                     style = loadedStyle,
-                    stations = (visibleStations as? VisibleStations.Ready)?.stations.orEmpty(),
+                    stations = focusedStations ?: (visibleStations as? VisibleStations.Ready)?.stations.orEmpty(),
                     accessedIds = accessedIds,
                     nearbyIds = nearbyIds,
                     showPins = showPins,
                     showAccessState = showAccessState,
                     attrMode = mode == MapMode.ATTRIBUTE,
+                    showVoronoi = focus?.line == null,
                 )
-                if (showLocation) {
-                    LaunchedEffect(Unit) {
-                        if (movedToCurrent) return@LaunchedEffect
-                        val location = context.locationUpdates(1000).first()
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), 12.0))
-                        movedToCurrent = true
+                focus?.line?.let { line ->
+                    LineLayers(
+                        style = loadedStyle,
+                        polylines = line.polylines,
+                        color = parseLineColor(line.color) ?: MaterialTheme.colorScheme.primary,
+                    )
+                }
+                LaunchedEffect(focus) {
+                    val focus = focus
+                    if (cameraInitialized || focus == null) return@LaunchedEffect
+                    val station = focus.station
+                    val bounds = focus.line?.bounds
+                    val update = when {
+                        station != null -> CameraUpdateFactory.newLatLngZoom(LatLng(station.lat, station.lng), 14.0)
+                        bounds != null -> CameraUpdateFactory.newLatLngBounds(
+                            LatLngBounds.from(bounds.north, bounds.east, bounds.south, bounds.west),
+                            cameraPadding,
+                        )
+                        showLocation -> {
+                            val location = context.locationUpdates(1000).first()
+                            CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), 12.0)
+                        }
+                        else -> return@LaunchedEffect
                     }
+                    map.moveCamera(update)
+                    cameraInitialized = true
                 }
             }
             AnimatedVisibility(
-                visible = visibleStations == VisibleStations.TooMany,
+                visible = focusedStations == null && visibleStations == VisibleStations.TooMany,
                 modifier = Modifier.padding(8.dp),
                 enter = fadeIn(motion.defaultEffectsSpec()) + scaleIn(motion.defaultSpatialSpec(), initialScale = 0.95f),
                 exit = fadeOut(motion.defaultEffectsSpec()) + scaleOut(motion.defaultSpatialSpec(), targetScale = 0.95f),
