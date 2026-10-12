@@ -20,6 +20,11 @@
     <string name="tools_movement_log_description">移動ログを確認することが出来ます</string>
     <string name="tools_route_search_description">GPXファイルを読み込み、通過する駅の一覧を表示することが出来ます</string>
     <string name="tools_interval_timer_description">インターバルタイマーを設定することが出来ます</string>
+    <string name="route_search_description">ルート探索に使用するGPXファイルを選択してください。</string>
+    <string name="route_search_select_file">GPXファイルを選択</string>
+    <string name="route_search_result">探索結果: %1$d駅 (%2$dms)</string>
+    <string name="route_search_file_info">%1$s (%2$d地点)</string>
+    <string name="route_search_failed">GPXファイルの読み込みに失敗しました</string>
     <string name="back">戻る</string>
     <string name="ok">OK</string>
     <string name="permission_required">権限が必要です</string>
