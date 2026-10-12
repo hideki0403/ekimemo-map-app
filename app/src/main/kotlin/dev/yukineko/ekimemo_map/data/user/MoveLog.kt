@@ -8,6 +8,7 @@ import androidx.room.Index
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Entity(
     tableName = "move_log",
@@ -36,6 +37,9 @@ data class MoveLog(
 interface MoveLogDao {
     @Query("SELECT * FROM move_log WHERE session_id = :sessionId ORDER BY timestamp")
     suspend fun getBySessionId(sessionId: Long): List<MoveLog>
+
+    @Query("SELECT * FROM move_log WHERE session_id IN (:sessionIds) ORDER BY timestamp")
+    fun observeBySessionIds(sessionIds: List<Long>): Flow<List<MoveLog>>
 
     @Insert
     suspend fun insert(log: MoveLog)

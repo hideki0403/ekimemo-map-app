@@ -76,6 +76,7 @@
     <string name="map_marked_accessed">%1$sをアクセス済みにしました</string>
     <string name="map_marked_unaccessed">%1$sを未アクセスにしました</string>
     <string name="map_distance_from_current">現在地から %1$s</string>
+    <string name="map_reset_camera">表示範囲をリセット</string>
     <string name="map_reachable_stations">タップした地点からレーダーで届く駅</string>
     <string name="open_station_detail">駅の詳細を見る</string>
     <string name="station_open_radar">レーダー範囲</string>
@@ -90,7 +91,6 @@
     <string name="radar_k_title">レーダー検知数</string>
     <string name="radar_k_suffix">駅</string>
     <string name="radar_recompute">再計算</string>
-    <string name="radar_reset_camera">表示範囲をリセット</string>
     <string name="station_open_activity">駅のにぎわい (公式サイト)</string>
     <string name="line_info">路線情報</string>
     <string name="line_station_info">駅情報</string>
@@ -115,6 +115,15 @@
     <string name="history_distance">距離: %1$s</string>
     <string name="history_accuracy">精度: %1$s</string>
     <string name="history_speed">速度: %1$s</string>
+    <string name="move_log_sessions">表示するセッション</string>
+    <string name="move_log_session_time">%1$s〜%2$s</string>
+    <string name="move_log_point_count">%1$d地点</string>
+    <string name="move_log_stats">統計情報</string>
+    <string name="move_log_stats_message">%1$sの移動ログ\nセッション数: %2$d\n記録された地点数: %3$d</string>
+    <string name="move_log_empty">表示できる移動ログがありません</string>
+    <string name="move_log_delete_title">移動ログの削除</string>
+    <string name="move_log_delete_message">%1$d地点を含む移動ログを削除しますか？\nこの操作は取り消せません。</string>
+    <string name="move_log_deleted">移動ログを削除しました</string>
     <string-array name="prefectures">
         <item>北海道</item>
         <item>青森県</item>

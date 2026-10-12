@@ -116,7 +116,7 @@ fun RadarScreen(
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 SmallFloatingActionButton(onClick = { resetCount++ }) {
-                    Icon(Icons.Rounded.CenterFocusStrong, contentDescription = stringResource(R.string.radar_reset_camera))
+                    Icon(Icons.Rounded.CenterFocusStrong, contentDescription = stringResource(R.string.map_reset_camera))
                 }
                 if (showLocation) {
                     FloatingActionButton(onClick = { tracking = !tracking }) {
