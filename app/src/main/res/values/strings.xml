@@ -65,6 +65,13 @@
     <string name="map_follow_location">現在地に追従</string>
     <string name="map_show_pins">マップピン</string>
     <string name="map_show_access_state">アクセス状態</string>
+    <string name="map_layers">マップの種類と表示</string>
+    <string name="map_mode_title">表示モード</string>
+    <string name="map_mode_normal">アクセスマップ</string>
+    <string name="map_mode_attribute">属性マップ</string>
+    <string name="map_display_title">表示</string>
+    <string name="map_show_attr_icons">属性アイコン</string>
+    <string name="map_show_fill">塗りつぶし</string>
     <string name="map_too_many_stations">表示範囲内の駅数が多すぎるため、メッシュを描画できませんでした。地図を拡大してください。</string>
     <string name="map_marked_accessed">%1$sをアクセス済みにしました</string>
     <string name="map_marked_unaccessed">%1$sを未アクセスにしました</string>

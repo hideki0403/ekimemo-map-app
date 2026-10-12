@@ -2,7 +2,6 @@ package dev.yukineko.ekimemo_map.ui.map
 
 import android.Manifest
 import android.content.pm.PackageManager
-import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -17,20 +16,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Cancel
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.GpsFixed
 import androidx.compose.material.icons.rounded.GpsNotFixed
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.Radar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItemDefaults
@@ -38,6 +34,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -103,6 +100,8 @@ fun MapScreen(
     var movedToCurrent by rememberSaveable { mutableStateOf(false) }
     var showPins by rememberSaveable { mutableStateOf(true) }
     var showAccessState by rememberSaveable { mutableStateOf(true) }
+    var mode by rememberSaveable { mutableStateOf(MapMode.NORMAL) }
+    var showLayers by rememberSaveable { mutableStateOf(false) }
     var tapped by remember { mutableStateOf<TappedPoint?>(null) }
     val motion = MaterialTheme.motionScheme
 
@@ -135,13 +134,18 @@ fun MapScreen(
             }
         },
         floatingActionButton = {
-            if (showLocation) {
-                FloatingActionButton(onClick = { tracking = !tracking }) {
-                    Icon(
-                        if (tracking) Icons.Rounded.GpsFixed else Icons.Rounded.GpsNotFixed,
-                        contentDescription = stringResource(R.string.map_follow_location),
-                        tint = if (tracking) MaterialTheme.colorScheme.primary else LocalContentColor.current,
-                    )
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                SmallFloatingActionButton(onClick = { showLayers = true }) {
+                    Icon(Icons.Rounded.Layers, contentDescription = stringResource(R.string.map_layers))
+                }
+                if (showLocation) {
+                    FloatingActionButton(onClick = { tracking = !tracking }) {
+                        Icon(
+                            if (tracking) Icons.Rounded.GpsFixed else Icons.Rounded.GpsNotFixed,
+                            contentDescription = stringResource(R.string.map_follow_location),
+                            tint = if (tracking) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+                        )
+                    }
                 }
             }
         },
@@ -168,6 +172,7 @@ fun MapScreen(
                     nearbyIds = nearbyIds,
                     showPins = showPins,
                     showAccessState = showAccessState,
+                    attrMode = mode == MapMode.ATTRIBUTE,
                 )
                 if (showLocation) {
                     LaunchedEffect(Unit) {
@@ -178,22 +183,29 @@ fun MapScreen(
                     }
                 }
             }
-            Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MapFilterChip(R.string.map_show_pins, showPins) { showPins = it }
-                    MapFilterChip(R.string.map_show_access_state, showAccessState) { showAccessState = it }
-                }
-                AnimatedVisibility(
-                    visible = visibleStations == VisibleStations.TooMany,
-                    enter = fadeIn(motion.defaultEffectsSpec()) + scaleIn(motion.defaultSpatialSpec(), initialScale = 0.95f),
-                    exit = fadeOut(motion.defaultEffectsSpec()) + scaleOut(motion.defaultSpatialSpec(), targetScale = 0.95f),
-                ) {
-                    Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainer, shadowElevation = 2.dp) {
-                        Text(stringResource(R.string.map_too_many_stations), modifier = Modifier.padding(16.dp))
-                    }
+            AnimatedVisibility(
+                visible = visibleStations == VisibleStations.TooMany,
+                modifier = Modifier.padding(8.dp),
+                enter = fadeIn(motion.defaultEffectsSpec()) + scaleIn(motion.defaultSpatialSpec(), initialScale = 0.95f),
+                exit = fadeOut(motion.defaultEffectsSpec()) + scaleOut(motion.defaultSpatialSpec(), targetScale = 0.95f),
+            ) {
+                Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainer, shadowElevation = 2.dp) {
+                    Text(stringResource(R.string.map_too_many_stations), modifier = Modifier.padding(16.dp))
                 }
             }
         }
+    }
+
+    if (showLayers) {
+        MapLayersSheet(
+            mode = mode,
+            onModeChange = { mode = it },
+            showPins = showPins,
+            onShowPinsChange = { showPins = it },
+            showAccessState = showAccessState,
+            onShowAccessStateChange = { showAccessState = it },
+            onDismiss = { showLayers = false },
+        )
     }
 
     tapped?.let { point ->
@@ -205,21 +217,6 @@ fun MapScreen(
             onNavigate = onNavigate,
         )
     }
-}
-
-@Composable
-private fun MapFilterChip(@StringRes text: Int, selected: Boolean, onChange: (Boolean) -> Unit) {
-    FilterChip(
-        selected = selected,
-        onClick = { onChange(!selected) },
-        label = { Text(stringResource(text)) },
-        leadingIcon = if (selected) {
-            { Icon(Icons.Rounded.Check, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize)) }
-        } else {
-            null
-        },
-        colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
