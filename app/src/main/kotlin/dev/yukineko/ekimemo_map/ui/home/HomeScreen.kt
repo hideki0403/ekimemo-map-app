@@ -1,7 +1,6 @@
 package dev.yukineko.ekimemo_map.ui.home
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,7 +18,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Cancel
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.PinDrop
 import androidx.compose.material.icons.rounded.Radar
@@ -29,16 +30,23 @@ import androidx.compose.material.icons.rounded.TimerOff
 import androidx.compose.material.icons.rounded.Widgets
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -52,8 +60,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -67,6 +73,7 @@ import dev.yukineko.ekimemo_map.location.cooldownSeconds
 import dev.yukineko.ekimemo_map.ui.PermissionIssue
 import dev.yukineko.ekimemo_map.ui.PermissionIssueDialog
 import dev.yukineko.ekimemo_map.ui.StationCard
+import dev.yukineko.ekimemo_map.ui.ToolAction
 import dev.yukineko.ekimemo_map.ui.navigation.DevRoute
 import dev.yukineko.ekimemo_map.ui.navigation.MapRoute
 import dev.yukineko.ekimemo_map.ui.navigation.SettingsRoute
@@ -77,7 +84,7 @@ import dev.yukineko.ekimemo_map.ui.rememberSearchPermissionRequester
 import dev.yukineko.ekimemo_map.ui.relativeTime
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)) {
     val context = LocalContext.current
@@ -122,25 +129,7 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
         topBar = {
             Surface {
                 Column {
-                    TopAppBar(
-                        title = { Text(stringResource(R.string.title_home)) },
-                        actions = {
-                            if (BuildConfig.DEBUG) {
-                                IconButton(onClick = { onNavigate(DevRoute) }) {
-                                    Icon(Icons.Rounded.BugReport, contentDescription = stringResource(R.string.title_dev))
-                                }
-                            }
-                            IconButton(onClick = { onNavigate(ToolsRoute) }) {
-                                Icon(Icons.Rounded.Widgets, contentDescription = stringResource(R.string.title_tools))
-                            }
-                            IconButton(onClick = { onNavigate(MapRoute()) }, enabled = hasStationData) {
-                                Icon(Icons.Rounded.Map, contentDescription = stringResource(R.string.title_map))
-                            }
-                            IconButton(onClick = { onNavigate(SettingsRoute) }) {
-                                Icon(Icons.Rounded.Settings, contentDescription = stringResource(R.string.title_settings))
-                            }
-                        },
-                    )
+                    TopAppBar(title = { Text(stringResource(R.string.title_home)) })
                     Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                         val unknown = stringResource(R.string.unknown)
                         Column(Modifier.weight(1f)) {
@@ -155,6 +144,13 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
                             checked = isRunning,
                             enabled = hasStationData,
                             onCheckedChange = { if (it) requestPermissions() else LocationService.stop(context) },
+                            thumbContent = {
+                                Icon(
+                                    if (isRunning) Icons.Rounded.Check else Icons.Rounded.Close,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                                )
+                            },
                         )
                     }
                 }
@@ -172,6 +168,25 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
                 }
             }
         },
+        floatingActionButton = {
+            HorizontalFloatingToolbar(expanded = true) {
+                if (BuildConfig.DEBUG) {
+                    IconButton(onClick = { onNavigate(DevRoute) }, shapes = IconButtonDefaults.shapes()) {
+                        Icon(Icons.Rounded.BugReport, contentDescription = stringResource(R.string.title_dev))
+                    }
+                }
+                IconButton(onClick = { onNavigate(ToolsRoute) }, shapes = IconButtonDefaults.shapes()) {
+                    Icon(Icons.Rounded.Widgets, contentDescription = stringResource(R.string.title_tools))
+                }
+                IconButton(onClick = { onNavigate(MapRoute()) }, shapes = IconButtonDefaults.shapes(), enabled = hasStationData) {
+                    Icon(Icons.Rounded.Map, contentDescription = stringResource(R.string.title_map))
+                }
+                IconButton(onClick = { onNavigate(SettingsRoute) }, shapes = IconButtonDefaults.shapes()) {
+                    Icon(Icons.Rounded.Settings, contentDescription = stringResource(R.string.title_settings))
+                }
+            }
+        },
+        floatingActionButtonPosition = FabPosition.Center,
     ) { padding ->
         val stations = searchResult?.stations.orEmpty()
         val stationIds = stations.map { it.station.id }
@@ -183,11 +198,11 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
             }
         }
         when {
-            stationDataState == StationDataState.LOADING -> EmptyMessage(padding, R.string.home_loading_station_data)
+            stationDataState == StationDataState.LOADING -> EmptyMessage(padding, R.string.home_loading_station_data) { LoadingIndicator() }
             stationDataState == StationDataState.MISSING -> EmptyMessage(padding, R.string.home_no_station_data, R.string.home_no_station_data_message) {
-                Button(onClick = viewModel::updateStationData, enabled = stationDataUpdate != StationDataUpdateState.RUNNING) {
+                Button(onClick = viewModel::updateStationData, shapes = ButtonDefaults.shapes(), enabled = stationDataUpdate != StationDataUpdateState.RUNNING) {
                     if (stationDataUpdate == StationDataUpdateState.RUNNING) {
-                        CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                        LoadingIndicator(Modifier.size(24.dp), color = LocalContentColor.current)
                     } else {
                         Text(stringResource(R.string.update_station_data))
                     }
@@ -204,15 +219,16 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
                     start = 12.dp,
                     end = 12.dp,
                     top = padding.calculateTopPadding() + 8.dp,
-                    bottom = padding.calculateBottomPadding() + 32.dp,
+                    bottom = padding.calculateBottomPadding() + 96.dp,
                 ),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
             ) {
                 itemsIndexed(stations, key = { _, item -> item.station.id }) { index, item ->
                     StationCard(
                         station = item.station,
                         line = item.line,
                         index = index,
+                        count = stations.size,
                         distance = item.distance,
                         cooldown = cooldownOf(item.station.id),
                         onClick = { onNavigate(StationDetailRoute(item.station.id)) },
@@ -237,7 +253,7 @@ private fun EmptyMessage(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(stringResource(title), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+        Text(stringResource(title), style = MaterialTheme.typography.titleMediumEmphasized, textAlign = TextAlign.Center)
         message?.let { Text(stringResource(it), textAlign = TextAlign.Center) }
         content()
     }
@@ -265,33 +281,39 @@ private fun StationMenuDialog(
                     Text(it.name, Modifier.fillMaxWidth().alpha(0.8f), textAlign = TextAlign.Center)
                     Spacer(Modifier.height(16.dp))
                 }
-                if (showAccessMenu) {
-                    if (accessed) {
-                        MenuItem(R.string.mark_unaccessed, Icons.Rounded.Cancel) { onSetAccessed(false) }
-                    } else {
-                        MenuItem(R.string.mark_accessed, Icons.Rounded.CheckCircle) { onSetAccessed(true) }
-                    }
-                    if (timerEnabled) {
-                        if (timerRunning) {
-                            MenuItem(R.string.reset_timer, Icons.Rounded.TimerOff, onToggleTimer)
+                val actions = buildList {
+                    if (showAccessMenu) {
+                        if (accessed) {
+                            add(ToolAction(R.string.mark_unaccessed, Icons.Rounded.Cancel) { onSetAccessed(false) })
                         } else {
-                            MenuItem(R.string.start_timer, Icons.Rounded.Timer, onToggleTimer)
+                            add(ToolAction(R.string.mark_accessed, Icons.Rounded.CheckCircle) { onSetAccessed(true) })
+                        }
+                        if (timerEnabled) {
+                            if (timerRunning) {
+                                add(ToolAction(R.string.reset_timer, Icons.Rounded.TimerOff, onToggleTimer))
+                            } else {
+                                add(ToolAction(R.string.start_timer, Icons.Rounded.Timer, onToggleTimer))
+                            }
                         }
                     }
+                    add(ToolAction(R.string.show_radar, Icons.Rounded.Radar, onOpenRadar))
                 }
-                MenuItem(R.string.show_radar, Icons.Rounded.Radar, onOpenRadar)
+                Column(verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
+                    actions.forEachIndexed { index, action -> MenuItem(action, index, actions.size) }
+                }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) } },
+        confirmButton = { TextButton(onClick = onDismiss, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.close)) } },
     )
 }
 
 @Composable
-private fun MenuItem(@StringRes text: Int, icon: ImageVector, onClick: () -> Unit) {
-    ListItem(
-        headlineContent = { Text(stringResource(text)) },
-        leadingContent = { Icon(icon, contentDescription = null) },
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        modifier = Modifier.clickable(onClick = onClick),
-    )
+private fun MenuItem(action: ToolAction, index: Int, count: Int) {
+    SegmentedListItem(
+        onClick = action.onClick,
+        shapes = ListItemDefaults.segmentedShapes(index, count),
+        leadingContent = { Icon(action.icon, contentDescription = null) },
+    ) {
+        Text(stringResource(action.text))
+    }
 }

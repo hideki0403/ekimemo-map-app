@@ -1,24 +1,18 @@
 package dev.yukineko.ekimemo_map.ui
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItemColors
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -29,61 +23,73 @@ import dev.yukineko.ekimemo_map.data.station.Station
 import dev.yukineko.ekimemo_map.data.station.formatDistance
 
 @Composable
+fun segmentedCardColors(): ListItemColors =
+    ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
+
+@Composable
 fun StationCard(
     station: Station,
     line: Line?,
     index: Int,
+    count: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     distance: Int? = null,
     cooldown: Int = 0,
     onLongClick: (() -> Unit)? = null,
 ) {
-    Card(modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+    SegmentedListItem(
+        onClick = onClick,
+        onLongClick = onLongClick,
+        shapes = ListItemDefaults.segmentedShapes(index, count),
+        colors = segmentedCardColors(),
+        modifier = modifier,
+        leadingContent = {
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("${index + 1}")
                 StationAttrIcon(station.attr)
             }
-            Spacer(Modifier.width(20.dp))
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(station.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(line?.name.orEmpty(), modifier = Modifier.alpha(0.8f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-            if (distance != null) {
+        },
+        supportingContent = { Text(line?.name.orEmpty(), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        trailingContent = distance?.let {
+            {
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(formatDistance(distance), style = MaterialTheme.typography.titleMedium)
-                    if (cooldown > 0) Text(formatSeconds(cooldown), modifier = Modifier.alpha(0.8f))
+                    Text(formatDistance(it), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMediumEmphasized)
+                    if (cooldown > 0) Text(formatSeconds(cooldown))
                 }
             }
-        }
+        },
+    ) {
+        Text(station.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
 @Composable
 fun SimpleStationCard(
     station: Station,
+    index: Int,
+    count: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     accessed: Boolean = false,
     showAttr: Boolean = false,
 ) {
-    Card(modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.clickable(onClick = onClick).padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (showAttr) {
-                StationAttrIcon(station.attr)
-                Spacer(Modifier.width(20.dp))
-            }
-            Text(station.name, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-            if (accessed) Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.accessed), tint = Color(0xFF4CAF50))
-        }
+    SegmentedListItem(
+        onClick = onClick,
+        shapes = ListItemDefaults.segmentedShapes(index, count),
+        colors = segmentedCardColors(),
+        modifier = modifier,
+        leadingContent = if (showAttr) {
+            { StationAttrIcon(station.attr) }
+        } else {
+            null
+        },
+        trailingContent = if (accessed) {
+            { Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.accessed), tint = Color(0xFF4CAF50)) }
+        } else {
+            null
+        },
+    ) {
+        Text(station.name, style = MaterialTheme.typography.titleMedium)
     }
 }

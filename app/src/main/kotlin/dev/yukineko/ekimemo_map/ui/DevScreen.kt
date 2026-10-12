@@ -1,5 +1,6 @@
 package dev.yukineko.ekimemo_map.ui
 
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,7 +37,7 @@ fun DevScreen(onNavigate: (Any) -> Unit, onBack: () -> Unit) {
             LicenseRoute, MapRoute(stationId = 1130101, sessionIds = listOf(1, 2)),
             StationDetailRoute(1130101), LineDetailRoute(11302),
         ).forEach { route ->
-            TextButton(onClick = { onNavigate(route) }) { Text(route.toString()) }
+            TextButton(onClick = { onNavigate(route) }, shapes = ButtonDefaults.shapes()) { Text(route.toString()) }
         }
     }
 }

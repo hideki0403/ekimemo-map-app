@@ -2,20 +2,14 @@ package dev.yukineko.ekimemo_map.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -31,12 +25,13 @@ fun parseLineColor(hex: String?): Color? =
     hex?.let { runCatching { Color(android.graphics.Color.parseColor("#" + it.removePrefix("#"))) }.getOrNull() }
 
 @Composable
-fun LineCard(line: Line, onClick: () -> Unit, modifier: Modifier = Modifier, progress: LineProgress? = null) {
-    Card(modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.clickable(onClick = onClick).padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+fun LineCard(line: Line, index: Int, count: Int, onClick: () -> Unit, modifier: Modifier = Modifier, progress: LineProgress? = null) {
+    SegmentedListItem(
+        onClick = onClick,
+        shapes = ListItemDefaults.segmentedShapes(index, count),
+        colors = segmentedCardColors(),
+        modifier = modifier,
+        leadingContent = {
             val shape = RoundedCornerShape(4.dp)
             Box(
                 Modifier
@@ -44,14 +39,16 @@ fun LineCard(line: Line, onClick: () -> Unit, modifier: Modifier = Modifier, pro
                     .background(parseLineColor(line.color) ?: Color.Transparent, shape)
                     .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), shape),
             )
-            Spacer(Modifier.width(12.dp))
-            Text(line.name, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-            if (progress != null) {
+        },
+        trailingContent = progress?.let {
+            {
                 Text(
-                    "${progress.accessed}/${progress.total} (${progress.percent})",
-                    color = if (progress.isComplete) MaterialTheme.colorScheme.primary else Color.Unspecified,
+                    "${it.accessed}/${it.total} (${it.percent})",
+                    color = if (it.isComplete) MaterialTheme.colorScheme.primary else Color.Unspecified,
                 )
             }
-        }
+        },
+    ) {
+        Text(line.name, style = MaterialTheme.typography.titleMedium)
     }
 }

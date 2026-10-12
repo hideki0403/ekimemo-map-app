@@ -11,47 +11,44 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Map
-import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.Train
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.data.station.Line
+import dev.yukineko.ekimemo_map.ui.BackButton
 import dev.yukineko.ekimemo_map.ui.LineProgress
 import dev.yukineko.ekimemo_map.ui.SectionTitle
 import dev.yukineko.ekimemo_map.ui.SimpleStationCard
-import dev.yukineko.ekimemo_map.ui.ToolItem
-import dev.yukineko.ekimemo_map.ui.ToolsSheet
+import dev.yukineko.ekimemo_map.ui.ToolAction
+import dev.yukineko.ekimemo_map.ui.ToolsFabMenu
 import dev.yukineko.ekimemo_map.ui.navigation.MapRoute
 import dev.yukineko.ekimemo_map.ui.navigation.StationDetailRoute
 import dev.yukineko.ekimemo_map.ui.parseLineColor
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LineDetailScreen(
     lineId: Int,
@@ -62,40 +59,32 @@ fun LineDetailScreen(
     val line by viewModel.line.collectAsState()
     val stations by viewModel.stations.collectAsState()
     val accessedStationIds by viewModel.accessedStationIds.collectAsState()
-    var showTools by remember { mutableStateOf(false) }
-
-    if (showTools) {
-        val uriHandler = LocalUriHandler.current
-        val dismiss = { showTools = false }
-        ToolsSheet(dismiss) {
-            ToolItem(R.string.open_map, Icons.Rounded.Map) { dismiss(); onNavigate(MapRoute(lineId = lineId)) }
-            ToolItem(R.string.line_open_official, Icons.Rounded.Train) {
-                dismiss()
-                line?.let { uriHandler.openUri("https://ekimemo.com/database/line/${it.id}") }
-            }
-        }
-    }
+    val uriHandler = LocalUriHandler.current
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
+            MediumFlexibleTopAppBar(
                 title = { Text(stringResource(R.string.title_line_detail)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                    }
-                },
+                navigationIcon = { BackButton(onBack) },
+                scrollBehavior = scrollBehavior,
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showTools = true }) {
-                Icon(Icons.Rounded.Menu, contentDescription = stringResource(R.string.title_tools))
-            }
+            ToolsFabMenu(
+                listOf(
+                    ToolAction(R.string.open_map, Icons.Rounded.Map) { onNavigate(MapRoute(lineId = lineId)) },
+                    ToolAction(R.string.line_open_official, Icons.Rounded.Train) {
+                        line?.let { uriHandler.openUri("https://ekimemo.com/database/line/${it.id}") }
+                    },
+                ),
+            )
         },
     ) { padding ->
         val current = line
         if (current == null) {
-            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { LoadingIndicator() }
             return@Scaffold
         }
         val progress = LineProgress(current.stationList.count { it in accessedStationIds }, current.stationList.size)
@@ -109,20 +98,22 @@ fun LineDetailScreen(
                     Text(stringResource(R.string.line_station_count, progress.total))
                     Text(stringResource(R.string.line_accessed_count, progress.accessed, progress.percent))
                     Spacer(Modifier.height(8.dp))
-                    LinearProgressIndicator(
+                    LinearWavyProgressIndicator(
                         progress = { if (progress.total == 0) 0f else progress.accessed.toFloat() / progress.total },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
             item { SectionTitle(stringResource(R.string.line_station_info), Modifier.padding(horizontal = 12.dp)) }
-            items(stations, key = { it.id }) { station ->
+            itemsIndexed(stations, key = { _, station -> station.id }) { index, station ->
                 SimpleStationCard(
                     station = station,
+                    index = index,
+                    count = stations.size,
                     accessed = station.id in accessedStationIds,
                     showAttr = true,
                     onClick = { onNavigate(StationDetailRoute(station.id)) },
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = ListItemDefaults.SegmentedGap / 2),
                 )
             }
         }
@@ -133,11 +124,15 @@ fun LineDetailScreen(
 private fun LineHeader(line: Line) {
     val colors = MaterialTheme.colorScheme
     Column(
-        modifier = Modifier.fillMaxWidth().background(colors.surfaceContainer).padding(16.dp),
+        modifier = Modifier
+            .padding(horizontal = 12.dp)
+            .fillMaxWidth()
+            .background(colors.surfaceContainer, MaterialTheme.shapes.extraLargeIncreased)
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text(line.name, style = MaterialTheme.typography.headlineSmall)
+        Text(line.name, style = MaterialTheme.typography.headlineSmallEmphasized)
         Text(line.nameKana)
         Spacer(Modifier.height(8.dp))
         Box(

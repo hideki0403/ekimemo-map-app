@@ -1,8 +1,6 @@
 package dev.yukineko.ekimemo_map.ui.search
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -25,9 +23,9 @@ import kotlin.time.measureTimedValue
 data class SearchResult(val stations: List<Station>, val lines: List<Line>, val elapsedMillis: Long)
 
 class SearchViewModel(data: Flow<StationData?>) : ViewModel() {
-    var query by mutableStateOf("")
+    val query = TextFieldState()
 
-    val result: StateFlow<SearchResult?> = combine(snapshotFlow { query }, data) { query, data ->
+    val result: StateFlow<SearchResult?> = combine(snapshotFlow { query.text.toString() }, data) { query, data ->
         if (query.isEmpty() || data == null) return@combine null
         val (hits, elapsed) = measureTimedValue {
             data.stations.values.filter { query in it.originalName } to data.lines.values.filter { query in it.name }

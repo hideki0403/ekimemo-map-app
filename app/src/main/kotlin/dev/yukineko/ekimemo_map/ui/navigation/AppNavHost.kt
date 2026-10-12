@@ -1,7 +1,13 @@
 package dev.yukineko.ekimemo_map.ui.navigation
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -21,7 +27,19 @@ fun AppNavHost() {
     val back: () -> Unit = { navController.navigateUp() }
     val navigate: (Any) -> Unit = { navController.navigate(it) }
 
-    NavHost(navController = navController, startDestination = HomeRoute) {
+    val motion = MaterialTheme.motionScheme
+    val slide = motion.defaultSpatialSpec<IntOffset>()
+    val fade = motion.defaultEffectsSpec<Float>()
+    val offset = { width: Int -> width / 10 }
+
+    NavHost(
+        navController = navController,
+        startDestination = HomeRoute,
+        enterTransition = { slideInHorizontally(slide) { offset(it) } + fadeIn(fade) },
+        exitTransition = { slideOutHorizontally(slide) { -offset(it) } + fadeOut(fade) },
+        popEnterTransition = { slideInHorizontally(slide) { -offset(it) } + fadeIn(fade) },
+        popExitTransition = { slideOutHorizontally(slide) { offset(it) } + fadeOut(fade) },
+    ) {
         composable<HomeRoute> { HomeScreen(onNavigate = navigate) }
         composable<DevRoute> { DevScreen(onNavigate = navigate, onBack = back) }
         composable<SettingsRoute> { PlaceholderScreen(R.string.title_settings, back) }

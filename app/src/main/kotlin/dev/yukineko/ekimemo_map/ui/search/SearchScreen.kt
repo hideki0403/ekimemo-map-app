@@ -1,33 +1,32 @@
 package dev.yukineko.ekimemo_map.ui.search
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.AppBarWithSearch
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.yukineko.ekimemo_map.R
+import dev.yukineko.ekimemo_map.ui.BackButton
 import dev.yukineko.ekimemo_map.ui.LineCard
 import dev.yukineko.ekimemo_map.ui.SectionTitle
 import dev.yukineko.ekimemo_map.ui.SimpleStationCard
@@ -39,58 +38,48 @@ import dev.yukineko.ekimemo_map.ui.navigation.StationDetailRoute
 fun SearchScreen(onNavigate: (Any) -> Unit, onBack: () -> Unit, viewModel: SearchViewModel = viewModel(factory = SearchViewModel.Factory)) {
     val result by viewModel.result.collectAsState()
 
+    val searchBarState = rememberSearchBarState()
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.title_search)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                    }
+            AppBarWithSearch(
+                state = searchBarState,
+                navigationIcon = { BackButton(onBack) },
+                inputField = {
+                    SearchBarDefaults.InputField(
+                        textFieldState = viewModel.query,
+                        searchBarState = searchBarState,
+                        onSearch = {},
+                        placeholder = { Text(stringResource(R.string.search_hint)) },
+                        leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+                        trailingIcon = {
+                            if (viewModel.query.text.isNotEmpty()) {
+                                IconButton(onClick = { viewModel.query.clearText() }, shapes = IconButtonDefaults.shapes()) {
+                                    Icon(Icons.Rounded.Clear, contentDescription = stringResource(R.string.clear))
+                                }
+                            }
+                        },
+                    )
                 },
             )
         },
     ) { padding ->
-        val itemModifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+        val itemModifier = Modifier.padding(horizontal = 12.dp, vertical = ListItemDefaults.SegmentedGap / 2)
         LazyColumn(
-            contentPadding = PaddingValues(top = padding.calculateTopPadding() + 8.dp, bottom = padding.calculateBottomPadding() + 64.dp),
+            contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding() + 64.dp),
         ) {
-            item {
-                TextField(
-                    value = viewModel.query,
-                    onValueChange = { viewModel.query = it },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                    placeholder = { Text(stringResource(R.string.search_hint)) },
-                    leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
-                    trailingIcon = {
-                        if (viewModel.query.isNotEmpty()) {
-                            IconButton(onClick = { viewModel.query = "" }) {
-                                Icon(Icons.Rounded.Clear, contentDescription = stringResource(R.string.clear))
-                            }
-                        }
-                    },
-                    singleLine = true,
-                    shape = CircleShape,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                    ),
-                )
-            }
             result?.let { result ->
-                item { Text(summary(result), Modifier.padding(start = 28.dp, end = 28.dp, top = 16.dp)) }
+                item { Text(summary(result), Modifier.padding(start = 28.dp, end = 28.dp, top = 8.dp)) }
                 if (result.stations.isNotEmpty()) {
                     item { SectionTitle(stringResource(R.string.search_stations), Modifier.padding(horizontal = 12.dp)) }
-                    items(result.stations, key = { "station-${it.id}" }) { station ->
-                        SimpleStationCard(station, onClick = { onNavigate(StationDetailRoute(station.id)) }, modifier = itemModifier, showAttr = true)
+                    itemsIndexed(result.stations, key = { _, station -> "station-${station.id}" }) { index, station ->
+                        SimpleStationCard(station, index, result.stations.size, onClick = { onNavigate(StationDetailRoute(station.id)) }, modifier = itemModifier, showAttr = true)
                     }
                 }
                 if (result.lines.isNotEmpty()) {
                     item { SectionTitle(stringResource(R.string.search_lines), Modifier.padding(horizontal = 12.dp)) }
-                    items(result.lines, key = { "line-${it.code}" }) { line ->
-                        LineCard(line, onClick = { onNavigate(LineDetailRoute(line.code)) }, modifier = itemModifier)
+                    itemsIndexed(result.lines, key = { _, line -> "line-${line.code}" }) { index, line ->
+                        LineCard(line, index, result.lines.size, onClick = { onNavigate(LineDetailRoute(line.code)) }, modifier = itemModifier)
                     }
                 }
             }
