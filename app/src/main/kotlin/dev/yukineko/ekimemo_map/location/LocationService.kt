@@ -1,22 +1,15 @@
 package dev.yukineko.ekimemo_map.location
 
-import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.location.Location
-import android.os.Looper
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.data.station.StationTree
@@ -27,12 +20,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -148,21 +139,6 @@ class LocationService : Service() {
             .setName(getString(R.string.notification_channel_search))
             .build()
         NotificationManagerCompat.from(this).createNotificationChannel(channel)
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun locationUpdates(intervalMillis: Long) = callbackFlow {
-        val client = LocationServices.getFusedLocationProviderClient(this@LocationService)
-        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, intervalMillis)
-            .setMinUpdateDistanceMeters(10f)
-            .build()
-        val callback = object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
-                result.lastLocation?.let { trySend(it) }
-            }
-        }
-        client.requestLocationUpdates(request, callback, Looper.getMainLooper())
-        awaitClose { client.removeLocationUpdates(callback) }
     }
 
     companion object {

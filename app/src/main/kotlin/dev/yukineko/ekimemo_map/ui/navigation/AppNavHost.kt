@@ -5,7 +5,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.compose.NavHost
@@ -18,6 +17,7 @@ import dev.yukineko.ekimemo_map.ui.PlaceholderScreen
 import dev.yukineko.ekimemo_map.ui.history.HistoryScreen
 import dev.yukineko.ekimemo_map.ui.home.HomeScreen
 import dev.yukineko.ekimemo_map.ui.line.LineDetailScreen
+import dev.yukineko.ekimemo_map.ui.map.MapScreen
 import dev.yukineko.ekimemo_map.ui.search.SearchScreen
 import dev.yukineko.ekimemo_map.ui.station.StationDetailScreen
 
@@ -53,10 +53,7 @@ fun AppNavHost() {
         composable<IntervalTimerRoute> { PlaceholderScreen(R.string.title_interval_timer, back) }
         composable<MovementLogRoute> { PlaceholderScreen(R.string.title_movement_log, back) }
         composable<LicenseRoute> { PlaceholderScreen(R.string.title_license, back) }
-        composable<MapRoute> {
-            val route = it.toRoute<MapRoute>()
-            PlaceholderScreen(R.string.title_map, back) { Text(route.toString()) }
-        }
+        composable<MapRoute> { MapScreen(onBack = back) }
         composable<StationDetailRoute> {
             StationDetailScreen(it.toRoute<StationDetailRoute>().stationId, onNavigate = navigate, onBack = back)
         }

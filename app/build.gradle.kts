@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.room.runtime)
     implementation(libs.play.services.location)
+    implementation(libs.maplibre.android)
     ksp(libs.androidx.room.compiler)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     testImplementation(libs.junit)

@@ -22,6 +22,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
+import org.maplibre.android.MapLibre
 import java.io.File
 import kotlin.system.measureTimeMillis
 
@@ -57,6 +58,7 @@ class EkimemoMapApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        MapLibre.getInstance(this)
         scope.launch {
             runCatching { LegacyPreferencesImporter(this@EkimemoMapApplication, settings).import() }
                 .onSuccess { if (it) logger.info("Imported legacy preferences") }

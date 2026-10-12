@@ -62,6 +62,7 @@
     <string name="station_last_access">最終アクセス: %1$s</string>
     <string name="station_first_access">初回アクセス: %1$s</string>
     <string name="open_map">マップで見る</string>
+    <string name="map_follow_location">現在地に追従</string>
     <string name="station_open_radar">レーダー範囲</string>
     <string name="station_open_activity">駅のにぎわい (公式サイト)</string>
     <string name="line_info">路線情報</string>
