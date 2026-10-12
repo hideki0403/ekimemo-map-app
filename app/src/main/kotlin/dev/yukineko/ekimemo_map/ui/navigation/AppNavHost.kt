@@ -10,6 +10,7 @@ import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.ui.DevScreen
 import dev.yukineko.ekimemo_map.ui.PlaceholderScreen
 import dev.yukineko.ekimemo_map.ui.home.HomeScreen
+import dev.yukineko.ekimemo_map.ui.station.StationDetailScreen
 
 @Composable
 fun AppNavHost() {
@@ -36,8 +37,7 @@ fun AppNavHost() {
             PlaceholderScreen(R.string.title_map, back) { Text(route.toString()) }
         }
         composable<StationDetailRoute> {
-            val route = it.toRoute<StationDetailRoute>()
-            PlaceholderScreen(R.string.title_station_detail, back) { Text(route.toString()) }
+            StationDetailScreen(it.toRoute<StationDetailRoute>().stationId, onNavigate = navigate, onBack = back)
         }
         composable<LineDetailRoute> {
             val route = it.toRoute<LineDetailRoute>()
