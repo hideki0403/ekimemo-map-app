@@ -9,11 +9,13 @@ import androidx.compose.material.icons.rounded.Whatshot
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
+import com.materialkolor.ktx.harmonize
 import dev.yukineko.ekimemo_map.data.station.StationAttr
+import dev.yukineko.ekimemo_map.ui.theme.isDark
 
 fun StationAttr.color(dark: Boolean): Color = when (this) {
     StationAttr.ECO -> if (dark) Color(0xFF81C784) else Color(0xFF66BB6A)
@@ -32,6 +34,7 @@ private val StationAttr.icon
 
 @Composable
 fun StationAttrIcon(attr: StationAttr, modifier: Modifier = Modifier) {
-    val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    Icon(attr.icon, contentDescription = null, tint = attr.color(dark), modifier = modifier.size(20.dp))
+    val colors = MaterialTheme.colorScheme
+    val tint = remember(attr, colors) { attr.color(colors.isDark).harmonize(colors.primary) }
+    Icon(attr.icon, contentDescription = null, tint = tint, modifier = modifier.size(20.dp))
 }

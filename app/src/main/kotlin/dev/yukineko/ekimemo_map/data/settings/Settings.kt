@@ -28,7 +28,7 @@ data class Settings(
     val mapRenderingLimit: Int = 750,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val font: AppFont = AppFont.NOTO_SANS_JP,
-    val useDynamicColor: Boolean = false,
+    val useDynamicColor: Boolean = true,
     val themeSeedColor: Int = DefaultSeedColor.toArgb(),
     val enableMovementLog: Boolean = false,
     val minimumMovementDistance: Int = 100,

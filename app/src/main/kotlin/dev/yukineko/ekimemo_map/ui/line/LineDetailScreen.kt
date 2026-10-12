@@ -24,6 +24,7 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -39,6 +40,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.data.station.Line
 import dev.yukineko.ekimemo_map.ui.BackButton
+import dev.yukineko.ekimemo_map.ui.appBarColors
+import dev.yukineko.ekimemo_map.ui.listItemContainerColor
 import dev.yukineko.ekimemo_map.ui.LineProgress
 import dev.yukineko.ekimemo_map.ui.SectionTitle
 import dev.yukineko.ekimemo_map.ui.SimpleStationCard
@@ -68,6 +71,7 @@ fun LineDetailScreen(
             MediumFlexibleTopAppBar(
                 title = { Text(stringResource(R.string.title_line_detail)) },
                 navigationIcon = { BackButton(onBack) },
+                colors = appBarColors(),
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -123,27 +127,29 @@ fun LineDetailScreen(
 @Composable
 private fun LineHeader(line: Line) {
     val colors = MaterialTheme.colorScheme
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 12.dp)
-            .fillMaxWidth()
-            .background(colors.surfaceContainer, MaterialTheme.shapes.extraLargeIncreased)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+    Surface(
+        modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLargeIncreased,
+        color = listItemContainerColor(),
     ) {
-        Text(line.name, style = MaterialTheme.typography.headlineSmallEmphasized)
-        Text(line.nameKana)
-        Spacer(Modifier.height(8.dp))
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .height(12.dp)
-                .background(parseLineColor(line.color) ?: colors.surfaceBright, CircleShape),
-        )
-        line.nameFormal?.let {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(line.name, style = MaterialTheme.typography.headlineSmallEmphasized)
+            Text(line.nameKana)
             Spacer(Modifier.height(8.dp))
-            Text(it)
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(12.dp)
+                    .background(parseLineColor(line.color) ?: colors.surfaceContainerHighest, CircleShape),
+            )
+            line.nameFormal?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(it)
+            }
         }
     }
 }

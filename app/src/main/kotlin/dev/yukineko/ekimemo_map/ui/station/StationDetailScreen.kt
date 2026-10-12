@@ -24,6 +24,7 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -42,6 +43,8 @@ import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.data.station.Station
 import dev.yukineko.ekimemo_map.data.user.AccessLog
 import dev.yukineko.ekimemo_map.ui.BackButton
+import dev.yukineko.ekimemo_map.ui.appBarColors
+import dev.yukineko.ekimemo_map.ui.listItemContainerColor
 import dev.yukineko.ekimemo_map.ui.LineCard
 import dev.yukineko.ekimemo_map.ui.SectionTitle
 import dev.yukineko.ekimemo_map.ui.StationAttrIcon
@@ -73,6 +76,7 @@ fun StationDetailScreen(
             MediumFlexibleTopAppBar(
                 title = { Text(stringResource(R.string.title_station_detail)) },
                 navigationIcon = { BackButton(onBack) },
+                colors = appBarColors(),
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -128,29 +132,31 @@ fun StationDetailScreen(
 @Composable
 private fun StationHeader(station: Station, accessed: Boolean) {
     val colors = MaterialTheme.colorScheme
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 12.dp)
-            .fillMaxWidth()
-            .background(colors.surfaceContainer, MaterialTheme.shapes.extraLargeIncreased)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+    Surface(
+        modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLargeIncreased,
+        color = listItemContainerColor(),
     ) {
-        Text(stringArrayResource(R.array.prefectures).getOrElse(station.prefecture - 1) { "" })
-        StationAttrIcon(station.attr)
-        Text(station.originalName, style = MaterialTheme.typography.headlineSmallEmphasized)
-        Text(station.nameKana)
-        Spacer(Modifier.height(8.dp))
-        Text(
-            stringResource(if (accessed) R.string.accessed else R.string.not_accessed),
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(if (accessed) colors.primaryContainer else colors.surfaceBright, CircleShape)
-                .padding(vertical = 2.dp),
-            color = if (accessed) colors.onPrimaryContainer else colors.onSurface,
-            textAlign = TextAlign.Center,
-        )
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(stringArrayResource(R.array.prefectures).getOrElse(station.prefecture - 1) { "" })
+            StationAttrIcon(station.attr)
+            Text(station.originalName, style = MaterialTheme.typography.headlineSmallEmphasized)
+            Text(station.nameKana)
+            Spacer(Modifier.height(8.dp))
+            Text(
+                stringResource(if (accessed) R.string.accessed else R.string.not_accessed),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(if (accessed) colors.primary else colors.surfaceContainerHighest, CircleShape)
+                    .padding(vertical = 2.dp),
+                color = if (accessed) colors.onPrimary else colors.onSurface,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }
 

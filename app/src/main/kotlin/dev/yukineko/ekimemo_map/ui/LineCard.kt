@@ -29,7 +29,11 @@ fun LineCard(line: Line, index: Int, count: Int, onClick: () -> Unit, modifier: 
     SegmentedListItem(
         onClick = onClick,
         shapes = ListItemDefaults.segmentedShapes(index, count),
-        colors = segmentedCardColors(),
+        colors = if (progress?.isComplete == true) {
+            highlightedListItemColors(MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer)
+        } else {
+            listItemColors()
+        },
         modifier = modifier,
         leadingContent = {
             val shape = RoundedCornerShape(4.dp)
@@ -37,15 +41,12 @@ fun LineCard(line: Line, index: Int, count: Int, onClick: () -> Unit, modifier: 
                 Modifier
                     .size(width = 8.dp, height = 30.dp)
                     .background(parseLineColor(line.color) ?: Color.Transparent, shape)
-                    .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), shape),
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape),
             )
         },
         trailingContent = progress?.let {
             {
-                Text(
-                    "${it.accessed}/${it.total} (${it.percent})",
-                    color = if (it.isComplete) MaterialTheme.colorScheme.primary else Color.Unspecified,
-                )
+                Text("${it.accessed}/${it.total} (${it.percent})")
             }
         },
     ) {

@@ -17,14 +17,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.materialkolor.ktx.harmonize
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.data.station.Line
 import dev.yukineko.ekimemo_map.data.station.Station
 import dev.yukineko.ekimemo_map.data.station.formatDistance
+import dev.yukineko.ekimemo_map.ui.theme.isDark
+
+private val AccessedColor = Color(0xFF4CAF50)
 
 @Composable
-fun segmentedCardColors(): ListItemColors =
-    ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
+fun listItemContainerColor(): Color = MaterialTheme.colorScheme.run { if (isDark) surfaceContainerHigh else surface }
+
+@Composable
+fun listItemColors(): ListItemColors = ListItemDefaults.segmentedColors(containerColor = listItemContainerColor())
+
+@Composable
+fun highlightedListItemColors(containerColor: Color, contentColor: Color): ListItemColors =
+    ListItemDefaults.segmentedColors(
+        containerColor = containerColor,
+        contentColor = contentColor,
+        leadingContentColor = contentColor,
+        trailingContentColor = contentColor,
+        supportingContentColor = contentColor,
+    )
 
 @Composable
 fun StationCard(
@@ -42,7 +58,7 @@ fun StationCard(
         onClick = onClick,
         onLongClick = onLongClick,
         shapes = ListItemDefaults.segmentedShapes(index, count),
-        colors = segmentedCardColors(),
+        colors = listItemColors(),
         modifier = modifier,
         leadingContent = {
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -54,7 +70,7 @@ fun StationCard(
         trailingContent = distance?.let {
             {
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(formatDistance(it), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMediumEmphasized)
+                    Text(formatDistance(it), style = MaterialTheme.typography.titleMediumEmphasized)
                     if (cooldown > 0) Text(formatSeconds(cooldown))
                 }
             }
@@ -77,7 +93,7 @@ fun SimpleStationCard(
     SegmentedListItem(
         onClick = onClick,
         shapes = ListItemDefaults.segmentedShapes(index, count),
-        colors = segmentedCardColors(),
+        colors = listItemColors(),
         modifier = modifier,
         leadingContent = if (showAttr) {
             { StationAttrIcon(station.attr) }
@@ -85,7 +101,7 @@ fun SimpleStationCard(
             null
         },
         trailingContent = if (accessed) {
-            { Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.accessed), tint = Color(0xFF4CAF50)) }
+            { Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.accessed), tint = AccessedColor.harmonize(MaterialTheme.colorScheme.primary)) }
         } else {
             null
         },

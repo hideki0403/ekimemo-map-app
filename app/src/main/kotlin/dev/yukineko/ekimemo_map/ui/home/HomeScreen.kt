@@ -34,6 +34,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -59,7 +60,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -73,6 +73,7 @@ import dev.yukineko.ekimemo_map.location.cooldownSeconds
 import dev.yukineko.ekimemo_map.ui.PermissionIssue
 import dev.yukineko.ekimemo_map.ui.PermissionIssueDialog
 import dev.yukineko.ekimemo_map.ui.StationCard
+import dev.yukineko.ekimemo_map.ui.appBarColors
 import dev.yukineko.ekimemo_map.ui.ToolAction
 import dev.yukineko.ekimemo_map.ui.navigation.DevRoute
 import dev.yukineko.ekimemo_map.ui.navigation.MapRoute
@@ -127,9 +128,9 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
 
     Scaffold(
         topBar = {
-            Surface {
+            Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
                 Column {
-                    TopAppBar(title = { Text(stringResource(R.string.title_home)) })
+                    TopAppBar(title = { Text(stringResource(R.string.title_home)) }, colors = appBarColors())
                     Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                         val unknown = stringResource(R.string.unknown)
                         Column(Modifier.weight(1f)) {
@@ -162,14 +163,14 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
                     Row(Modifier.navigationBarsPadding().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.home_last_update, relativeTime(searchResult?.updatedAt, now)), Modifier.weight(1f))
                         searchResult?.let {
-                            Text("${it.processingMillis}ms", Modifier.alpha(0.7f), style = MaterialTheme.typography.bodySmall)
+                            Text("${it.processingMillis}ms", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
             }
         },
         floatingActionButton = {
-            HorizontalFloatingToolbar(expanded = true) {
+            HorizontalFloatingToolbar(expanded = true, colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors()) {
                 if (BuildConfig.DEBUG) {
                     IconButton(onClick = { onNavigate(DevRoute) }, shapes = IconButtonDefaults.shapes()) {
                         Icon(Icons.Rounded.BugReport, contentDescription = stringResource(R.string.title_dev))
@@ -278,7 +279,7 @@ private fun StationMenuDialog(
         text = {
             Column {
                 item.line?.let {
-                    Text(it.name, Modifier.fillMaxWidth().alpha(0.8f), textAlign = TextAlign.Center)
+                    Text(it.name, Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
                     Spacer(Modifier.height(16.dp))
                 }
                 val actions = buildList {

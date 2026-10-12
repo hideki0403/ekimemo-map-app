@@ -49,10 +49,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.data.station.formatDistance
 import dev.yukineko.ekimemo_map.ui.BackButton
+import dev.yukineko.ekimemo_map.ui.appBarColors
 import dev.yukineko.ekimemo_map.ui.StationAttrIcon
 import dev.yukineko.ekimemo_map.ui.formatDateTime
+import dev.yukineko.ekimemo_map.ui.listItemColors
 import dev.yukineko.ekimemo_map.ui.navigation.StationDetailRoute
-import dev.yukineko.ekimemo_map.ui.segmentedCardColors
 import java.util.Locale
 import kotlinx.coroutines.launch
 
@@ -89,6 +90,7 @@ fun HistoryScreen(onNavigate: (Any) -> Unit, onBack: () -> Unit, viewModel: Hist
                         Icon(Icons.Rounded.DeleteForever, contentDescription = stringResource(R.string.history_delete_title))
                     }
                 },
+                colors = appBarColors(),
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -126,7 +128,7 @@ private fun HistoryCard(item: HistoryItem, index: Int, count: Int, onClick: () -
     SegmentedListItem(
         onClick = onClick,
         shapes = ListItemDefaults.segmentedShapes(index, count),
-        colors = segmentedCardColors(),
+        colors = listItemColors(),
         leadingContent = item.station?.let { { StationAttrIcon(it.attr) } },
         supportingContent = {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {

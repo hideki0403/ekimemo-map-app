@@ -2,6 +2,7 @@ package dev.yukineko.ekimemo_map.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Typography
@@ -10,6 +11,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +34,8 @@ enum class AppFont(val googleFontName: String) {
 
 val DefaultSeedColor = Color(0xFF2196F3)
 
+val ColorScheme.isDark: Boolean get() = surface.luminance() < 0.5f
+
 @Composable
 fun ThemeMode.isDark(): Boolean = when (this) {
     ThemeMode.SYSTEM -> isSystemInDarkTheme()
@@ -53,17 +57,18 @@ private fun AppFont.toFontFamily(): FontFamily {
 @Composable
 fun EkimemoMapTheme(
     darkTheme: Boolean,
-    useDynamicColor: Boolean = false,
+    useDynamicColor: Boolean = true,
     seedColor: Color = DefaultSeedColor,
     font: AppFont = AppFont.NOTO_SANS_JP,
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = if (useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    val baseColorScheme = if (useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         val context = LocalContext.current
         if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
     } else {
         rememberDynamicColorScheme(seedColor = seedColor, isDark = darkTheme, specVersion = ColorSpec.SpecVersion.SPEC_2025)
     }
+    val colorScheme = baseColorScheme.copy(background = baseColorScheme.surfaceContainer)
     val typography = remember(font) { Typography(fontFamily = font.toFontFamily()) }
 
     MaterialExpressiveTheme(

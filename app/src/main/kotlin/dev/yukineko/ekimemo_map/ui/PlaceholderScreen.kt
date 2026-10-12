@@ -32,6 +32,7 @@ fun PlaceholderScreen(
             MediumFlexibleTopAppBar(
                 title = { Text(stringResource(title)) },
                 navigationIcon = { onBack?.let { BackButton(it) } },
+                colors = appBarColors(),
                 scrollBehavior = scrollBehavior,
             )
         },

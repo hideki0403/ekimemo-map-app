@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -45,6 +46,7 @@ fun SearchScreen(onNavigate: (Any) -> Unit, onBack: () -> Unit, viewModel: Searc
             AppBarWithSearch(
                 state = searchBarState,
                 navigationIcon = { BackButton(onBack) },
+                colors = SearchBarDefaults.appBarWithSearchColors(appBarContainerColor = MaterialTheme.colorScheme.surfaceContainer),
                 inputField = {
                     SearchBarDefaults.InputField(
                         textFieldState = viewModel.query,
