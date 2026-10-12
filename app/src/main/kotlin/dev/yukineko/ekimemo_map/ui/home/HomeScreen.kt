@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Cancel
@@ -42,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -88,6 +90,7 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
     val accessLogs by viewModel.accessLogs.collectAsState()
     val stationDataUpdate by viewModel.stationDataUpdate.collectAsState()
     val now by rememberNow()
+    val listState = rememberLazyListState()
 
     var issues by remember { mutableStateOf(emptyList<PermissionIssue>()) }
     val requestPermissions = rememberSearchPermissionRequester {
@@ -171,6 +174,14 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
         },
     ) { padding ->
         val stations = searchResult?.stations.orEmpty()
+        val stationIds = stations.map { it.station.id }
+        val previousStationIds = remember { mutableStateOf(stationIds) }
+        SideEffect {
+            if (previousStationIds.value != stationIds) {
+                previousStationIds.value = stationIds
+                listState.requestScrollToItem(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset)
+            }
+        }
         when {
             stationDataState == StationDataState.LOADING -> EmptyMessage(padding, R.string.home_loading_station_data)
             stationDataState == StationDataState.MISSING -> EmptyMessage(padding, R.string.home_no_station_data, R.string.home_no_station_data_message) {
@@ -188,6 +199,7 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
             stations.isEmpty() && isRunning -> EmptyMessage(padding, R.string.home_waiting_location)
             stations.isEmpty() -> EmptyMessage(padding, R.string.home_search_off, R.string.home_search_off_message)
             else -> LazyColumn(
+                state = listState,
                 contentPadding = PaddingValues(
                     start = 12.dp,
                     end = 12.dp,
