@@ -6,8 +6,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
+import dev.yukineko.ekimemo_map.data.github.ReleaseAsset
 import dev.yukineko.ekimemo_map.data.settings.Settings
 import dev.yukineko.ekimemo_map.data.station.StationDataRepository
+import dev.yukineko.ekimemo_map.data.update.AppUpdater
 import dev.yukineko.ekimemo_map.data.user.AccessLog
 import dev.yukineko.ekimemo_map.data.user.AccessLogDao
 import dev.yukineko.ekimemo_map.location.LocationService
@@ -35,6 +37,7 @@ class HomeViewModel(
     private val accessLogDao: AccessLogDao,
     private val stationDataRepository: StationDataRepository,
     private val settingsFlow: Flow<Settings>,
+    appUpdater: AppUpdater,
 ) : ViewModel() {
     private val logger = Logger("HomeViewModel")
 
@@ -55,6 +58,9 @@ class HomeViewModel(
         .flatMapLatest { ids -> accessLogDao.observeByStationIds(ids) }
         .map { logs -> logs.associateBy { it.stationId } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
+    val appUpdate: StateFlow<ReleaseAsset?> = appUpdater.available
+    val stationDataAvailable: StateFlow<ReleaseAsset?> = stationDataRepository.available
 
     private val _stationDataUpdate = MutableStateFlow(StationDataUpdateState.IDLE)
     val stationDataUpdate: StateFlow<StationDataUpdateState> = _stationDataUpdate.asStateFlow()
@@ -94,7 +100,7 @@ class HomeViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as EkimemoMapApplication
-                HomeViewModel(app.userDatabase.accessLogDao(), app.stationDataRepository, app.settings.data)
+                HomeViewModel(app.userDatabase.accessLogDao(), app.stationDataRepository, app.settings.data, app.appUpdater)
             }
         }
     }

@@ -15,10 +15,12 @@ import dev.yukineko.ekimemo_map.data.backup.CsvImportResult
 import dev.yukineko.ekimemo_map.data.backup.parseAccessLogCsv
 import dev.yukineko.ekimemo_map.data.backup.readBackup
 import dev.yukineko.ekimemo_map.data.backup.writeBackup
+import dev.yukineko.ekimemo_map.data.github.ReleaseAsset
 import dev.yukineko.ekimemo_map.data.settings.AssistantSettings
 import dev.yukineko.ekimemo_map.data.settings.Settings
 import dev.yukineko.ekimemo_map.data.station.StationData
 import dev.yukineko.ekimemo_map.data.station.StationDataRepository
+import dev.yukineko.ekimemo_map.data.update.AppUpdater
 import dev.yukineko.ekimemo_map.data.user.UserDatabase
 import dev.yukineko.ekimemo_map.log.Logger
 import dev.yukineko.ekimemo_map.notification.NotificationPlayer
@@ -40,6 +42,7 @@ class SettingsViewModel(
     private val assistantStore: DataStore<AssistantSettings>,
     private val player: NotificationPlayer,
     private val stationDataRepository: StationDataRepository,
+    private val appUpdater: AppUpdater,
     private val userDatabase: UserDatabase,
     private val contentResolver: ContentResolver,
 ) : ViewModel() {
@@ -78,6 +81,14 @@ class SettingsViewModel(
     }
 
     fun previewVibration(pattern: VibrationPattern) = player.vibrate(pattern)
+
+    suspend fun checkAppUpdate(): Result<ReleaseAsset?> =
+        runCatching { appUpdater.checkUpdate() }
+            .onFailure { logger.error("Failed to check app update", it) }
+
+    suspend fun checkStationDataUpdate(): Result<ReleaseAsset?> =
+        runCatching { stationDataRepository.checkUpdate() }
+            .onFailure { logger.error("Failed to check station data update", it) }
 
     suspend fun backup(uri: Uri): Boolean =
         runCatching {
@@ -145,7 +156,7 @@ class SettingsViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as EkimemoMapApplication
-                SettingsViewModel(app.settings, app.assistantSettings, app.notificationPlayer, app.stationDataRepository, app.userDatabase, app.contentResolver)
+                SettingsViewModel(app.settings, app.assistantSettings, app.notificationPlayer, app.stationDataRepository, app.appUpdater, app.userDatabase, app.contentResolver)
             }
         }
     }

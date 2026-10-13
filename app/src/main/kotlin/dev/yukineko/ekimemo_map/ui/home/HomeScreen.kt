@@ -3,6 +3,10 @@ package dev.yukineko.ekimemo_map.ui.home
 import android.location.Location
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,11 +24,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.GpsFixed
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.Radar
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.TimerOff
 import androidx.compose.material.icons.rounded.Update
@@ -55,6 +62,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -71,6 +79,9 @@ import dev.yukineko.ekimemo_map.location.LocationService
 import dev.yukineko.ekimemo_map.location.NearbyStation
 import dev.yukineko.ekimemo_map.location.SearchResult
 import dev.yukineko.ekimemo_map.location.cooldownSeconds
+import dev.yukineko.ekimemo_map.ui.update.AppUpdateDialog
+import dev.yukineko.ekimemo_map.ui.update.StationDataUpdateDialog
+import dev.yukineko.ekimemo_map.ui.update.StationDataUpdateViewModel
 import dev.yukineko.ekimemo_map.ui.IconSwitch
 import dev.yukineko.ekimemo_map.ui.PermissionIssue
 import dev.yukineko.ekimemo_map.ui.PermissionIssueDialog
@@ -91,7 +102,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)) {
+fun HomeScreen(
+    onNavigate: (Any) -> Unit,
+    viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
+    stationDataUpdateViewModel: StationDataUpdateViewModel = viewModel(factory = StationDataUpdateViewModel.Factory),
+) {
     val context = LocalContext.current
     val isRunning by LocationService.isRunning.collectAsState()
     val location by LocationService.location.collectAsState()
@@ -101,6 +116,8 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
     val hasStationData = stationDataState == StationDataState.READY
     val accessLogs by viewModel.accessLogs.collectAsState()
     val stationDataUpdate by viewModel.stationDataUpdate.collectAsState()
+    val appUpdate by viewModel.appUpdate.collectAsState()
+    val stationDataAvailable by viewModel.stationDataAvailable.collectAsState()
     val now by rememberNow()
     val listState = rememberLazyListState()
 
@@ -110,6 +127,15 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
         if (it.none { issue -> issue.blocksSearch }) LocationService.start(context)
     }
     issues.firstOrNull()?.let { PermissionIssueDialog(it) { issues = issues.drop(1) } }
+
+    var showAppUpdate by remember { mutableStateOf(false) }
+    appUpdate?.takeIf { showAppUpdate }?.let { AppUpdateDialog(it) { showAppUpdate = false } }
+    StationDataUpdateDialog(stationDataUpdateViewModel)
+    var dismissedAppUpdate by rememberSaveable { mutableStateOf<String?>(null) }
+    var dismissedStationDataUpdate by rememberSaveable { mutableStateOf<String?>(null) }
+    val showAppBanner = appUpdate != null && appUpdate?.version != dismissedAppUpdate
+    val showStationDataBanner = !showAppBanner && hasStationData &&
+        stationDataAvailable != null && stationDataAvailable?.version != dismissedStationDataUpdate
 
     fun cooldownOf(stationId: Int) = settings?.let { cooldownSeconds(accessLogs[stationId]?.lastAccess, it, now) } ?: 0
 
@@ -138,7 +164,22 @@ fun HomeScreen(onNavigate: (Any) -> Unit, viewModel: HomeViewModel = viewModel(f
                 isRunning = isRunning,
                 switchEnabled = hasStationData,
                 onSwitchChange = { if (it) requestPermissions() else LocationService.stop(context) },
-            )
+            ) {
+                UpdateBanner(
+                    visible = showAppBanner,
+                    icon = Icons.Rounded.SystemUpdate,
+                    text = stringResource(R.string.app_update_banner, appUpdate?.version.orEmpty()),
+                    onClick = { showAppUpdate = true },
+                    onDismiss = { dismissedAppUpdate = appUpdate?.version },
+                )
+                UpdateBanner(
+                    visible = showStationDataBanner,
+                    icon = Icons.Rounded.Download,
+                    text = stringResource(R.string.station_data_update_banner, stationDataAvailable?.version.orEmpty()),
+                    onClick = { stationDataAvailable?.let(stationDataUpdateViewModel::confirm) },
+                    onDismiss = { dismissedStationDataUpdate = stationDataAvailable?.version },
+                )
+            }
         },
         floatingActionButton = {
             HorizontalFloatingToolbar(expanded = true, colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors()) {
@@ -222,6 +263,7 @@ private fun HomeTopBar(
     isRunning: Boolean,
     switchEnabled: Boolean,
     onSwitchChange: (Boolean) -> Unit,
+    banner: @Composable () -> Unit,
 ) {
     Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
         Column {
@@ -247,6 +289,27 @@ private fun HomeTopBar(
                     StatusItem(Icons.Rounded.GpsFixed, R.string.home_accuracy, accuracy ?: unknown)
                     Spacer(Modifier.weight(1f))
                     StatusItem(Icons.Rounded.Update, R.string.home_last_update, relativeTime(searchResult?.updatedAt, now))
+                }
+            }
+            banner()
+        }
+    }
+}
+
+@Composable
+private fun UpdateBanner(visible: Boolean, icon: ImageVector, text: String, onClick: () -> Unit, onDismiss: () -> Unit) {
+    AnimatedVisibility(visible, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+        Surface(
+            onClick = onClick,
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+        ) {
+            Row(Modifier.padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
+                Text(text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f).padding(start = 12.dp))
+                IconButton(onClick = onDismiss, shapes = IconButtonDefaults.shapes()) {
+                    Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.close))
                 }
             }
         }

@@ -102,6 +102,20 @@ class StationDataRepositoryTest {
     }
 
     @Test
+    fun availableFollowsCheckAndUpdate() = runBlocking {
+        installVersion("v1", treeRoot = 1)
+        assertNull(repository.available.value)
+
+        enqueueRelease("v2")
+        val asset = repository.checkUpdate()!!
+        assertEquals(asset, repository.available.value)
+
+        enqueueAsset(stationData("v2", treeRoot = 2))
+        repository.update(asset)
+        assertNull(repository.available.value)
+    }
+
+    @Test
     fun invalidDownloadKeepsCurrentData() = runBlocking {
         installVersion("v1", treeRoot = 1)
         enqueueRelease("v2")

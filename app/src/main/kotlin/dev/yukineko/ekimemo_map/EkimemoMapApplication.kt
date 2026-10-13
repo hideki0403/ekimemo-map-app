@@ -14,6 +14,7 @@ import dev.yukineko.ekimemo_map.data.settings.AssistantSettings
 import dev.yukineko.ekimemo_map.data.settings.JsonSerializer
 import dev.yukineko.ekimemo_map.data.settings.Settings
 import dev.yukineko.ekimemo_map.data.station.StationDataRepository
+import dev.yukineko.ekimemo_map.data.update.AppUpdater
 import dev.yukineko.ekimemo_map.data.user.UserDatabase
 import dev.yukineko.ekimemo_map.log.Logger
 import dev.yukineko.ekimemo_map.notification.NotificationPlayer
@@ -46,6 +47,7 @@ class EkimemoMapApplication : Application() {
     val stationDataRepository by lazy {
         StationDataRepository(File(filesDir, "station_database.msgpack"), gitHubReleases)
     }
+    val appUpdater by lazy { AppUpdater(gitHubReleases, "v${BuildConfig.VERSION_NAME}") }
     val settings get() = settingsStore
     val assistantSettings get() = assistantSettingsStore
     val assistantFlowRunner by lazy { AssistantFlowRunner(assistantSettings) }
@@ -79,6 +81,16 @@ class EkimemoMapApplication : Application() {
             runCatching { measureTimeMillis { stationDataRepository.load() } }
                 .onSuccess { if (stationDataRepository.data.value != null) logger.info("Loaded station data in ${it}ms") }
                 .onFailure { logger.error("Failed to load station data", it) }
+            runCatching { stationDataRepository.checkUpdate() }
+                .onSuccess { logger.info("Station data update: ${it?.version ?: "up to date"}") }
+                .onFailure { logger.error("Failed to check station data update", it) }
+        }
+        if (!BuildConfig.DEBUG) {
+            scope.launch {
+                runCatching { appUpdater.checkUpdate() }
+                    .onSuccess { logger.info("App update: ${it?.version ?: "up to date"}") }
+                    .onFailure { logger.error("Failed to check app update", it) }
+            }
         }
     }
 }

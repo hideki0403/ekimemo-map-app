@@ -20,6 +20,8 @@ class StationDataRepository(
     val data: StateFlow<StationData?> = _data.asStateFlow()
     private val _loaded = MutableStateFlow(false)
     val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
+    private val _available = MutableStateFlow<ReleaseAsset?>(null)
+    val available: StateFlow<ReleaseAsset?> = _available.asStateFlow()
 
     suspend fun load() {
         mutex.withLock {
@@ -33,7 +35,7 @@ class StationDataRepository(
 
     suspend fun checkUpdate(): ReleaseAsset? {
         val latest = releases.latestAsset(REPOSITORY, ASSET_NAME)
-        return latest.takeIf { _data.value?.version != it.version }
+        return latest.takeIf { _data.value?.version != it.version }.also { _available.value = it }
     }
 
     suspend fun update(asset: ReleaseAsset, onProgress: (Long) -> Unit = {}) {
@@ -45,6 +47,7 @@ class StationDataRepository(
                 file.delete()
                 check(temp.renameTo(file)) { "Failed to replace ${file.name}" }
                 _data.value = data
+                _available.value = null
             } finally {
                 temp.delete()
             }

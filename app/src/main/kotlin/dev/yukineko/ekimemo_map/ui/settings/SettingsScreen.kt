@@ -30,6 +30,7 @@ import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.FontDownload
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.Place
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Search
@@ -39,9 +40,11 @@ import androidx.compose.material.icons.rounded.Vibration
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ListItemShapes
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.SnackbarHost
@@ -71,8 +74,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.yukineko.ekimemo_map.BuildConfig
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.data.backup.CsvImportResult
+import dev.yukineko.ekimemo_map.data.github.ReleaseAsset
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import dev.yukineko.ekimemo_map.notification.VibrationPattern
+import dev.yukineko.ekimemo_map.ui.update.AppUpdateDialog
+import dev.yukineko.ekimemo_map.ui.update.StationDataUpdateDialog
+import dev.yukineko.ekimemo_map.ui.update.StationDataUpdateViewModel
 import dev.yukineko.ekimemo_map.ui.IconSwitch
 import dev.yukineko.ekimemo_map.ui.InputDialog
 import dev.yukineko.ekimemo_map.ui.PlaceholderScreen
@@ -103,6 +110,7 @@ fun SettingsScreen(
     onNavigate: (Any) -> Unit,
     onBack: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
+    stationDataUpdateViewModel: StationDataUpdateViewModel = viewModel(factory = StationDataUpdateViewModel.Factory),
 ) {
     val settings by viewModel.settings.collectAsState()
     val ttsAvailable by viewModel.ttsAvailable.collectAsState()
@@ -146,6 +154,29 @@ fun SettingsScreen(
                 is CsvImportOutcome.Imported -> csvImportResult = outcome.result
             }
         }
+    }
+    var checkingAppUpdate by remember { mutableStateOf(false) }
+    var appUpdate by remember { mutableStateOf<ReleaseAsset?>(null) }
+    val appUpToDate = stringResource(R.string.app_update_latest)
+    val appUpdateFailed = stringResource(R.string.app_update_check_failed)
+    fun checkAppUpdate() = scope.launch {
+        checkingAppUpdate = true
+        val result = viewModel.checkAppUpdate()
+        checkingAppUpdate = false
+        result
+            .onSuccess { if (it == null) snackbar.showSnackbar(appUpToDate) else appUpdate = it }
+            .onFailure { snackbar.showSnackbar(appUpdateFailed) }
+    }
+    var checkingStationData by remember { mutableStateOf(false) }
+    val stationDataUpToDate = stringResource(R.string.station_data_latest)
+    val stationDataCheckFailed = stringResource(R.string.station_data_update_check_failed)
+    fun checkStationDataUpdate() = scope.launch {
+        checkingStationData = true
+        val result = viewModel.checkStationDataUpdate()
+        checkingStationData = false
+        result
+            .onSuccess { if (it == null) snackbar.showSnackbar(stationDataUpToDate) else stationDataUpdateViewModel.confirm(it) }
+            .onFailure { snackbar.showSnackbar(stationDataCheckFailed) }
     }
 
     PlaceholderScreen(R.string.title_settings, onBack, snackbarHost = { SnackbarHost(snackbar) }) {
@@ -277,8 +308,24 @@ fun SettingsScreen(
         SettingsSection(
             stringResource(R.string.settings_section_app),
             listOfNotNull<SettingsItem>(
-                { InfoItem(it, stringResource(R.string.settings_app_version), "v${BuildConfig.VERSION_NAME}") },
-                { InfoItem(it, stringResource(R.string.settings_station_data_version), stationData?.version ?: stringResource(R.string.unknown)) },
+                {
+                    ClickItem(
+                        it,
+                        stringResource(R.string.settings_app_version),
+                        "v${BuildConfig.VERSION_NAME}",
+                        enabled = !BuildConfig.DEBUG && !checkingAppUpdate,
+                        trailing = { UpdateCheckIcon(checkingAppUpdate) },
+                    ) { checkAppUpdate() }
+                },
+                {
+                    ClickItem(
+                        it,
+                        stringResource(R.string.settings_station_data_version),
+                        stationData?.version ?: stringResource(R.string.unknown),
+                        enabled = !checkingStationData,
+                        trailing = { UpdateCheckIcon(checkingStationData) },
+                    ) { checkStationDataUpdate() }
+                },
                 { ClickItem(it, stringResource(R.string.settings_license), null) { onNavigate(LicenseRoute) } },
                 if (s.isDebugMode || appTitleTaps >= DEBUG_MODE_TAPS) {
                     {
@@ -504,6 +551,8 @@ fun SettingsScreen(
             null -> {}
         }
         csvImportResult?.let { CsvImportResultDialog(it) { csvImportResult = null } }
+        appUpdate?.let { AppUpdateDialog(it) { appUpdate = null } }
+        StationDataUpdateDialog(stationDataUpdateViewModel)
     }
 }
 
@@ -666,6 +715,16 @@ private val SeedColors = listOf(
     0xFFF44336, 0xFFE91E63, 0xFF9C27B0, 0xFF673AB7, 0xFF3F51B5, 0xFF2196F3, 0xFF03A9F4, 0xFF00BCD4, 0xFF009688,
     0xFF4CAF50, 0xFF8BC34A, 0xFFCDDC39, 0xFFFFEB3B, 0xFFFFC107, 0xFFFF9800, 0xFFFF5722, 0xFF795548,
 ).map { Color(it) }
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun UpdateCheckIcon(checking: Boolean) {
+    if (checking) {
+        LoadingIndicator(Modifier.size(24.dp))
+    } else {
+        Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.update_check))
+    }
+}
 
 @Composable
 private fun InfoItem(shapes: ListItemShapes, title: String, summary: String) {
