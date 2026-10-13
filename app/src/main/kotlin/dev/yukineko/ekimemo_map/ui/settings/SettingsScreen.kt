@@ -271,6 +271,11 @@ fun SettingsScreen(
                     ) { dialog = SettingsDialog.SEED_COLOR }
                 },
                 { ClickItem(it, stringResource(R.string.settings_font), fontName(s.font)) { dialog = SettingsDialog.FONT } },
+                {
+                    SwitchItem(it, stringResource(R.string.settings_number_in_attr_icon), stringResource(R.string.settings_number_in_attr_icon_summary), s.showNumberInAttrIcon) { v ->
+                        update { it.copy(showNumberInAttrIcon = v) }
+                    }
+                },
             ),
         )
         SettingsSection(

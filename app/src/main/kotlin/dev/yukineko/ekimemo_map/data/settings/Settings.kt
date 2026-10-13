@@ -29,6 +29,7 @@ data class Settings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val font: AppFont = AppFont.NOTO_SANS_JP,
     val useDynamicColor: Boolean = true,
+    val showNumberInAttrIcon: Boolean = false,
     val themeSeedColor: Int = DefaultSeedColor.toArgb(),
     val enableMovementLog: Boolean = false,
     val minimumMovementDistance: Int = 100,

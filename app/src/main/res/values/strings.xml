@@ -243,6 +243,8 @@
     <string name="settings_seed_color_summary">アプリのテーマカラーを設定できます。</string>
     <string name="settings_seed_color_disabled">Material Youが有効の場合は設定できません。</string>
     <string name="settings_font">フォント</string>
+    <string name="settings_number_in_attr_icon">属性アイコンと番号を統合</string>
+    <string name="settings_number_in_attr_icon_summary">ホーム画面の駅リストに表示される、属性表示内のアイコンを番号に置き換えます。</string>
     <string name="font_noto_sans_jp">Noto Sans JP</string>
     <string name="font_m_plus_1p">M PLUS 1p</string>
     <string name="font_m_plus_rounded_1c">M PLUS Rounded 1c</string>

@@ -57,6 +57,7 @@ fun StationCard(
     distance: Int? = null,
     cooldown: Int = 0,
     onLongClick: (() -> Unit)? = null,
+    numberInIcon: Boolean = false,
 ) {
     SegmentedListItem(
         onClick = onClick,
@@ -65,12 +66,16 @@ fun StationCard(
         colors = listItemColors(),
         modifier = modifier,
         leadingContent = {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text("$count", modifier = Modifier.alpha(0f).clearAndSetSemantics {})
-                    Text("${index + 1}")
+            if (numberInIcon) {
+                StationAttrIcon(station.attr, size = 36.dp, number = index + 1)
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text("$count", modifier = Modifier.alpha(0f).clearAndSetSemantics {})
+                        Text("${index + 1}")
+                    }
+                    StationAttrIcon(station.attr, size = 36.dp)
                 }
-                StationAttrIcon(station.attr, size = 36.dp)
             }
         },
         supportingContent = { Text(line?.name.orEmpty(), maxLines = 1, overflow = TextOverflow.Ellipsis) },

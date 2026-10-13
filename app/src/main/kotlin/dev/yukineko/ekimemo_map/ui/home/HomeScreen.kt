@@ -259,6 +259,7 @@ fun HomeScreen(
                         cooldown = cooldownOf(item.station.id),
                         onClick = { onNavigate(StationDetailRoute(item.station.id)) },
                         onLongClick = { menuTarget = IndexedValue(index, item) },
+                        numberInIcon = settings?.showNumberInAttrIcon == true,
                         modifier = Modifier.animateItem(),
                     )
                 }
