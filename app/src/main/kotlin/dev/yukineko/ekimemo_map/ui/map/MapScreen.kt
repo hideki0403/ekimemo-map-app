@@ -305,8 +305,12 @@ private fun TappedPointSheet(
             verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
         ) {
             item {
-                Row(Modifier.fillMaxWidth().padding(bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StationAttrIcon(station.attr, Modifier.padding(top = 4.dp))
+                Row(
+                    Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    StationAttrIcon(station.attr)
                     Column(Modifier.weight(1f)) {
                         Text(station.name, style = MaterialTheme.typography.titleLarge)
                         Row {

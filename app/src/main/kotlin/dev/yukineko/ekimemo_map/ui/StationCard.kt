@@ -1,7 +1,9 @@
 package dev.yukineko.ekimemo_map.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.Icon
@@ -13,8 +15,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.materialkolor.ktx.harmonize
@@ -61,9 +65,12 @@ fun StationCard(
         colors = listItemColors(),
         modifier = modifier,
         leadingContent = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("${index + 1}")
-                StationAttrIcon(station.attr)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text("$count", modifier = Modifier.alpha(0f).clearAndSetSemantics {})
+                    Text("${index + 1}")
+                }
+                StationAttrIcon(station.attr, size = 36.dp)
             }
         },
         supportingContent = { Text(line?.name.orEmpty(), maxLines = 1, overflow = TextOverflow.Ellipsis) },
