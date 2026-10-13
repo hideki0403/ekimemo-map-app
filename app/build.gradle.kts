@@ -26,7 +26,7 @@ android {
         minSdk = 24
         targetSdk = 35
         versionCode = git("rev-list", "HEAD", "--count").toInt()
-        versionName = "1.0"
+        versionName = project.version.toString()
         buildConfigField("String", "COMMIT_HASH", "\"${git("rev-parse", "--short", "HEAD")}\"")
     }
 
