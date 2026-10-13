@@ -140,6 +140,7 @@ private fun HistoryCard(item: HistoryItem, index: Int, count: Int, onClick: () -
                 Text(formatDateTime(log.timestamp), style = MaterialTheme.typography.bodySmall)
             }
         },
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             item.station?.name ?: stringResource(R.string.unknown),
