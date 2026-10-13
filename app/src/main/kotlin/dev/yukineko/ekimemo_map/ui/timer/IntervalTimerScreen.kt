@@ -59,7 +59,6 @@ import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -91,6 +90,7 @@ import dev.yukineko.ekimemo_map.data.user.IntervalTimer
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import dev.yukineko.ekimemo_map.notification.VibrationPattern
 import dev.yukineko.ekimemo_map.ui.BackButton
+import dev.yukineko.ekimemo_map.ui.IconSwitch
 import dev.yukineko.ekimemo_map.ui.InputDialog
 import dev.yukineko.ekimemo_map.ui.SelectDialog
 import dev.yukineko.ekimemo_map.ui.appBarColors
@@ -399,11 +399,11 @@ private fun TimerSettingsSheet(
             }
             SettingItem(
                 2, 6, Icons.Rounded.Notifications, stringResource(R.string.interval_timer_notification),
-                trailing = { Switch(timer.enableNotification, onCheckedChange = null) },
+                trailing = { IconSwitch(timer.enableNotification, onCheckedChange = null) },
             ) { onUpdate(timer.copy(enableNotification = !timer.enableNotification)) }
             SettingItem(
                 3, 6, Icons.Rounded.RecordVoiceOver, stringResource(R.string.interval_timer_tts),
-                trailing = { Switch(timer.enableTts, onCheckedChange = null) },
+                trailing = { IconSwitch(timer.enableTts, onCheckedChange = null) },
             ) { onUpdate(timer.copy(enableTts = !timer.enableTts)) }
             SettingItem(4, 6, Icons.Rounded.MusicNote, stringResource(R.string.interval_timer_sound), timer.notificationSound?.let { soundName(it) } ?: off) {
                 onEdit(TimerDialog.SOUND)

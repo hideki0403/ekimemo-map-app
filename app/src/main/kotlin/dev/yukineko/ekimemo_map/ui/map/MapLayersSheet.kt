@@ -14,7 +14,6 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SegmentedListItem
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,6 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.yukineko.ekimemo_map.R
+import dev.yukineko.ekimemo_map.ui.IconSwitch
 import dev.yukineko.ekimemo_map.ui.highlightedListItemColors
 
 enum class MapMode(@StringRes val label: Int, val icon: ImageVector) {
@@ -79,7 +79,7 @@ fun MapLayersSheet(
                         onClick = { onChange(!checked) },
                         shapes = ListItemDefaults.segmentedShapes(index, toggles.size),
                         colors = itemColors,
-                        trailingContent = { Switch(checked = checked, onCheckedChange = onChange) },
+                        trailingContent = { IconSwitch(checked = checked, onCheckedChange = onChange) },
                     ) {
                         Text(stringResource(label))
                     }

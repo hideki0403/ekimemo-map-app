@@ -19,9 +19,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Cancel
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.GpsFixed
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.Radar
@@ -48,8 +46,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -75,6 +71,7 @@ import dev.yukineko.ekimemo_map.location.LocationService
 import dev.yukineko.ekimemo_map.location.NearbyStation
 import dev.yukineko.ekimemo_map.location.SearchResult
 import dev.yukineko.ekimemo_map.location.cooldownSeconds
+import dev.yukineko.ekimemo_map.ui.IconSwitch
 import dev.yukineko.ekimemo_map.ui.PermissionIssue
 import dev.yukineko.ekimemo_map.ui.PermissionIssueDialog
 import dev.yukineko.ekimemo_map.ui.StationCard
@@ -232,18 +229,11 @@ private fun HomeTopBar(
                 title = { Text(stringResource(R.string.title_home)) },
                 actions = {
                     Text(stringResource(if (isRunning) R.string.search_on else R.string.search_off))
-                    Switch(
+                    IconSwitch(
                         checked = isRunning,
                         enabled = switchEnabled,
                         onCheckedChange = onSwitchChange,
                         modifier = Modifier.padding(start = 8.dp, end = 12.dp),
-                        thumbContent = {
-                            Icon(
-                                if (isRunning) Icons.Rounded.Check else Icons.Rounded.Close,
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        },
                     )
                 },
                 colors = appBarColors(),

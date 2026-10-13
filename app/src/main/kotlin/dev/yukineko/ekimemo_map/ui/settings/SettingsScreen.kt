@@ -35,7 +35,6 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedListItem
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -58,6 +57,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import dev.yukineko.ekimemo_map.notification.VibrationPattern
+import dev.yukineko.ekimemo_map.ui.IconSwitch
 import dev.yukineko.ekimemo_map.ui.InputDialog
 import dev.yukineko.ekimemo_map.ui.PlaceholderScreen
 import dev.yukineko.ekimemo_map.ui.SectionTitle
@@ -467,7 +467,7 @@ private fun SwitchItem(
         shapes = shapes,
         enabled = enabled,
         colors = listItemColors(),
-        trailingContent = { Switch(checked, onCheckedChange = null, enabled = enabled) },
+        trailingContent = { IconSwitch(checked, onCheckedChange = null, enabled = enabled) },
         supportingContent = { Text(summary) },
         verticalAlignment = Alignment.CenterVertically,
     ) {
