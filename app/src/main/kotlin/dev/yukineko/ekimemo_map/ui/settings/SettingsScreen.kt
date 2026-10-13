@@ -26,6 +26,7 @@ import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.FontDownload
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.Place
+import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Update
@@ -84,7 +85,7 @@ import java.time.format.DateTimeFormatter
 
 private enum class SettingsDialog {
     MAX_RESULTS, UPDATE_FREQUENCY, MAX_ACCURACY, COOLDOWN, SOUND, VOLUME, VIBRATION, MIN_DISTANCE,
-    THEME_MODE, SEED_COLOR, FONT, MAP_RENDERING_LIMIT, DELETE_STATION_DATA, DELETE_DATABASE,
+    THEME_MODE, SEED_COLOR, FONT, MAP_RENDERING_LIMIT, RESTORE, DELETE_STATION_DATA, DELETE_DATABASE,
 }
 
 private typealias SettingsItem = @Composable (ListItemShapes) -> Unit
@@ -115,6 +116,13 @@ fun SettingsScreen(
     val backupLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(BACKUP_MIME_TYPE)) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
         scope.launch { snackbar.showSnackbar(if (viewModel.backup(uri)) backupSucceeded else backupFailed) }
+    }
+    var restoreClear by rememberSaveable { mutableStateOf(false) }
+    val restoreSucceeded = stringResource(R.string.settings_restore_succeeded)
+    val restoreFailed = stringResource(R.string.settings_restore_failed)
+    val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch { snackbar.showSnackbar(if (viewModel.restore(uri, restoreClear)) restoreSucceeded else restoreFailed) }
     }
 
     PlaceholderScreen(R.string.title_settings, onBack, snackbarHost = { SnackbarHost(snackbar) }) {
@@ -229,6 +237,11 @@ fun SettingsScreen(
                 {
                     ClickItem(it, stringResource(R.string.settings_backup), stringResource(R.string.settings_backup_summary)) {
                         backupLauncher.launch(backupFileName())
+                    }
+                },
+                {
+                    ClickItem(it, stringResource(R.string.settings_restore), stringResource(R.string.settings_restore_summary)) {
+                        dialog = SettingsDialog.RESTORE
                     }
                 },
             ),
@@ -398,6 +411,11 @@ fun SettingsScreen(
                 dismiss()
                 update { it.copy(themeSeedColor = color.toArgb()) }
             }
+            SettingsDialog.RESTORE -> RestoreDialog(dismiss) { clear ->
+                dismiss()
+                restoreClear = clear
+                restoreLauncher.launch(arrayOf("*/*"))
+            }
             SettingsDialog.DELETE_STATION_DATA -> ConfirmDialog(stringResource(R.string.settings_delete_station_data_message), dismiss) {
                 dismiss()
                 viewModel.deleteStationData()
@@ -420,6 +438,22 @@ private fun ConfirmDialog(message: String, onDismiss: () -> Unit, onConfirm: () 
         text = { Text(message) },
         confirmButton = { TextButton(onClick = onConfirm, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.ok)) } },
         dismissButton = { TextButton(onClick = onDismiss, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.cancel)) } },
+    )
+}
+
+@Composable
+private fun RestoreDialog(onDismiss: () -> Unit, onSelect: (clear: Boolean) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Rounded.Restore, contentDescription = null, modifier = Modifier.size(30.dp)) },
+        title = { Text(stringResource(R.string.settings_restore_title)) },
+        text = { Text(stringResource(R.string.settings_restore_message)) },
+        confirmButton = {
+            TextButton(onClick = { onSelect(false) }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.settings_restore_keep)) }
+        },
+        dismissButton = {
+            TextButton(onClick = { onSelect(true) }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.settings_restore_clear)) }
+        },
     )
 }
 

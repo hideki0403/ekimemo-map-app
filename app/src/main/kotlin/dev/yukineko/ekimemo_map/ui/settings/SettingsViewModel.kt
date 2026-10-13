@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
+import dev.yukineko.ekimemo_map.data.backup.readBackup
 import dev.yukineko.ekimemo_map.data.backup.writeBackup
 import dev.yukineko.ekimemo_map.data.settings.Settings
 import dev.yukineko.ekimemo_map.data.station.StationData
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.ZoneId
 
 class SettingsViewModel(
     private val store: DataStore<Settings>,
@@ -65,6 +67,18 @@ class SettingsViewModel(
         }
             .onSuccess { logger.info("Backup success: $uri") }
             .onFailure { logger.error("Failed to backup", it) }
+            .isSuccess
+
+    suspend fun restore(uri: Uri, clear: Boolean): Boolean =
+        runCatching {
+            val logs = withContext(Dispatchers.IO) {
+                contentResolver.openInputStream(uri)!!.use { readBackup(it, ZoneId.systemDefault()) }
+            }
+            val dao = userDatabase.accessLogDao()
+            if (clear) dao.replaceAll(logs) else dao.upsertAll(logs)
+        }
+            .onSuccess { logger.info("Restore success: $uri") }
+            .onFailure { logger.error("Failed to restore", it) }
             .isSuccess
 
     fun deleteStationData() {

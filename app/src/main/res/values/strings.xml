@@ -239,6 +239,14 @@
     <string name="settings_backup_summary">駅にアクセスした記録をバックアップします。</string>
     <string name="settings_backup_succeeded">バックアップに成功しました</string>
     <string name="settings_backup_failed">バックアップに失敗しました</string>
+    <string name="settings_restore">復元</string>
+    <string name="settings_restore_summary">バックアップした記録を復元します。</string>
+    <string name="settings_restore_title">データの復元</string>
+    <string name="settings_restore_message">既に記録されているデータを削除して復元しますか？\n「上書きして復元」を選択すると、現在のデータを残したまま復元します。</string>
+    <string name="settings_restore_keep">上書きして復元</string>
+    <string name="settings_restore_clear">削除して復元</string>
+    <string name="settings_restore_succeeded">データの復元に成功しました</string>
+    <string name="settings_restore_failed">データの復元に失敗しました</string>
     <string name="settings_section_app">アプリ</string>
     <string name="settings_app_version">アプリバージョン</string>
     <string name="settings_station_data_version">駅データバージョン</string>

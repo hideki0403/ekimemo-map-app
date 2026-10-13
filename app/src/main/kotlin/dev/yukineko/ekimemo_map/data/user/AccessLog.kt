@@ -49,6 +49,9 @@ interface AccessLogDao {
     @Insert
     suspend fun insertAll(logs: List<AccessLog>)
 
+    @Upsert
+    suspend fun upsertAll(logs: List<AccessLog>)
+
     @Query("DELETE FROM access_log")
     suspend fun deleteAll()
 
