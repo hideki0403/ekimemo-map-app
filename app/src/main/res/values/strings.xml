@@ -247,6 +247,16 @@
     <string name="settings_restore_clear">削除して復元</string>
     <string name="settings_restore_succeeded">データの復元に成功しました</string>
     <string name="settings_restore_failed">データの復元に失敗しました</string>
+    <string name="settings_import">インポート</string>
+    <string name="settings_import_summary">他のアプリでエクスポートしたCSVファイルから記録をインポートします。</string>
+    <string name="settings_import_title">データのインポート</string>
+    <string name="settings_import_message">既に記録されているデータを削除してインポートしますか？\n「上書きしてインポート」を選択すると、現在のデータを残したままインポートします。</string>
+    <string name="settings_import_keep">上書きしてインポート</string>
+    <string name="settings_import_clear">削除してインポート</string>
+    <string name="settings_import_unsupported">非対応のファイルです。CSVファイルを選択してください。</string>
+    <string name="settings_import_failed">CSVファイルの読み込みに失敗しました</string>
+    <string name="settings_import_result">データをインポートしました。\nインポートに成功した駅数: %1$d\nインポートに失敗した駅数: %2$d</string>
+    <string name="settings_import_failed_stations">以下の駅のインポートに失敗しました:\n%1$s</string>
     <string name="settings_section_app">アプリ</string>
     <string name="settings_app_version">アプリバージョン</string>
     <string name="settings_station_data_version">駅データバージョン</string>

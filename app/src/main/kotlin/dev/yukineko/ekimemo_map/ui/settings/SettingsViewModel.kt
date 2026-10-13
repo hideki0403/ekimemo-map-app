@@ -2,6 +2,7 @@ package dev.yukineko.ekimemo_map.ui.settings
 
 import android.content.ContentResolver
 import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -9,6 +10,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
+import dev.yukineko.ekimemo_map.data.backup.CsvImportResult
+import dev.yukineko.ekimemo_map.data.backup.parseAccessLogCsv
 import dev.yukineko.ekimemo_map.data.backup.readBackup
 import dev.yukineko.ekimemo_map.data.backup.writeBackup
 import dev.yukineko.ekimemo_map.data.settings.Settings
@@ -81,6 +84,29 @@ class SettingsViewModel(
             .onFailure { logger.error("Failed to restore", it) }
             .isSuccess
 
+    suspend fun importCsv(uri: Uri, clear: Boolean): CsvImportOutcome {
+        val name = withContext(Dispatchers.IO) {
+            contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
+                if (it.moveToFirst()) it.getString(0) else null
+            }
+        }
+        if (name?.endsWith(".csv", ignoreCase = true) != true) return CsvImportOutcome.UnsupportedFile
+
+        return runCatching {
+            val stations = checkNotNull(stationDataRepository.data.value) { "Station data is not loaded" }.stations.values
+            val text = withContext(Dispatchers.IO) {
+                contentResolver.openInputStream(uri)!!.use { it.readBytes().decodeToString() }
+            }
+            val result = parseAccessLogCsv(text, stations, System.currentTimeMillis())
+            val dao = userDatabase.accessLogDao()
+            if (clear) dao.replaceAll(result.logs) else dao.upsertAllKeepingCount(result.logs)
+            result
+        }
+            .onSuccess { logger.info("Import success: ${it.logs.size} imported, ${it.failedStations.size} failed") }
+            .onFailure { logger.error("Failed to import CSV", it) }
+            .fold({ CsvImportOutcome.Imported(it) }, { CsvImportOutcome.Failed })
+    }
+
     fun deleteStationData() {
         viewModelScope.launch {
             runCatching { stationDataRepository.delete() }
@@ -105,4 +131,10 @@ class SettingsViewModel(
             }
         }
     }
+}
+
+sealed interface CsvImportOutcome {
+    data object UnsupportedFile : CsvImportOutcome
+    data object Failed : CsvImportOutcome
+    data class Imported(val result: CsvImportResult) : CsvImportOutcome
 }

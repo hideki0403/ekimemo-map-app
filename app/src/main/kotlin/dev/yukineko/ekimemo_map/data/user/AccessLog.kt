@@ -75,4 +75,9 @@ interface AccessLogDao {
         deleteAll()
         insertAll(logs)
     }
+
+    @Transaction
+    suspend fun upsertAllKeepingCount(logs: List<AccessLog>) {
+        logs.forEach { log -> upsert(get(log.stationId)?.let { log.copy(accessCount = it.accessCount) } ?: log) }
+    }
 }

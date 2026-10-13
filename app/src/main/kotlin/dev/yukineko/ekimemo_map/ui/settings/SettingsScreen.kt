@@ -16,12 +16,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.DirectionsWalk
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Alarm
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.FontDownload
 import androidx.compose.material.icons.rounded.Map
@@ -30,6 +33,7 @@ import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Update
+import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material.icons.rounded.Vibration
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.AlertDialog
@@ -65,6 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.yukineko.ekimemo_map.BuildConfig
 import dev.yukineko.ekimemo_map.R
+import dev.yukineko.ekimemo_map.data.backup.CsvImportResult
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import dev.yukineko.ekimemo_map.notification.VibrationPattern
 import dev.yukineko.ekimemo_map.ui.IconSwitch
@@ -85,7 +90,7 @@ import java.time.format.DateTimeFormatter
 
 private enum class SettingsDialog {
     MAX_RESULTS, UPDATE_FREQUENCY, MAX_ACCURACY, COOLDOWN, SOUND, VOLUME, VIBRATION, MIN_DISTANCE,
-    THEME_MODE, SEED_COLOR, FONT, MAP_RENDERING_LIMIT, RESTORE, DELETE_STATION_DATA, DELETE_DATABASE,
+    THEME_MODE, SEED_COLOR, FONT, MAP_RENDERING_LIMIT, RESTORE, IMPORT_CSV, DELETE_STATION_DATA, DELETE_DATABASE,
 }
 
 private typealias SettingsItem = @Composable (ListItemShapes) -> Unit
@@ -117,12 +122,25 @@ fun SettingsScreen(
         if (uri == null) return@rememberLauncherForActivityResult
         scope.launch { snackbar.showSnackbar(if (viewModel.backup(uri)) backupSucceeded else backupFailed) }
     }
-    var restoreClear by rememberSaveable { mutableStateOf(false) }
+    var importClear by rememberSaveable { mutableStateOf(false) }
     val restoreSucceeded = stringResource(R.string.settings_restore_succeeded)
     val restoreFailed = stringResource(R.string.settings_restore_failed)
     val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
-        scope.launch { snackbar.showSnackbar(if (viewModel.restore(uri, restoreClear)) restoreSucceeded else restoreFailed) }
+        scope.launch { snackbar.showSnackbar(if (viewModel.restore(uri, importClear)) restoreSucceeded else restoreFailed) }
+    }
+    var csvImportResult by remember { mutableStateOf<CsvImportResult?>(null) }
+    val importUnsupported = stringResource(R.string.settings_import_unsupported)
+    val importFailed = stringResource(R.string.settings_import_failed)
+    val csvLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            when (val outcome = viewModel.importCsv(uri, importClear)) {
+                CsvImportOutcome.UnsupportedFile -> snackbar.showSnackbar(importUnsupported)
+                CsvImportOutcome.Failed -> snackbar.showSnackbar(importFailed)
+                is CsvImportOutcome.Imported -> csvImportResult = outcome.result
+            }
+        }
     }
 
     PlaceholderScreen(R.string.title_settings, onBack, snackbarHost = { SnackbarHost(snackbar) }) {
@@ -242,6 +260,11 @@ fun SettingsScreen(
                 {
                     ClickItem(it, stringResource(R.string.settings_restore), stringResource(R.string.settings_restore_summary)) {
                         dialog = SettingsDialog.RESTORE
+                    }
+                },
+                {
+                    ClickItem(it, stringResource(R.string.settings_import), stringResource(R.string.settings_import_summary)) {
+                        dialog = SettingsDialog.IMPORT_CSV
                     }
                 },
             ),
@@ -411,10 +434,29 @@ fun SettingsScreen(
                 dismiss()
                 update { it.copy(themeSeedColor = color.toArgb()) }
             }
-            SettingsDialog.RESTORE -> RestoreDialog(dismiss) { clear ->
+            SettingsDialog.RESTORE -> ImportModeDialog(
+                icon = Icons.Rounded.Restore,
+                title = stringResource(R.string.settings_restore_title),
+                message = stringResource(R.string.settings_restore_message),
+                keepLabel = stringResource(R.string.settings_restore_keep),
+                clearLabel = stringResource(R.string.settings_restore_clear),
+                onDismiss = dismiss,
+            ) { clear ->
                 dismiss()
-                restoreClear = clear
+                importClear = clear
                 restoreLauncher.launch(arrayOf("*/*"))
+            }
+            SettingsDialog.IMPORT_CSV -> ImportModeDialog(
+                icon = Icons.Rounded.UploadFile,
+                title = stringResource(R.string.settings_import_title),
+                message = stringResource(R.string.settings_import_message),
+                keepLabel = stringResource(R.string.settings_import_keep),
+                clearLabel = stringResource(R.string.settings_import_clear),
+                onDismiss = dismiss,
+            ) { clear ->
+                dismiss()
+                importClear = clear
+                csvLauncher.launch(arrayOf("*/*"))
             }
             SettingsDialog.DELETE_STATION_DATA -> ConfirmDialog(stringResource(R.string.settings_delete_station_data_message), dismiss) {
                 dismiss()
@@ -426,6 +468,7 @@ fun SettingsScreen(
             }
             null -> {}
         }
+        csvImportResult?.let { CsvImportResultDialog(it) { csvImportResult = null } }
     }
 }
 
@@ -442,18 +485,40 @@ private fun ConfirmDialog(message: String, onDismiss: () -> Unit, onConfirm: () 
 }
 
 @Composable
-private fun RestoreDialog(onDismiss: () -> Unit, onSelect: (clear: Boolean) -> Unit) {
+private fun ImportModeDialog(
+    icon: ImageVector,
+    title: String,
+    message: String,
+    keepLabel: String,
+    clearLabel: String,
+    onDismiss: () -> Unit,
+    onSelect: (clear: Boolean) -> Unit,
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        icon = { Icon(Icons.Rounded.Restore, contentDescription = null, modifier = Modifier.size(30.dp)) },
-        title = { Text(stringResource(R.string.settings_restore_title)) },
-        text = { Text(stringResource(R.string.settings_restore_message)) },
-        confirmButton = {
-            TextButton(onClick = { onSelect(false) }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.settings_restore_keep)) }
+        icon = { Icon(icon, contentDescription = null, modifier = Modifier.size(30.dp)) },
+        title = { Text(title) },
+        text = { Text(message) },
+        confirmButton = { TextButton(onClick = { onSelect(false) }, shapes = ButtonDefaults.shapes()) { Text(keepLabel) } },
+        dismissButton = { TextButton(onClick = { onSelect(true) }, shapes = ButtonDefaults.shapes()) { Text(clearLabel) } },
+    )
+}
+
+@Composable
+private fun CsvImportResultDialog(result: CsvImportResult, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Rounded.CheckCircle, contentDescription = null, modifier = Modifier.size(30.dp)) },
+        title = { Text(stringResource(R.string.settings_import)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(stringResource(R.string.settings_import_result, result.logs.size, result.failedStations.size))
+                if (result.failedStations.isNotEmpty()) {
+                    Text(stringResource(R.string.settings_import_failed_stations, result.failedStations.joinToString(", ")))
+                }
+            }
         },
-        dismissButton = {
-            TextButton(onClick = { onSelect(true) }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.settings_restore_clear)) }
-        },
+        confirmButton = { TextButton(onClick = onDismiss, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.ok)) } },
     )
 }
 
