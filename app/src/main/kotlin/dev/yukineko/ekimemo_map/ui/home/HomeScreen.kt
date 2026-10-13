@@ -35,7 +35,9 @@ import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.TimerOff
 import androidx.compose.material.icons.rounded.Update
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material.icons.rounded.Widgets
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,6 +57,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
@@ -130,6 +133,17 @@ fun HomeScreen(
     issues.firstOrNull()?.let { PermissionIssueDialog(it) { issues = issues.drop(1) } }
 
     UpdateDialog(updateViewModel)
+    viewModel.legacyDatabaseDump.collectAsState().value?.let { path ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissLegacyDatabaseDump,
+            icon = { Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(30.dp)) },
+            title = { Text(stringResource(R.string.legacy_database_discarded)) },
+            text = { Text(stringResource(R.string.legacy_database_discarded_message, path)) },
+            confirmButton = {
+                TextButton(onClick = viewModel::dismissLegacyDatabaseDump, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.ok)) }
+            },
+        )
+    }
     var dismissedAppUpdate by rememberSaveable { mutableStateOf<String?>(null) }
     var dismissedStationDataUpdate by rememberSaveable { mutableStateOf<String?>(null) }
     val showAppBanner = appUpdate != null && appUpdate?.version != dismissedAppUpdate

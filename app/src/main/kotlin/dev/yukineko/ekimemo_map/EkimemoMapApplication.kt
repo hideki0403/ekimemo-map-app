@@ -20,9 +20,8 @@ import dev.yukineko.ekimemo_map.data.user.UserDatabase
 import dev.yukineko.ekimemo_map.log.Logger
 import dev.yukineko.ekimemo_map.notification.NotificationPlayer
 import dev.yukineko.ekimemo_map.timer.IntervalTimerRunner
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import org.maplibre.android.MapLibre
@@ -61,8 +60,7 @@ class EkimemoMapApplication : Application() {
         IntervalTimerRunner(this, userDatabase.intervalTimerDao(), settings, notificationPlayer)
     }
 
-    lateinit var legacyImport: Deferred<LegacyImportResult>
-        private set
+    val legacyDatabaseDump = MutableStateFlow<String?>(null)
 
     override fun onCreate() {
         super.onCreate()
@@ -72,12 +70,13 @@ class EkimemoMapApplication : Application() {
                 .onSuccess { if (it) logger.info("Imported legacy preferences") }
                 .onFailure { logger.error("Failed to import legacy preferences", it) }
         }
-        legacyImport = scope.async {
-            val importer = LegacyDatabaseImporter(getDatabasePath("database.db"), userDatabase, assistantSettings)
-            runCatching { importer.import() }
-                .onSuccess { logger.info("Legacy database import: $it") }
+        scope.launch {
+            runCatching { LegacyDatabaseImporter(this@EkimemoMapApplication, userDatabase, assistantSettings).import() }
+                .onSuccess {
+                    logger.info("Legacy database import: $it")
+                    if (it is LegacyImportResult.Discarded) legacyDatabaseDump.value = it.dumpPath
+                }
                 .onFailure { logger.error("Failed to import legacy database", it) }
-                .getOrThrow()
         }
         scope.launch {
             runCatching { measureTimeMillis { stationDataRepository.load() } }

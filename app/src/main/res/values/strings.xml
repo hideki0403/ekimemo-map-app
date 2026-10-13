@@ -101,6 +101,8 @@
     <string name="home_search_off">探索がOFFになっています</string>
     <string name="home_search_off_message">右上のスイッチで探索をはじめることができます。</string>
     <string name="home_waiting_location">位置情報を取得しています</string>
+    <string name="legacy_database_discarded">データを引き継げませんでした</string>
+    <string name="legacy_database_discarded_message">データの引き継ぎに非対応のバージョンからアップデートされたため、データを引き継げませんでした。\n以前のデータは %1$s に保存されています。</string>
     <string name="mark_accessed">アクセス済みにする</string>
     <string name="mark_unaccessed">未アクセスにする</string>
     <string name="start_timer">タイマーをセットする</string>

@@ -1,7 +1,12 @@
 package dev.yukineko.ekimemo_map.data.legacy
 
+import android.content.ContentValues
+import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import androidx.datastore.core.DataStore
 import androidx.room.withTransaction
 import dev.yukineko.ekimemo_map.data.settings.AssistantSettings
@@ -18,20 +23,28 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-enum class LegacyImportResult { NOT_FOUND, IMPORTED, DISCARDED }
+sealed interface LegacyImportResult {
+    data object NotFound : LegacyImportResult
+    data object Imported : LegacyImportResult
+    data class Discarded(val dumpPath: String) : LegacyImportResult
+}
 
 class LegacyDatabaseImporter(
-    private val file: File,
+    private val context: Context,
     private val database: UserDatabase,
     private val assistantSettings: DataStore<AssistantSettings>,
 ) {
-    suspend fun import(): LegacyImportResult = withContext(Dispatchers.IO) {
-        if (!file.exists()) return@withContext LegacyImportResult.NOT_FOUND
+    private val file = context.getDatabasePath(NAME)
 
-        val data = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
-            if (db.version < SUPPORTED_VERSION) null else read(db)
+    suspend fun import(): LegacyImportResult = withContext(Dispatchers.IO) {
+        if (!file.exists()) return@withContext LegacyImportResult.NotFound
+
+        val (version, data) = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE).use { db ->
+            db.version to if (db.version < SUPPORTED_VERSION) null else read(db)
         }
-        if (data != null) {
+        val result = if (data == null) {
+            LegacyImportResult.Discarded(dump(version))
+        } else {
             database.withTransaction {
                 database.accessLogDao().insertAll(data.accessLogs)
                 database.passingLogDao().insertAll(data.passingLogs)
@@ -40,10 +53,27 @@ class LegacyDatabaseImporter(
                 database.intervalTimerDao().insertAll(data.intervalTimers)
             }
             assistantSettings.updateData { data.assistantSettings }
+            LegacyImportResult.Imported
         }
         SQLiteDatabase.deleteDatabase(file)
+        result
+    }
 
-        if (data == null) LegacyImportResult.DISCARDED else LegacyImportResult.IMPORTED
+    private fun dump(version: Int): String {
+        val name = "ekimemo_map_database_v$version.db"
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            val dest = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), name)
+            file.copyTo(dest, overwrite = true)
+            return dest.path
+        }
+        val values = ContentValues().apply {
+            put(MediaStore.Downloads.DISPLAY_NAME, name)
+            put(MediaStore.Downloads.MIME_TYPE, "application/octet-stream")
+        }
+        val resolver = context.contentResolver
+        val uri = checkNotNull(resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values))
+        checkNotNull(resolver.openOutputStream(uri)).use { output -> file.inputStream().use { it.copyTo(output) } }
+        return "${Environment.DIRECTORY_DOWNLOADS}/$name"
     }
 
     private fun read(db: SQLiteDatabase): LegacyData {
@@ -124,6 +154,7 @@ class LegacyDatabaseImporter(
     )
 
     companion object {
+        private const val NAME = "database.db"
         private const val SUPPORTED_VERSION = 10
     }
 }

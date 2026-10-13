@@ -38,6 +38,7 @@ class HomeViewModel(
     private val stationDataRepository: StationDataRepository,
     private val settingsFlow: Flow<Settings>,
     appUpdater: AppUpdater,
+    private val legacyDatabaseDumpFlow: MutableStateFlow<String?>,
 ) : ViewModel() {
     private val logger = Logger("HomeViewModel")
 
@@ -61,6 +62,7 @@ class HomeViewModel(
 
     val appUpdate: StateFlow<ReleaseAsset?> = appUpdater.available
     val stationDataAvailable: StateFlow<ReleaseAsset?> = stationDataRepository.available
+    val legacyDatabaseDump: StateFlow<String?> = legacyDatabaseDumpFlow.asStateFlow()
 
     private val _stationDataUpdate = MutableStateFlow(StationDataUpdateState.IDLE)
     val stationDataUpdate: StateFlow<StationDataUpdateState> = _stationDataUpdate.asStateFlow()
@@ -83,6 +85,10 @@ class HomeViewModel(
             .onFailure { logger.error("Failed to update access log", it) }
     }
 
+    fun dismissLegacyDatabaseDump() {
+        legacyDatabaseDumpFlow.value = null
+    }
+
     fun updateStationData() {
         if (_stationDataUpdate.value == StationDataUpdateState.RUNNING) return
         _stationDataUpdate.value = StationDataUpdateState.RUNNING
@@ -100,7 +106,13 @@ class HomeViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as EkimemoMapApplication
-                HomeViewModel(app.userDatabase.accessLogDao(), app.stationDataRepository, app.settings.data, app.appUpdater)
+                HomeViewModel(
+                    app.userDatabase.accessLogDao(),
+                    app.stationDataRepository,
+                    app.settings.data,
+                    app.appUpdater,
+                    app.legacyDatabaseDump,
+                )
             }
         }
     }
