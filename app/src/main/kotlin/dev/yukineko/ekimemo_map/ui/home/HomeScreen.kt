@@ -79,9 +79,9 @@ import dev.yukineko.ekimemo_map.location.LocationService
 import dev.yukineko.ekimemo_map.location.NearbyStation
 import dev.yukineko.ekimemo_map.location.SearchResult
 import dev.yukineko.ekimemo_map.location.cooldownSeconds
-import dev.yukineko.ekimemo_map.ui.update.AppUpdateDialog
-import dev.yukineko.ekimemo_map.ui.update.StationDataUpdateDialog
-import dev.yukineko.ekimemo_map.ui.update.StationDataUpdateViewModel
+import dev.yukineko.ekimemo_map.ui.update.UpdateDialog
+import dev.yukineko.ekimemo_map.ui.update.UpdateTarget
+import dev.yukineko.ekimemo_map.ui.update.UpdateViewModel
 import dev.yukineko.ekimemo_map.ui.IconSwitch
 import dev.yukineko.ekimemo_map.ui.PermissionIssue
 import dev.yukineko.ekimemo_map.ui.PermissionIssueDialog
@@ -105,7 +105,7 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     onNavigate: (Any) -> Unit,
     viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
-    stationDataUpdateViewModel: StationDataUpdateViewModel = viewModel(factory = StationDataUpdateViewModel.Factory),
+    updateViewModel: UpdateViewModel = viewModel(factory = UpdateViewModel.Factory),
 ) {
     val context = LocalContext.current
     val isRunning by LocationService.isRunning.collectAsState()
@@ -128,9 +128,7 @@ fun HomeScreen(
     }
     issues.firstOrNull()?.let { PermissionIssueDialog(it) { issues = issues.drop(1) } }
 
-    var showAppUpdate by remember { mutableStateOf(false) }
-    appUpdate?.takeIf { showAppUpdate }?.let { AppUpdateDialog(it) { showAppUpdate = false } }
-    StationDataUpdateDialog(stationDataUpdateViewModel)
+    UpdateDialog(updateViewModel)
     var dismissedAppUpdate by rememberSaveable { mutableStateOf<String?>(null) }
     var dismissedStationDataUpdate by rememberSaveable { mutableStateOf<String?>(null) }
     val showAppBanner = appUpdate != null && appUpdate?.version != dismissedAppUpdate
@@ -169,14 +167,14 @@ fun HomeScreen(
                     visible = showAppBanner,
                     icon = Icons.Rounded.SystemUpdate,
                     text = stringResource(R.string.app_update_banner, appUpdate?.version.orEmpty()),
-                    onClick = { showAppUpdate = true },
+                    onClick = { appUpdate?.let { updateViewModel.confirm(UpdateTarget.APP, it) } },
                     onDismiss = { dismissedAppUpdate = appUpdate?.version },
                 )
                 UpdateBanner(
                     visible = showStationDataBanner,
                     icon = Icons.Rounded.Download,
                     text = stringResource(R.string.station_data_update_banner, stationDataAvailable?.version.orEmpty()),
-                    onClick = { stationDataAvailable?.let(stationDataUpdateViewModel::confirm) },
+                    onClick = { stationDataAvailable?.let { updateViewModel.confirm(UpdateTarget.STATION_DATA, it) } },
                     onDismiss = { dismissedStationDataUpdate = stationDataAvailable?.version },
                 )
             }

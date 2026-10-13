@@ -74,12 +74,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.yukineko.ekimemo_map.BuildConfig
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.data.backup.CsvImportResult
-import dev.yukineko.ekimemo_map.data.github.ReleaseAsset
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import dev.yukineko.ekimemo_map.notification.VibrationPattern
-import dev.yukineko.ekimemo_map.ui.update.AppUpdateDialog
-import dev.yukineko.ekimemo_map.ui.update.StationDataUpdateDialog
-import dev.yukineko.ekimemo_map.ui.update.StationDataUpdateViewModel
+import dev.yukineko.ekimemo_map.ui.update.UpdateDialog
+import dev.yukineko.ekimemo_map.ui.update.UpdateTarget
+import dev.yukineko.ekimemo_map.ui.update.UpdateViewModel
 import dev.yukineko.ekimemo_map.ui.IconSwitch
 import dev.yukineko.ekimemo_map.ui.InputDialog
 import dev.yukineko.ekimemo_map.ui.PlaceholderScreen
@@ -110,7 +109,7 @@ fun SettingsScreen(
     onNavigate: (Any) -> Unit,
     onBack: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
-    stationDataUpdateViewModel: StationDataUpdateViewModel = viewModel(factory = StationDataUpdateViewModel.Factory),
+    updateViewModel: UpdateViewModel = viewModel(factory = UpdateViewModel.Factory),
 ) {
     val settings by viewModel.settings.collectAsState()
     val ttsAvailable by viewModel.ttsAvailable.collectAsState()
@@ -156,7 +155,6 @@ fun SettingsScreen(
         }
     }
     var checkingAppUpdate by remember { mutableStateOf(false) }
-    var appUpdate by remember { mutableStateOf<ReleaseAsset?>(null) }
     val appUpToDate = stringResource(R.string.app_update_latest)
     val appUpdateFailed = stringResource(R.string.app_update_check_failed)
     fun checkAppUpdate() = scope.launch {
@@ -164,7 +162,7 @@ fun SettingsScreen(
         val result = viewModel.checkAppUpdate()
         checkingAppUpdate = false
         result
-            .onSuccess { if (it == null) snackbar.showSnackbar(appUpToDate) else appUpdate = it }
+            .onSuccess { if (it == null) snackbar.showSnackbar(appUpToDate) else updateViewModel.confirm(UpdateTarget.APP, it) }
             .onFailure { snackbar.showSnackbar(appUpdateFailed) }
     }
     var checkingStationData by remember { mutableStateOf(false) }
@@ -175,7 +173,7 @@ fun SettingsScreen(
         val result = viewModel.checkStationDataUpdate()
         checkingStationData = false
         result
-            .onSuccess { if (it == null) snackbar.showSnackbar(stationDataUpToDate) else stationDataUpdateViewModel.confirm(it) }
+            .onSuccess { if (it == null) snackbar.showSnackbar(stationDataUpToDate) else updateViewModel.confirm(UpdateTarget.STATION_DATA, it) }
             .onFailure { snackbar.showSnackbar(stationDataCheckFailed) }
     }
 
@@ -551,8 +549,7 @@ fun SettingsScreen(
             null -> {}
         }
         csvImportResult?.let { CsvImportResultDialog(it) { csvImportResult = null } }
-        appUpdate?.let { AppUpdateDialog(it) { appUpdate = null } }
-        StationDataUpdateDialog(stationDataUpdateViewModel)
+        UpdateDialog(updateViewModel)
     }
 }
 

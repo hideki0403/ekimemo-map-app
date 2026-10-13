@@ -14,6 +14,7 @@ import dev.yukineko.ekimemo_map.data.settings.AssistantSettings
 import dev.yukineko.ekimemo_map.data.settings.JsonSerializer
 import dev.yukineko.ekimemo_map.data.settings.Settings
 import dev.yukineko.ekimemo_map.data.station.StationDataRepository
+import dev.yukineko.ekimemo_map.data.update.AppInstaller
 import dev.yukineko.ekimemo_map.data.update.AppUpdater
 import dev.yukineko.ekimemo_map.data.user.UserDatabase
 import dev.yukineko.ekimemo_map.log.Logger
@@ -47,7 +48,8 @@ class EkimemoMapApplication : Application() {
     val stationDataRepository by lazy {
         StationDataRepository(File(filesDir, "station_database.msgpack"), gitHubReleases)
     }
-    val appUpdater by lazy { AppUpdater(gitHubReleases, "v${BuildConfig.VERSION_NAME}") }
+    val appUpdater by lazy { AppUpdater(gitHubReleases, "v${BuildConfig.VERSION_NAME}", File(cacheDir, "app_update")) }
+    val appInstaller by lazy { AppInstaller(this) }
     val settings get() = settingsStore
     val assistantSettings get() = assistantSettingsStore
     val assistantFlowRunner by lazy { AssistantFlowRunner(assistantSettings) }
