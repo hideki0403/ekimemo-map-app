@@ -234,6 +234,11 @@
     <string name="settings_section_map">マップ</string>
     <string name="settings_map_rendering_limit">マップの描画駅数上限</string>
     <string name="settings_map_rendering_limit_caption">描画する最大駅数を指定できます。上限を上げすぎるとパフォーマンスが低下する可能性があります。</string>
+    <string name="settings_section_data">データ管理</string>
+    <string name="settings_backup">バックアップ</string>
+    <string name="settings_backup_summary">駅にアクセスした記録をバックアップします。</string>
+    <string name="settings_backup_succeeded">バックアップに成功しました</string>
+    <string name="settings_backup_failed">バックアップに失敗しました</string>
     <string name="settings_section_app">アプリ</string>
     <string name="settings_app_version">アプリバージョン</string>
     <string name="settings_station_data_version">駅データバージョン</string>

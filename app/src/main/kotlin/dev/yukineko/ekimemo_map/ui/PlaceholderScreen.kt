@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 fun PlaceholderScreen(
     @StringRes title: Int,
     onBack: (() -> Unit)? = null,
+    snackbarHost: @Composable () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit = {},
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -36,6 +37,7 @@ fun PlaceholderScreen(
                 scrollBehavior = scrollBehavior,
             )
         },
+        snackbarHost = snackbarHost,
     ) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()),

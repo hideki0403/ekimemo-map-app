@@ -1,6 +1,8 @@
 package dev.yukineko.ekimemo_map.ui.settings
 
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,6 +38,8 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedListItem
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -43,6 +47,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,6 +78,9 @@ import dev.yukineko.ekimemo_map.ui.soundName
 import dev.yukineko.ekimemo_map.ui.theme.AppFont
 import dev.yukineko.ekimemo_map.ui.theme.ThemeMode
 import dev.yukineko.ekimemo_map.ui.vibrationName
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 private enum class SettingsDialog {
     MAX_RESULTS, UPDATE_FREQUENCY, MAX_ACCURACY, COOLDOWN, SOUND, VOLUME, VIBRATION, MIN_DISTANCE,
@@ -99,7 +108,16 @@ fun SettingsScreen(
     val percent = stringResource(R.string.settings_unit_percent)
     val none = stringResource(R.string.settings_none)
 
-    PlaceholderScreen(R.string.title_settings, onBack) {
+    val scope = rememberCoroutineScope()
+    val snackbar = remember { SnackbarHostState() }
+    val backupSucceeded = stringResource(R.string.settings_backup_succeeded)
+    val backupFailed = stringResource(R.string.settings_backup_failed)
+    val backupLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(BACKUP_MIME_TYPE)) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch { snackbar.showSnackbar(if (viewModel.backup(uri)) backupSucceeded else backupFailed) }
+    }
+
+    PlaceholderScreen(R.string.title_settings, onBack, snackbarHost = { SnackbarHost(snackbar) }) {
         val s = settings ?: return@PlaceholderScreen
 
         SettingsSection(
@@ -201,6 +219,16 @@ fun SettingsScreen(
                 {
                     ClickItem(it, stringResource(R.string.settings_map_rendering_limit), "${s.mapRenderingLimit}$station") {
                         dialog = SettingsDialog.MAP_RENDERING_LIMIT
+                    }
+                },
+            ),
+        )
+        SettingsSection(
+            stringResource(R.string.settings_section_data),
+            listOf(
+                {
+                    ClickItem(it, stringResource(R.string.settings_backup), stringResource(R.string.settings_backup_summary)) {
+                        backupLauncher.launch(backupFileName())
                     }
                 },
             ),
@@ -493,6 +521,10 @@ private fun ColorPickerDialog(title: String, selected: Color, onDismiss: () -> U
 private const val COLOR_COLUMNS = 5
 
 private const val DEBUG_MODE_TAPS = 10
+
+private const val BACKUP_MIME_TYPE = "application/octet-stream"
+
+private fun backupFileName() = "ekimemo_map_backup_${LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)}.bin"
 
 private val DynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 

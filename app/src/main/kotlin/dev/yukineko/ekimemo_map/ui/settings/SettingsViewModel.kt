@@ -1,5 +1,7 @@
 package dev.yukineko.ekimemo_map.ui.settings
 
+import android.content.ContentResolver
+import android.net.Uri
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -7,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
+import dev.yukineko.ekimemo_map.data.backup.writeBackup
 import dev.yukineko.ekimemo_map.data.settings.Settings
 import dev.yukineko.ekimemo_map.data.station.StationData
 import dev.yukineko.ekimemo_map.data.station.StationDataRepository
@@ -29,6 +32,7 @@ class SettingsViewModel(
     private val player: NotificationPlayer,
     private val stationDataRepository: StationDataRepository,
     private val userDatabase: UserDatabase,
+    private val contentResolver: ContentResolver,
 ) : ViewModel() {
     private val logger = Logger("SettingsViewModel")
 
@@ -52,6 +56,17 @@ class SettingsViewModel(
 
     fun previewVibration(pattern: VibrationPattern) = player.vibrate(pattern)
 
+    suspend fun backup(uri: Uri): Boolean =
+        runCatching {
+            val logs = userDatabase.accessLogDao().getAll()
+            withContext(Dispatchers.IO) {
+                contentResolver.openOutputStream(uri, "wt")!!.use { writeBackup(it, logs, System.currentTimeMillis()) }
+            }
+        }
+            .onSuccess { logger.info("Backup success: $uri") }
+            .onFailure { logger.error("Failed to backup", it) }
+            .isSuccess
+
     fun deleteStationData() {
         viewModelScope.launch {
             runCatching { stationDataRepository.delete() }
@@ -72,7 +87,7 @@ class SettingsViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as EkimemoMapApplication
-                SettingsViewModel(app.settings, app.notificationPlayer, app.stationDataRepository, app.userDatabase)
+                SettingsViewModel(app.settings, app.notificationPlayer, app.stationDataRepository, app.userDatabase, app.contentResolver)
             }
         }
     }
