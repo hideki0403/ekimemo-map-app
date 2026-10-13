@@ -214,6 +214,26 @@
     <string name="settings_move_log_summary">探索をONにしているときに移動ログを記録します。\n記録された移動ログはツール→移動ログから確認できます。</string>
     <string name="settings_min_distance">最小移動距離</string>
     <string name="settings_min_distance_caption">前回記録された位置から設定された距離以上移動した場合にのみ、移動ログを記録するようにします。\n0mで無効になります。</string>
+    <string name="settings_section_theme">テーマ</string>
+    <string name="settings_theme_mode">テーマ</string>
+    <string name="theme_mode_system">システム設定に従う</string>
+    <string name="theme_mode_light">ライト</string>
+    <string name="theme_mode_dark">ダーク</string>
+    <string name="settings_dynamic_color">Material You</string>
+    <string name="settings_dynamic_color_summary">アプリの配色に端末のテーマカラーを使用します。</string>
+    <string name="settings_seed_color">テーマカラー</string>
+    <string name="settings_seed_color_summary">アプリのテーマカラーを設定できます。</string>
+    <string name="settings_seed_color_disabled">Material Youが有効の場合は設定できません。</string>
+    <string name="settings_font">フォント</string>
+    <string name="font_noto_sans_jp">Noto Sans JP</string>
+    <string name="font_m_plus_1p">M PLUS 1p</string>
+    <string name="font_m_plus_rounded_1c">M PLUS Rounded 1c</string>
+    <string name="font_biz_ud_gothic">BIZ UDゴシック</string>
+    <string name="font_kosugi_maru">小杉丸ゴシック</string>
+    <string name="font_zen_maru_gothic">Zen丸ゴシック</string>
+    <string name="settings_section_map">マップ</string>
+    <string name="settings_map_rendering_limit">マップの描画駅数上限</string>
+    <string name="settings_map_rendering_limit_caption">描画する最大駅数を指定できます。上限を上げすぎるとパフォーマンスが低下する可能性があります。</string>
     <string-array name="prefectures">
         <item>北海道</item>
         <item>青森県</item>

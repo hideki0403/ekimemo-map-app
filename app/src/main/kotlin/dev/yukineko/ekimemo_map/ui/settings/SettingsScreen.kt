@@ -1,24 +1,43 @@
 package dev.yukineko.ekimemo_map.ui.settings
 
+import android.os.Build
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.DirectionsWalk
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Alarm
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.ColorLens
+import androidx.compose.material.icons.rounded.FontDownload
+import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.Place
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.Vibration
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ListItemShapes
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,6 +46,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -41,9 +64,14 @@ import dev.yukineko.ekimemo_map.ui.SectionTitle
 import dev.yukineko.ekimemo_map.ui.SelectDialog
 import dev.yukineko.ekimemo_map.ui.listItemColors
 import dev.yukineko.ekimemo_map.ui.soundName
+import dev.yukineko.ekimemo_map.ui.theme.AppFont
+import dev.yukineko.ekimemo_map.ui.theme.ThemeMode
 import dev.yukineko.ekimemo_map.ui.vibrationName
 
-private enum class SettingsDialog { MAX_RESULTS, UPDATE_FREQUENCY, MAX_ACCURACY, COOLDOWN, SOUND, VOLUME, VIBRATION, MIN_DISTANCE }
+private enum class SettingsDialog {
+    MAX_RESULTS, UPDATE_FREQUENCY, MAX_ACCURACY, COOLDOWN, SOUND, VOLUME, VIBRATION, MIN_DISTANCE,
+    THEME_MODE, SEED_COLOR, FONT, MAP_RENDERING_LIMIT,
+}
 
 private typealias SettingsItem = @Composable (ListItemShapes) -> Unit
 
@@ -132,6 +160,40 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = viewModel(
                 },
             ),
         )
+        val dynamicColor = DynamicColorSupported && s.useDynamicColor
+        SettingsSection(
+            stringResource(R.string.settings_section_theme),
+            listOfNotNull<SettingsItem>(
+                { ClickItem(it, stringResource(R.string.settings_theme_mode), themeModeName(s.themeMode)) { dialog = SettingsDialog.THEME_MODE } },
+                if (DynamicColorSupported) {
+                    {
+                        SwitchItem(it, stringResource(R.string.settings_dynamic_color), stringResource(R.string.settings_dynamic_color_summary), dynamicColor) { v ->
+                            update { it.copy(useDynamicColor = v) }
+                        }
+                    }
+                } else {
+                    null
+                },
+                {
+                    val summary = stringResource(if (dynamicColor) R.string.settings_seed_color_disabled else R.string.settings_seed_color_summary)
+                    ClickItem(
+                        it, stringResource(R.string.settings_seed_color), summary, enabled = !dynamicColor,
+                        trailing = if (dynamicColor) null else ({ ColorSwatch(Color(s.themeSeedColor)) }),
+                    ) { dialog = SettingsDialog.SEED_COLOR }
+                },
+                { ClickItem(it, stringResource(R.string.settings_font), fontName(s.font)) { dialog = SettingsDialog.FONT } },
+            ),
+        )
+        SettingsSection(
+            stringResource(R.string.settings_section_map),
+            listOf(
+                {
+                    ClickItem(it, stringResource(R.string.settings_map_rendering_limit), "${s.mapRenderingLimit}$station") {
+                        dialog = SettingsDialog.MAP_RENDERING_LIMIT
+                    }
+                },
+            ),
+        )
         Spacer(Modifier.height(24.dp))
 
         val dismiss = { dialog = null }
@@ -217,6 +279,49 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = viewModel(
                     v?.let { update { s -> s.copy(vibrationPattern = it) } }
                 },
             )
+            SettingsDialog.MAP_RENDERING_LIMIT -> NumberDialog(
+                title = stringResource(R.string.settings_map_rendering_limit),
+                icon = Icons.Rounded.Map,
+                caption = stringResource(R.string.settings_map_rendering_limit_caption),
+                initial = s.mapRenderingLimit,
+                suffix = station,
+                parse = { it.toIntOrNull()?.takeIf { v -> v >= 1 } },
+                onDismiss = dismiss,
+            ) { v -> update { it.copy(mapRenderingLimit = v) } }
+            SettingsDialog.THEME_MODE -> SelectDialog(
+                title = stringResource(R.string.settings_theme_mode),
+                icon = Icons.Rounded.ColorLens,
+                options = ThemeMode.entries,
+                selected = s.themeMode,
+                label = { themeModeName(it) },
+                onPreview = {},
+                onDismiss = dismiss,
+                onConfirm = { v ->
+                    dismiss()
+                    v?.let { update { s -> s.copy(themeMode = it) } }
+                },
+            )
+            SettingsDialog.FONT -> SelectDialog(
+                title = stringResource(R.string.settings_font),
+                icon = Icons.Rounded.FontDownload,
+                options = AppFont.entries,
+                selected = s.font,
+                label = { fontName(it) },
+                onPreview = {},
+                onDismiss = dismiss,
+                onConfirm = { v ->
+                    dismiss()
+                    v?.let { update { s -> s.copy(font = it) } }
+                },
+            )
+            SettingsDialog.SEED_COLOR -> ColorPickerDialog(
+                title = stringResource(R.string.settings_seed_color),
+                selected = Color(s.themeSeedColor),
+                onDismiss = dismiss,
+            ) { color ->
+                dismiss()
+                update { it.copy(themeSeedColor = color.toArgb()) }
+            }
             null -> {}
         }
     }
@@ -262,11 +367,85 @@ private fun SettingsSection(title: String, items: List<SettingsItem>) {
 }
 
 @Composable
-private fun ClickItem(shapes: ListItemShapes, title: String, summary: String, onClick: () -> Unit) {
+private fun themeModeName(mode: ThemeMode) = stringResource(
+    when (mode) {
+        ThemeMode.SYSTEM -> R.string.theme_mode_system
+        ThemeMode.LIGHT -> R.string.theme_mode_light
+        ThemeMode.DARK -> R.string.theme_mode_dark
+    },
+)
+
+@Composable
+private fun fontName(font: AppFont) = stringResource(
+    when (font) {
+        AppFont.NOTO_SANS_JP -> R.string.font_noto_sans_jp
+        AppFont.M_PLUS_1P -> R.string.font_m_plus_1p
+        AppFont.M_PLUS_ROUNDED_1C -> R.string.font_m_plus_rounded_1c
+        AppFont.BIZ_UD_GOTHIC -> R.string.font_biz_ud_gothic
+        AppFont.KOSUGI_MARU -> R.string.font_kosugi_maru
+        AppFont.ZEN_MARU_GOTHIC -> R.string.font_zen_maru_gothic
+    },
+)
+
+@Composable
+private fun ColorSwatch(color: Color, modifier: Modifier = Modifier.size(24.dp)) {
+    Box(modifier.background(color, CircleShape).border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape))
+}
+
+@Composable
+private fun ColorPickerDialog(title: String, selected: Color, onDismiss: () -> Unit, onSelect: (Color) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Rounded.ColorLens, contentDescription = null, modifier = Modifier.size(30.dp)) },
+        title = { Text(title) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SeedColors.chunked(COLOR_COLUMNS).forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        row.forEach { color ->
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.weight(1f).aspectRatio(1f).clip(CircleShape).clickable { onSelect(color) },
+                            ) {
+                                ColorSwatch(color, Modifier.fillMaxSize())
+                                if (color == selected) {
+                                    Icon(Icons.Rounded.Check, contentDescription = null, tint = if (color.luminance() > 0.5f) Color.Black else Color.White)
+                                }
+                            }
+                        }
+                        repeat(COLOR_COLUMNS - row.size) { Spacer(Modifier.weight(1f)) }
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.cancel)) } },
+    )
+}
+
+private const val COLOR_COLUMNS = 5
+
+private val DynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+private val SeedColors = listOf(
+    0xFFF44336, 0xFFE91E63, 0xFF9C27B0, 0xFF673AB7, 0xFF3F51B5, 0xFF2196F3, 0xFF03A9F4, 0xFF00BCD4, 0xFF009688,
+    0xFF4CAF50, 0xFF8BC34A, 0xFFCDDC39, 0xFFFFEB3B, 0xFFFFC107, 0xFFFF9800, 0xFFFF5722, 0xFF795548,
+).map { Color(it) }
+
+@Composable
+private fun ClickItem(
+    shapes: ListItemShapes,
+    title: String,
+    summary: String,
+    enabled: Boolean = true,
+    trailing: (@Composable () -> Unit)? = null,
+    onClick: () -> Unit,
+) {
     SegmentedListItem(
         onClick = onClick,
         shapes = shapes,
+        enabled = enabled,
         colors = listItemColors(),
+        trailingContent = trailing,
         supportingContent = { Text(summary) },
         verticalAlignment = Alignment.CenterVertically,
     ) {
