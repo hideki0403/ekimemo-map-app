@@ -49,7 +49,7 @@ import dev.yukineko.ekimemo_map.ui.ToolAction
 import dev.yukineko.ekimemo_map.ui.ToolsFabMenu
 import dev.yukineko.ekimemo_map.ui.navigation.MapRoute
 import dev.yukineko.ekimemo_map.ui.navigation.StationDetailRoute
-import dev.yukineko.ekimemo_map.ui.parseLineColor
+import dev.yukineko.ekimemo_map.ui.rememberLineColors
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -145,7 +145,7 @@ private fun LineHeader(line: Line) {
                 Modifier
                     .fillMaxWidth()
                     .height(12.dp)
-                    .background(parseLineColor(line.color) ?: colors.surfaceContainerHighest, CircleShape),
+                    .background(rememberLineColors(line.color)?.accent ?: colors.surfaceContainerHighest, CircleShape),
             )
             line.nameFormal?.let {
                 Spacer(Modifier.height(8.dp))

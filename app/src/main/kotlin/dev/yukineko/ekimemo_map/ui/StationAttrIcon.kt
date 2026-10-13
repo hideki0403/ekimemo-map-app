@@ -69,7 +69,7 @@ fun StationAttrIcon(attr: StationAttr, modifier: Modifier = Modifier, size: Dp =
 }
 
 @Composable
-private fun InkCenteredText(text: String, color: Color, style: TextStyle) {
+fun InkCenteredText(text: String, color: Color, style: TextStyle) {
     val typeface by LocalFontFamilyResolver.current.resolve(style.fontFamily, style.fontWeight ?: FontWeight.Normal)
     val textSize = with(LocalDensity.current) { style.fontSize.toPx() }
     val inkBounds = remember(text, typeface, textSize) {
