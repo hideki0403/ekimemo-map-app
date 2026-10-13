@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
 import dev.yukineko.ekimemo_map.data.settings.Settings
+import dev.yukineko.ekimemo_map.data.station.StationDataRepository
 import dev.yukineko.ekimemo_map.log.Logger
 import dev.yukineko.ekimemo_map.notification.NotificationPlayer
 import dev.yukineko.ekimemo_map.notification.NotificationSound
@@ -22,10 +23,14 @@ import kotlinx.coroutines.launch
 class SettingsViewModel(
     private val store: DataStore<Settings>,
     private val player: NotificationPlayer,
+    stationDataRepository: StationDataRepository,
 ) : ViewModel() {
     private val logger = Logger("SettingsViewModel")
 
     val settings: StateFlow<Settings?> = store.data.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val stationDataVersion: StateFlow<String?> = stationDataRepository.version
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val ttsAvailable: StateFlow<Boolean?> = flow { emit(player.isTtsAvailable()) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -47,7 +52,7 @@ class SettingsViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as EkimemoMapApplication
-                SettingsViewModel(app.settings, app.notificationPlayer)
+                SettingsViewModel(app.settings, app.notificationPlayer, app.stationDataRepository)
             }
         }
     }

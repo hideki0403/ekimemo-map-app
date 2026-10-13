@@ -40,6 +40,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -54,6 +55,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.yukineko.ekimemo_map.BuildConfig
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import dev.yukineko.ekimemo_map.notification.VibrationPattern
@@ -76,10 +78,16 @@ private enum class SettingsDialog {
 private typealias SettingsItem = @Composable (ListItemShapes) -> Unit
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)) {
+fun SettingsScreen(
+    onBack: () -> Unit,
+    onOpenLicense: () -> Unit,
+    viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
+) {
     val settings by viewModel.settings.collectAsState()
     val ttsAvailable by viewModel.ttsAvailable.collectAsState()
+    val stationDataVersion by viewModel.stationDataVersion.collectAsState()
     var dialog by rememberSaveable { mutableStateOf<SettingsDialog?>(null) }
+    var appTitleTaps by rememberSaveable { mutableIntStateOf(0) }
     val update = viewModel::update
 
     val station = stringResource(R.string.settings_unit_station)
@@ -193,6 +201,25 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = viewModel(
                     }
                 },
             ),
+        )
+        SettingsSection(
+            stringResource(R.string.settings_section_app),
+            listOfNotNull<SettingsItem>(
+                { InfoItem(it, stringResource(R.string.settings_app_version), "v${BuildConfig.VERSION_NAME}") },
+                { InfoItem(it, stringResource(R.string.settings_station_data_version), stationDataVersion ?: stringResource(R.string.unknown)) },
+                { ClickItem(it, stringResource(R.string.settings_license), null, onClick = onOpenLicense) },
+                if (s.isDebugMode || appTitleTaps >= DEBUG_MODE_TAPS) {
+                    {
+                        val summary = if (BuildConfig.DEBUG) stringResource(R.string.settings_debug_mode_locked) else null
+                        SwitchItem(it, stringResource(R.string.settings_debug_mode), summary, s.isDebugMode, enabled = !BuildConfig.DEBUG) { v ->
+                            update { it.copy(enableDebugMode = v) }
+                        }
+                    }
+                } else {
+                    null
+                },
+            ),
+            titleModifier = Modifier.clickable(interactionSource = null, indication = null) { appTitleTaps++ },
         )
         Spacer(Modifier.height(24.dp))
 
@@ -356,8 +383,8 @@ private fun <T : Number> NumberDialog(
 }
 
 @Composable
-private fun SettingsSection(title: String, items: List<SettingsItem>) {
-    SectionTitle(title)
+private fun SettingsSection(title: String, items: List<SettingsItem>, titleModifier: Modifier = Modifier) {
+    SectionTitle(title, titleModifier)
     Column(
         modifier = Modifier.padding(horizontal = 12.dp),
         verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
@@ -424,6 +451,8 @@ private fun ColorPickerDialog(title: String, selected: Color, onDismiss: () -> U
 
 private const val COLOR_COLUMNS = 5
 
+private const val DEBUG_MODE_TAPS = 10
+
 private val DynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
 private val SeedColors = listOf(
@@ -432,10 +461,22 @@ private val SeedColors = listOf(
 ).map { Color(it) }
 
 @Composable
+private fun InfoItem(shapes: ListItemShapes, title: String, summary: String) {
+    SegmentedListItem(
+        shapes = shapes,
+        colors = listItemColors(),
+        supportingContent = { Text(summary) },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(title)
+    }
+}
+
+@Composable
 private fun ClickItem(
     shapes: ListItemShapes,
     title: String,
-    summary: String,
+    summary: String?,
     enabled: Boolean = true,
     trailing: (@Composable () -> Unit)? = null,
     onClick: () -> Unit,
@@ -446,7 +487,7 @@ private fun ClickItem(
         enabled = enabled,
         colors = listItemColors(),
         trailingContent = trailing,
-        supportingContent = { Text(summary) },
+        supportingContent = summary?.let { { Text(it) } },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(title)
@@ -457,7 +498,7 @@ private fun ClickItem(
 private fun SwitchItem(
     shapes: ListItemShapes,
     title: String,
-    summary: String,
+    summary: String?,
     checked: Boolean,
     enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit,
@@ -468,7 +509,7 @@ private fun SwitchItem(
         enabled = enabled,
         colors = listItemColors(),
         trailingContent = { IconSwitch(checked, onCheckedChange = null, enabled = enabled) },
-        supportingContent = { Text(summary) },
+        supportingContent = summary?.let { { Text(it) } },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(title)

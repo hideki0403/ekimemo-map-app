@@ -49,7 +49,7 @@ class StationDetailViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
-    val debugMode: StateFlow<Boolean> = settings.map { it.enableDebugMode }
+    val debugMode: StateFlow<Boolean> = settings.map { it.isDebugMode }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     companion object {

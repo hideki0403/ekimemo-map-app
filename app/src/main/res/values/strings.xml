@@ -234,6 +234,12 @@
     <string name="settings_section_map">マップ</string>
     <string name="settings_map_rendering_limit">マップの描画駅数上限</string>
     <string name="settings_map_rendering_limit_caption">描画する最大駅数を指定できます。上限を上げすぎるとパフォーマンスが低下する可能性があります。</string>
+    <string name="settings_section_app">アプリ</string>
+    <string name="settings_app_version">アプリバージョン</string>
+    <string name="settings_station_data_version">駅データバージョン</string>
+    <string name="settings_license">オープンソースライセンス</string>
+    <string name="settings_debug_mode">デバッグモード</string>
+    <string name="settings_debug_mode_locked">デバッグビルドのため切り替えることができません。</string>
     <string-array name="prefectures">
         <item>北海道</item>
         <item>青森県</item>

@@ -1,6 +1,7 @@
 package dev.yukineko.ekimemo_map.data.settings
 
 import androidx.compose.ui.graphics.toArgb
+import dev.yukineko.ekimemo_map.BuildConfig
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import dev.yukineko.ekimemo_map.notification.VibrationPattern
 import dev.yukineko.ekimemo_map.ui.theme.AppFont
@@ -31,7 +32,9 @@ data class Settings(
     val enableMovementLog: Boolean = false,
     val minimumMovementDistance: Int = 100,
     val enableDebugMode: Boolean = false,
-)
+) {
+    val isDebugMode: Boolean get() = BuildConfig.DEBUG || enableDebugMode
+}
 
 @Serializable
 data class AssistantSettings(

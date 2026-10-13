@@ -51,7 +51,7 @@ fun AppNavHost() {
     ) {
         composable<HomeRoute> { HomeScreen(onNavigate = navigate) }
         composable<DevRoute> { DevScreen(onNavigate = navigate, onBack = back) }
-        composable<SettingsRoute> { SettingsScreen(onBack = back) }
+        composable<SettingsRoute> { SettingsScreen(onBack = back, onOpenLicense = { navigate(LicenseRoute) }) }
         composable<AssistantFlowRoute> { PlaceholderScreen(R.string.title_assistant_flow, back) }
         composable<AssistantChooseRectRoute> { PlaceholderScreen(R.string.title_assistant_choose_rect, back) }
         composable<LogRoute> { LogScreen(onBack = back) }
