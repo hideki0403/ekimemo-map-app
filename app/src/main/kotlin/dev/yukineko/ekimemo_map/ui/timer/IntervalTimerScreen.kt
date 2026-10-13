@@ -1,5 +1,6 @@
 package dev.yukineko.ekimemo_map.ui.timer
 
+import android.os.SystemClock
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -209,12 +210,11 @@ private fun TimerCard(
 
     val running = state?.running == true
     val progress = remember { Animatable(remaining.toFloat() / timer.durationSec) }
-    LaunchedEffect(remaining, timer.durationSec, running) {
-        val target = remaining.toFloat() / timer.durationSec
-        if (running && target < progress.value) {
-            progress.animateTo(target, tween(1000, easing = LinearEasing))
-        } else {
-            progress.snapTo(target)
+    LaunchedEffect(state, timer.durationSec) {
+        progress.snapTo(remaining.toFloat() / timer.durationSec)
+        if (state != null && state.running) {
+            val millis = (state.tickedAt + 1000 - SystemClock.elapsedRealtime()).coerceIn(0, 1000).toInt()
+            progress.animateTo((remaining - 1).toFloat() / timer.durationSec, tween(millis, easing = LinearEasing))
         }
     }
     val startLabel = stringResource(R.string.interval_timer_start)

@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class TimerState(val remaining: Int, val running: Boolean)
+data class TimerState(val remaining: Int, val running: Boolean, val tickedAt: Long = 0)
 
 class IntervalTimerRunner(
     private val context: Context,
@@ -59,14 +59,15 @@ class IntervalTimerRunner(
 
     fun start(timer: IntervalTimer) {
         if (jobs[timer.id]?.isActive == true) return
-        setState(timer.id) { (it ?: TimerState(timer.durationSec, false)).copy(running = true) }
+        val startedAt = SystemClock.elapsedRealtime()
+        setState(timer.id) { (it ?: TimerState(timer.durationSec, false)).copy(running = true, tickedAt = startedAt) }
         IntervalTimerService.start(context)
         jobs[timer.id] = scope.launch {
-            var next = SystemClock.elapsedRealtime()
+            var next = startedAt
             while (true) {
                 next += 1000
                 delay(next - SystemClock.elapsedRealtime())
-                tick(timers.value[timer.id] ?: break)
+                tick(timers.value[timer.id] ?: break, next)
             }
             stop(timer.id)
         }
@@ -86,13 +87,10 @@ class IntervalTimerRunner(
         setState(id) { it?.copy(remaining = durationSec) }
     }
 
-    private fun tick(timer: IntervalTimer) {
+    private fun tick(timer: IntervalTimer, tickedAt: Long) {
         val remaining = (states.value[timer.id]?.remaining ?: timer.durationSec) - 1
-        if (remaining > 0) {
-            setState(timer.id) { it?.copy(remaining = remaining) }
-            return
-        }
-        setState(timer.id) { it?.copy(remaining = timer.durationSec) }
+        setState(timer.id) { it?.copy(remaining = if (remaining > 0) remaining else timer.durationSec, tickedAt = tickedAt) }
+        if (remaining > 0) return
         scope.launch {
             runCatching { notify(timer) }.onFailure { logger.error("Failed to notify interval timer", it) }
         }
