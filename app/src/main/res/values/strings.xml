@@ -97,6 +97,7 @@
     <string name="home_no_station_data_message">下のボタンから駅データを更新することで、利用できるようになります。</string>
     <string name="home_loading_station_data">駅データを読み込んでいます</string>
     <string name="update_station_data">駅データを更新</string>
+    <string name="update_checking">確認しています…</string>
     <string name="station_data_update_failed">駅データの更新に失敗しました</string>
     <string name="home_search_off">探索がOFFになっています</string>
     <string name="home_search_off_message">右上のスイッチで探索をはじめることができます。</string>

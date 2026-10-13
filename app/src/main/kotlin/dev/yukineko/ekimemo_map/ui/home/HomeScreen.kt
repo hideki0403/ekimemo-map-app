@@ -119,11 +119,11 @@ fun HomeScreen(
     val stationDataState by viewModel.stationDataState.collectAsState()
     val hasStationData = stationDataState == StationDataState.READY
     val accessLogs by viewModel.accessLogs.collectAsState()
-    val stationDataUpdate by viewModel.stationDataUpdate.collectAsState()
     val appUpdate by viewModel.appUpdate.collectAsState()
     val stationDataAvailable by viewModel.stationDataAvailable.collectAsState()
     val now by rememberNow()
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
     var issues by remember { mutableStateOf(emptyList<PermissionIssue>()) }
     val requestPermissions = rememberSearchPermissionRequester {
@@ -144,6 +144,17 @@ fun HomeScreen(
             },
         )
     }
+    var checkingStationData by remember { mutableStateOf(false) }
+    var stationDataCheckFailed by remember { mutableStateOf(false) }
+    fun downloadStationData() = scope.launch {
+        checkingStationData = true
+        stationDataCheckFailed = false
+        viewModel.checkStationDataUpdate()
+            .onSuccess { asset -> asset?.let { updateViewModel.start(UpdateTarget.STATION_DATA, it) } }
+            .onFailure { stationDataCheckFailed = true }
+        checkingStationData = false
+    }
+
     var dismissedAppUpdate by rememberSaveable { mutableStateOf<String?>(null) }
     var dismissedStationDataUpdate by rememberSaveable { mutableStateOf<String?>(null) }
     val showAppBanner = appUpdate != null && appUpdate?.version != dismissedAppUpdate
@@ -226,14 +237,15 @@ fun HomeScreen(
         when {
             stationDataState == StationDataState.LOADING -> EmptyMessage(padding, R.string.home_loading_station_data) { LoadingIndicator() }
             stationDataState == StationDataState.MISSING -> EmptyMessage(padding, R.string.home_no_station_data, R.string.home_no_station_data_message) {
-                Button(onClick = viewModel::updateStationData, shapes = ButtonDefaults.shapes(), enabled = stationDataUpdate != StationDataUpdateState.RUNNING) {
-                    if (stationDataUpdate == StationDataUpdateState.RUNNING) {
+                Button(onClick = { downloadStationData() }, shapes = ButtonDefaults.shapes(), enabled = !checkingStationData) {
+                    if (checkingStationData) {
                         LoadingIndicator(Modifier.size(24.dp), color = LocalContentColor.current)
+                        Text(stringResource(R.string.update_checking), modifier = Modifier.padding(start = ButtonDefaults.IconSpacing))
                     } else {
                         Text(stringResource(R.string.update_station_data))
                     }
                 }
-                if (stationDataUpdate == StationDataUpdateState.FAILED) {
+                if (stationDataCheckFailed) {
                     Text(stringResource(R.string.station_data_update_failed), color = MaterialTheme.colorScheme.error)
                 }
             }

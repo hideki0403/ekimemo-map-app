@@ -30,8 +30,6 @@ import kotlinx.coroutines.launch
 
 enum class StationDataState { LOADING, MISSING, READY }
 
-enum class StationDataUpdateState { IDLE, RUNNING, FAILED }
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModel(
     private val accessLogDao: AccessLogDao,
@@ -64,9 +62,6 @@ class HomeViewModel(
     val stationDataAvailable: StateFlow<ReleaseAsset?> = stationDataRepository.available
     val legacyDatabaseDump: StateFlow<String?> = legacyDatabaseDumpFlow.asStateFlow()
 
-    private val _stationDataUpdate = MutableStateFlow(StationDataUpdateState.IDLE)
-    val stationDataUpdate: StateFlow<StationDataUpdateState> = _stationDataUpdate.asStateFlow()
-
     fun setAccessed(stationId: Int, accessed: Boolean) = viewModelScope.launch {
         runCatching { accessLogDao.setAccessed(stationId, accessed, settingsFlow.first()) }
             .onFailure { logger.error("Failed to update access log", it) }
@@ -89,18 +84,9 @@ class HomeViewModel(
         legacyDatabaseDumpFlow.value = null
     }
 
-    fun updateStationData() {
-        if (_stationDataUpdate.value == StationDataUpdateState.RUNNING) return
-        _stationDataUpdate.value = StationDataUpdateState.RUNNING
-        viewModelScope.launch {
-            runCatching { stationDataRepository.checkUpdate()?.let { stationDataRepository.update(it) } }
-                .onSuccess { _stationDataUpdate.value = StationDataUpdateState.IDLE }
-                .onFailure {
-                    logger.error("Failed to update station data", it)
-                    _stationDataUpdate.value = StationDataUpdateState.FAILED
-                }
-        }
-    }
+    suspend fun checkStationDataUpdate(): Result<ReleaseAsset?> =
+        runCatching { stationDataRepository.checkUpdate() }
+            .onFailure { logger.error("Failed to check station data update", it) }
 
     companion object {
         val Factory = viewModelFactory {
