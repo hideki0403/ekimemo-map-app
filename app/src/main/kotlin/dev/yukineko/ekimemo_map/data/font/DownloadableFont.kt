@@ -5,6 +5,7 @@ import android.graphics.Typeface
 import androidx.compose.ui.text.font.AndroidFont
 import androidx.compose.ui.text.font.FontLoadingStrategy
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import dev.yukineko.ekimemo_map.log.Logger
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +19,7 @@ import java.io.IOException
 import java.security.MessageDigest
 
 data class DownloadableFont(val hash: String, override val weight: FontWeight) :
-    AndroidFont(FontLoadingStrategy.Async, FontFileLoader) {
+    AndroidFont(FontLoadingStrategy.Async, FontFileLoader, FontVariation.Settings()) {
     override val style = FontStyle.Normal
 }
 
