@@ -10,10 +10,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
+import dev.yukineko.ekimemo_map.assistant.AssistantService
 import dev.yukineko.ekimemo_map.data.backup.CsvImportResult
 import dev.yukineko.ekimemo_map.data.backup.parseAccessLogCsv
 import dev.yukineko.ekimemo_map.data.backup.readBackup
 import dev.yukineko.ekimemo_map.data.backup.writeBackup
+import dev.yukineko.ekimemo_map.data.settings.AssistantSettings
 import dev.yukineko.ekimemo_map.data.settings.Settings
 import dev.yukineko.ekimemo_map.data.station.StationData
 import dev.yukineko.ekimemo_map.data.station.StationDataRepository
@@ -27,6 +29,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,6 +37,7 @@ import java.time.ZoneId
 
 class SettingsViewModel(
     private val store: DataStore<Settings>,
+    private val assistantStore: DataStore<AssistantSettings>,
     private val player: NotificationPlayer,
     private val stationDataRepository: StationDataRepository,
     private val userDatabase: UserDatabase,
@@ -42,6 +46,13 @@ class SettingsViewModel(
     private val logger = Logger("SettingsViewModel")
 
     val settings: StateFlow<Settings?> = store.data.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val assistantSettings: StateFlow<AssistantSettings?> =
+        assistantStore.data.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val assistantConnected: StateFlow<Boolean> = AssistantService.instance
+        .map { it != null }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val stationData: StateFlow<StationData?> = stationDataRepository.data
 
@@ -52,6 +63,13 @@ class SettingsViewModel(
         viewModelScope.launch {
             runCatching { store.updateData(transform) }
                 .onFailure { logger.error("Failed to update settings", it) }
+        }
+    }
+
+    fun updateAssistant(transform: (AssistantSettings) -> AssistantSettings) {
+        viewModelScope.launch {
+            runCatching { assistantStore.updateData(transform) }
+                .onFailure { logger.error("Failed to update assistant settings", it) }
         }
     }
 
@@ -127,7 +145,7 @@ class SettingsViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as EkimemoMapApplication
-                SettingsViewModel(app.settings, app.notificationPlayer, app.stationDataRepository, app.userDatabase, app.contentResolver)
+                SettingsViewModel(app.settings, app.assistantSettings, app.notificationPlayer, app.stationDataRepository, app.userDatabase, app.contentResolver)
             }
         }
     }

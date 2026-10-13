@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.DirectionsWalk
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Alarm
+import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.ColorLens
@@ -78,6 +79,7 @@ import dev.yukineko.ekimemo_map.ui.PlaceholderScreen
 import dev.yukineko.ekimemo_map.ui.SectionTitle
 import dev.yukineko.ekimemo_map.ui.SelectDialog
 import dev.yukineko.ekimemo_map.ui.listItemColors
+import dev.yukineko.ekimemo_map.ui.navigation.AssistantFlowRoute
 import dev.yukineko.ekimemo_map.ui.navigation.LicenseRoute
 import dev.yukineko.ekimemo_map.ui.navigation.LogRoute
 import dev.yukineko.ekimemo_map.ui.soundName
@@ -91,6 +93,7 @@ import java.time.format.DateTimeFormatter
 private enum class SettingsDialog {
     MAX_RESULTS, UPDATE_FREQUENCY, MAX_ACCURACY, COOLDOWN, SOUND, VOLUME, VIBRATION, MIN_DISTANCE,
     THEME_MODE, SEED_COLOR, FONT, MAP_RENDERING_LIMIT, RESTORE, IMPORT_CSV, DELETE_STATION_DATA, DELETE_DATABASE,
+    DEBUG_PACKAGE_NAME,
 }
 
 private typealias SettingsItem = @Composable (ListItemShapes) -> Unit
@@ -104,6 +107,8 @@ fun SettingsScreen(
     val settings by viewModel.settings.collectAsState()
     val ttsAvailable by viewModel.ttsAvailable.collectAsState()
     val stationData by viewModel.stationData.collectAsState()
+    val assistant by viewModel.assistantSettings.collectAsState()
+    val assistantConnected by viewModel.assistantConnected.collectAsState()
     var dialog by rememberSaveable { mutableStateOf<SettingsDialog?>(null) }
     var appTitleTaps by rememberSaveable { mutableIntStateOf(0) }
     val update = viewModel::update
@@ -305,6 +310,25 @@ fun SettingsScreen(
                     { InfoItem(it, stringResource(R.string.settings_tree_root), stationData?.treeRoot?.toString() ?: stringResource(R.string.unknown)) },
                 ),
             )
+            val a = assistant
+            if (assistantConnected && a != null) {
+                SettingsSection(
+                    stringResource(R.string.settings_section_assistant),
+                    listOf(
+                        {
+                            ClickItem(it, stringResource(R.string.settings_debug_package_name), a.debugPackageName) {
+                                dialog = SettingsDialog.DEBUG_PACKAGE_NAME
+                            }
+                        },
+                        {
+                            SwitchItem(it, stringResource(R.string.settings_enable_assistant_flow), null, a.enabled) { v ->
+                                viewModel.updateAssistant { it.copy(enabled = v) }
+                            }
+                        },
+                        { ClickItem(it, stringResource(R.string.settings_assistant_flow_editor), null) { onNavigate(AssistantFlowRoute) } },
+                    ),
+                )
+            }
         }
         Spacer(Modifier.height(24.dp))
 
@@ -466,6 +490,17 @@ fun SettingsScreen(
                 dismiss()
                 viewModel.deleteDatabase()
             }
+            SettingsDialog.DEBUG_PACKAGE_NAME -> InputDialog(
+                title = stringResource(R.string.settings_package_name),
+                icon = Icons.Rounded.Apps,
+                initial = assistant?.debugPackageName.orEmpty(),
+                parse = { it.trim().ifEmpty { null } },
+                onDismiss = dismiss,
+                onConfirm = { v ->
+                    dismiss()
+                    viewModel.updateAssistant { it.copy(debugPackageName = v) }
+                },
+            )
             null -> {}
         }
         csvImportResult?.let { CsvImportResultDialog(it) { csvImportResult = null } }

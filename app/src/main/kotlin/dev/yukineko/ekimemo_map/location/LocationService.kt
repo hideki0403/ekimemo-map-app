@@ -73,6 +73,10 @@ class LocationService : Service() {
 
         val tracker = NearestStationTracker(app.userDatabase.accessLogDao(), app.userDatabase.passingLogDao())
         val notifier = StationNotifier(this, app.notificationPlayer)
+        fun runAssistantFlow() = scope.launch {
+            runCatching { app.assistantFlowRunner.run() }
+                .onFailure { logger.error("Failed to run assistant flow", it) }
+        }
         val trees = app.stationDataRepository.data.filterNotNull()
             .map { it to StationTree(it) }
             .flowOn(Dispatchers.Default)
@@ -90,6 +94,7 @@ class LocationService : Service() {
                             runCatching { notifier.notifyNearest(result.stations.first(), silent, current) }
                                 .onFailure { logger.error("Failed to notify nearest station", it) }
                         }
+                        runAssistantFlow()
                     }
                 }.onFailure { logger.error("Failed to update nearest station", it) }
             }
@@ -116,6 +121,7 @@ class LocationService : Service() {
                         runCatching { notifier.notifyReminder(station, current) }
                             .onFailure { logger.error("Failed to notify reminder", it) }
                     }
+                    runAssistantFlow()
                     runCatching { tracker.recordReminder(station, _location.value) }
                         .onFailure { logger.error("Failed to record reminder", it) }
                 }

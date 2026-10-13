@@ -289,6 +289,11 @@
     <string name="settings_commit_hash">AppCommitHash</string>
     <string name="settings_build_number">AppBuildNumber</string>
     <string name="settings_tree_root">RootTreeNodeID</string>
+    <string name="settings_section_assistant">アシスタント (デバッグ用)</string>
+    <string name="settings_debug_package_name">デバッグ対象パッケージ名</string>
+    <string name="settings_package_name">パッケージ名</string>
+    <string name="settings_enable_assistant_flow">Enable AssistantFlow</string>
+    <string name="settings_assistant_flow_editor">Assistant Flow Editor</string>
     <string-array name="prefectures">
         <item>北海道</item>
         <item>青森県</item>
