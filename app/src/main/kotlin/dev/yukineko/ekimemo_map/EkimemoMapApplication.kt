@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStore
 import androidx.room.Room
+import dev.yukineko.ekimemo_map.assistant.AssistantFlowRunner
 import dev.yukineko.ekimemo_map.data.github.GitHubReleases
 import dev.yukineko.ekimemo_map.data.legacy.LegacyDatabaseImporter
 import dev.yukineko.ekimemo_map.data.legacy.LegacyImportResult
@@ -47,6 +48,7 @@ class EkimemoMapApplication : Application() {
     }
     val settings get() = settingsStore
     val assistantSettings get() = assistantSettingsStore
+    val assistantFlowRunner by lazy { AssistantFlowRunner(assistantSettings) }
     val userDatabase by lazy {
         Room.databaseBuilder(this, UserDatabase::class.java, "user.db").build()
     }

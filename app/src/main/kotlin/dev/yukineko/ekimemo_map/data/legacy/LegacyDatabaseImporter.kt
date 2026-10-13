@@ -13,6 +13,7 @@ import dev.yukineko.ekimemo_map.data.user.PassingLog
 import dev.yukineko.ekimemo_map.data.user.UserDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import java.io.File
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -106,7 +107,7 @@ class LegacyDatabaseImporter(
         val defaults = AssistantSettings()
         val assistantSettings = AssistantSettings(
             enabled = meta["enabled_assistant_flow"]?.toBooleanStrictOrNull() ?: defaults.enabled,
-            flow = meta["assistant_flow"] ?: defaults.flow,
+            flow = meta["assistant_flow"]?.let { Json.decodeFromString(it) } ?: defaults.flow,
             debugPackageName = meta["debug_package_name"] ?: defaults.debugPackageName,
         )
 

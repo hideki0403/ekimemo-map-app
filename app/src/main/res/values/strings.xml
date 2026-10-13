@@ -4,6 +4,7 @@
     <string name="title_settings">設定</string>
     <string name="title_assistant_flow">Assistant Flow</string>
     <string name="title_assistant_choose_rect">Choose Rect</string>
+    <string name="assistant_service_description">Debug Only</string>
     <string name="title_log">ログ</string>
     <string name="title_tools">ツール</string>
     <string name="title_search">検索</string>

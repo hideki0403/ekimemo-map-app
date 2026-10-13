@@ -2,6 +2,7 @@ package dev.yukineko.ekimemo_map.data.settings
 
 import androidx.compose.ui.graphics.toArgb
 import dev.yukineko.ekimemo_map.BuildConfig
+import dev.yukineko.ekimemo_map.assistant.AssistantFlowItem
 import dev.yukineko.ekimemo_map.notification.NotificationSound
 import dev.yukineko.ekimemo_map.notification.VibrationPattern
 import dev.yukineko.ekimemo_map.ui.theme.AppFont
@@ -39,6 +40,6 @@ data class Settings(
 @Serializable
 data class AssistantSettings(
     val enabled: Boolean = false,
-    val flow: String = "[]",
+    val flow: List<AssistantFlowItem> = emptyList(),
     val debugPackageName: String = "dev.yukineko.ekimemo_map",
 )
