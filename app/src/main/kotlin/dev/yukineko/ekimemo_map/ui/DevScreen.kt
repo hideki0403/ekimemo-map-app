@@ -33,7 +33,7 @@ fun DevScreen(onNavigate: (Any) -> Unit, onBack: () -> Unit) {
         Text("processing: ${searchResult?.processingMillis}ms")
         searchResult?.stations?.forEach { Text("${it.station.name} ${it.distance}m ${it.line?.name}") }
         listOf(
-            SettingsRoute, AssistantFlowRoute, AssistantChooseRectRoute, LogRoute, ToolsRoute,
+            SettingsRoute, AssistantFlowRoute, AssistantChooseRectRoute(point = false), LogRoute, ToolsRoute,
             SearchRoute, HistoryRoute, RouteSearchRoute, IntervalTimerRoute, MovementLogRoute,
             LicenseRoute, MapRoute(stationId = 1130101, sessionIds = listOf(1, 2)),
             StationDetailRoute(1130101), LineDetailRoute(11302),

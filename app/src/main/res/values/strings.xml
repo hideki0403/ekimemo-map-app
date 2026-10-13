@@ -4,6 +4,7 @@
     <string name="title_settings">設定</string>
     <string name="title_assistant_flow">Assistant Flow</string>
     <string name="title_assistant_choose_rect">Choose Rect</string>
+    <string name="assistant_choose_rect_select_image">Select Image</string>
     <string name="assistant_flow_tap">Tap</string>
     <string name="assistant_flow_tap_rect">Tap Rect</string>
     <string name="assistant_flow_wait">Wait</string>

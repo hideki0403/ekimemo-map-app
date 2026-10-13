@@ -131,8 +131,8 @@ fun AssistantFlowScreen(
         floatingActionButton = {
             ToolsFabMenu(
                 actions = listOf(
-                    ToolAction(R.string.assistant_flow_tap, Icons.Rounded.TouchApp) { onNavigate(AssistantChooseRectRoute) },
-                    ToolAction(R.string.assistant_flow_tap_rect, Icons.Rounded.CropFree) { onNavigate(AssistantChooseRectRoute) },
+                    ToolAction(R.string.assistant_flow_tap, Icons.Rounded.TouchApp) { onNavigate(AssistantChooseRectRoute(point = true)) },
+                    ToolAction(R.string.assistant_flow_tap_rect, Icons.Rounded.CropFree) { onNavigate(AssistantChooseRectRoute(point = false)) },
                     ToolAction(R.string.assistant_flow_wait, Icons.Rounded.HourglassEmpty) { dialog = FlowDialog.WAIT },
                     ToolAction(R.string.assistant_flow_wait_random, Icons.Rounded.Shuffle) { dialog = FlowDialog.WAIT_RANDOM },
                 ),

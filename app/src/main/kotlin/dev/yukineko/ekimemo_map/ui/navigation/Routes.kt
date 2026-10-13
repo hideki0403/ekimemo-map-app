@@ -15,7 +15,7 @@ data object SettingsRoute
 data object AssistantFlowRoute
 
 @Serializable
-data object AssistantChooseRectRoute
+data class AssistantChooseRectRoute(val point: Boolean)
 
 @Serializable
 data object LogRoute
