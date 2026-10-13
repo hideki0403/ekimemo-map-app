@@ -18,6 +18,7 @@
         android:name=".EkimemoMapApplication"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.EkimemoMap">
         <activity
             android:name=".MainActivity"
