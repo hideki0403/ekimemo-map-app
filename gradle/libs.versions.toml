@@ -4,6 +4,7 @@ kotlin = "2.4.21"
 composeBom = "2026.09.00"
 material3 = "1.5.0-beta01"
 activityCompose = "1.13.0"
+core = "1.19.0"
 materialKolor = "5.0.1"
 navigationCompose = "2.10.2"
 lifecycle = "2.11.0"
@@ -23,6 +24,7 @@ reorderable = "3.1.0"
 aboutLibraries = "15.2.0"
 
 [libraries]
+androidx-core = { group = "androidx.core", name = "core", version.ref = "core" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }

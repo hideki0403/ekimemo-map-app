@@ -1,10 +1,14 @@
 package dev.yukineko.ekimemo_map.location
 
+import android.annotation.SuppressLint
+import android.app.Notification
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.location.Location
+import android.os.Build
+import android.os.SystemClock
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -12,7 +16,9 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
 import dev.yukineko.ekimemo_map.R
+import dev.yukineko.ekimemo_map.data.station.StationAttr
 import dev.yukineko.ekimemo_map.data.station.StationTree
+import dev.yukineko.ekimemo_map.data.station.formatDistance
 import dev.yukineko.ekimemo_map.log.Logger
 import dev.yukineko.ekimemo_map.notification.StationNotifier
 import dev.yukineko.ekimemo_map.notification.openAppIntent
@@ -35,6 +41,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+private val StationAttr.notificationIcon
+    get() = when (this) {
+        StationAttr.ECO -> R.drawable.ic_notification_attr_eco
+        StationAttr.HEAT -> R.drawable.ic_notification_attr_heat
+        StationAttr.COOL -> R.drawable.ic_notification_attr_cool
+        StationAttr.UNKNOWN -> R.drawable.ic_notification_attr_unknown
+    }
+
 class LocationService : Service() {
     private val logger = Logger("LocationService")
     private val scope = MainScope()
@@ -43,17 +57,9 @@ class LocationService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification_place)
-            .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.notification_search_text))
-            .setContentIntent(openAppIntent())
-            .setOngoing(true)
-            .build()
-
         runCatching {
             createNotificationChannel()
-            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, buildNotification(null, null), ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
         }.onFailure {
             logger.error("Failed to start foreground service", it)
             stopSelf()
@@ -108,12 +114,26 @@ class LocationService : Service() {
             }
         }
 
+        val reminderAt = MutableStateFlow<Long?>(null)
+        scope.launch {
+            combine(_searchResult.map { it?.stations?.firstOrNull() }.distinctUntilChanged(), reminderAt, ::Pair)
+                .collectLatest { (nearest, at) ->
+                    while (true) {
+                        updateNotification(nearest, at)
+                        if (at == null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) break
+                        delay((at - System.currentTimeMillis()).mod(1000L) + 1)
+                    }
+                }
+        }
+
         val accessLogDao = app.userDatabase.accessLogDao()
         scope.launch {
             _searchResult.map { it?.stations?.firstOrNull()?.station }.distinctUntilChangedBy { it?.id }.collectLatest { station ->
                 station ?: return@collectLatest
                 combine(accessLogDao.observe(station.id), settings, ::Pair).collectLatest { (log, current) ->
-                    val remaining = cooldownSeconds(log?.lastAccess, current, System.currentTimeMillis())
+                    val now = System.currentTimeMillis()
+                    val remaining = cooldownSeconds(log?.lastAccess, current, now)
+                    reminderAt.value = if (remaining > 0) now + remaining * 1000L else null
                     if (remaining == 0) return@collectLatest
                     delay(remaining * 1000L)
                     logger.info("Remind: ${station.name} (${station.id})")
@@ -138,6 +158,57 @@ class LocationService : Service() {
         _searchResult.value = null
         logger.info("Location service stopped")
         super.onDestroy()
+    }
+
+    private fun buildNotification(nearest: NearbyStation?, reminderAt: Long?): Notification {
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_place)
+            .setContentIntent(openAppIntent())
+            .setOngoing(true)
+            .setShowWhen(false)
+        if (nearest == null) {
+            return builder
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText(getString(R.string.notification_search_text))
+                .build()
+        }
+
+        builder
+            .setSmallIcon(nearest.station.attr.notificationIcon)
+            .setContentTitle(nearest.station.name)
+            .setSubText(nearest.line?.name)
+            .setShortCriticalText(nearest.station.name)
+            .setRequestPromotedOngoing(true)
+        val distance = formatDistance(nearest.distance)
+        val now = System.currentTimeMillis()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
+            val style = NotificationCompat.MetricStyle()
+                .addMetric(NotificationCompat.Metric(NotificationCompat.Metric.FixedText(distance), getString(R.string.notification_metric_distance)))
+            if (reminderAt != null) {
+                val timer = NotificationCompat.Metric.TimeDifference.forTimer(
+                    SystemClock.elapsedRealtime() + reminderAt - now,
+                    NotificationCompat.Metric.TimeDifference.FORMAT_CHRONOMETER,
+                )
+                style.addMetric(NotificationCompat.Metric(timer, getString(R.string.notification_metric_reminder)))
+            }
+            return builder
+                .setContentText(getString(R.string.notification_search_distance, distance))
+                .setStyle(style)
+                .build()
+        }
+
+        val text = if (reminderAt == null) {
+            getString(R.string.notification_search_distance, distance)
+        } else {
+            val remaining = ((reminderAt - now + 999) / 1000).coerceAtLeast(0)
+            getString(R.string.notification_search_distance_reminder, distance, remaining / 60, remaining % 60)
+        }
+        return builder.setContentText(text).build()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun updateNotification(nearest: NearbyStation?, reminderAt: Long?) {
+        NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, buildNotification(nearest, reminderAt))
     }
 
     private fun createNotificationChannel() {
