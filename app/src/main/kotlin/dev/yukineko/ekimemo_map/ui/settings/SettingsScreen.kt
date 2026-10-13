@@ -28,6 +28,7 @@ import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.Vibration
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -65,6 +66,8 @@ import dev.yukineko.ekimemo_map.ui.PlaceholderScreen
 import dev.yukineko.ekimemo_map.ui.SectionTitle
 import dev.yukineko.ekimemo_map.ui.SelectDialog
 import dev.yukineko.ekimemo_map.ui.listItemColors
+import dev.yukineko.ekimemo_map.ui.navigation.LicenseRoute
+import dev.yukineko.ekimemo_map.ui.navigation.LogRoute
 import dev.yukineko.ekimemo_map.ui.soundName
 import dev.yukineko.ekimemo_map.ui.theme.AppFont
 import dev.yukineko.ekimemo_map.ui.theme.ThemeMode
@@ -72,20 +75,20 @@ import dev.yukineko.ekimemo_map.ui.vibrationName
 
 private enum class SettingsDialog {
     MAX_RESULTS, UPDATE_FREQUENCY, MAX_ACCURACY, COOLDOWN, SOUND, VOLUME, VIBRATION, MIN_DISTANCE,
-    THEME_MODE, SEED_COLOR, FONT, MAP_RENDERING_LIMIT,
+    THEME_MODE, SEED_COLOR, FONT, MAP_RENDERING_LIMIT, DELETE_STATION_DATA, DELETE_DATABASE,
 }
 
 private typealias SettingsItem = @Composable (ListItemShapes) -> Unit
 
 @Composable
 fun SettingsScreen(
+    onNavigate: (Any) -> Unit,
     onBack: () -> Unit,
-    onOpenLicense: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
 ) {
     val settings by viewModel.settings.collectAsState()
     val ttsAvailable by viewModel.ttsAvailable.collectAsState()
-    val stationDataVersion by viewModel.stationDataVersion.collectAsState()
+    val stationData by viewModel.stationData.collectAsState()
     var dialog by rememberSaveable { mutableStateOf<SettingsDialog?>(null) }
     var appTitleTaps by rememberSaveable { mutableIntStateOf(0) }
     val update = viewModel::update
@@ -206,8 +209,8 @@ fun SettingsScreen(
             stringResource(R.string.settings_section_app),
             listOfNotNull<SettingsItem>(
                 { InfoItem(it, stringResource(R.string.settings_app_version), "v${BuildConfig.VERSION_NAME}") },
-                { InfoItem(it, stringResource(R.string.settings_station_data_version), stationDataVersion ?: stringResource(R.string.unknown)) },
-                { ClickItem(it, stringResource(R.string.settings_license), null, onClick = onOpenLicense) },
+                { InfoItem(it, stringResource(R.string.settings_station_data_version), stationData?.version ?: stringResource(R.string.unknown)) },
+                { ClickItem(it, stringResource(R.string.settings_license), null) { onNavigate(LicenseRoute) } },
                 if (s.isDebugMode || appTitleTaps >= DEBUG_MODE_TAPS) {
                     {
                         val summary = if (BuildConfig.DEBUG) stringResource(R.string.settings_debug_mode_locked) else null
@@ -221,6 +224,24 @@ fun SettingsScreen(
             ),
             titleModifier = Modifier.clickable(interactionSource = null, indication = null) { appTitleTaps++ },
         )
+        if (s.isDebugMode) {
+            SettingsSection(
+                stringResource(R.string.settings_section_dev_utilities),
+                listOf(
+                    { ClickItem(it, stringResource(R.string.settings_log_viewer), null) { onNavigate(LogRoute) } },
+                    { ClickItem(it, stringResource(R.string.settings_delete_station_data), null) { dialog = SettingsDialog.DELETE_STATION_DATA } },
+                    { ClickItem(it, stringResource(R.string.settings_delete_database), null) { dialog = SettingsDialog.DELETE_DATABASE } },
+                ),
+            )
+            SettingsSection(
+                stringResource(R.string.settings_section_state),
+                listOf(
+                    { InfoItem(it, stringResource(R.string.settings_commit_hash), BuildConfig.COMMIT_HASH) },
+                    { InfoItem(it, stringResource(R.string.settings_build_number), BuildConfig.VERSION_CODE.toString()) },
+                    { InfoItem(it, stringResource(R.string.settings_tree_root), stationData?.treeRoot?.toString() ?: stringResource(R.string.unknown)) },
+                ),
+            )
+        }
         Spacer(Modifier.height(24.dp))
 
         val dismiss = { dialog = null }
@@ -349,9 +370,29 @@ fun SettingsScreen(
                 dismiss()
                 update { it.copy(themeSeedColor = color.toArgb()) }
             }
+            SettingsDialog.DELETE_STATION_DATA -> ConfirmDialog(stringResource(R.string.settings_delete_station_data_message), dismiss) {
+                dismiss()
+                viewModel.deleteStationData()
+            }
+            SettingsDialog.DELETE_DATABASE -> ConfirmDialog(stringResource(R.string.settings_delete_database_message), dismiss) {
+                dismiss()
+                viewModel.deleteDatabase()
+            }
             null -> {}
         }
     }
+}
+
+@Composable
+private fun ConfirmDialog(message: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(30.dp)) },
+        title = { Text(stringResource(R.string.delete)) },
+        text = { Text(message) },
+        confirmButton = { TextButton(onClick = onConfirm, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.ok)) } },
+        dismissButton = { TextButton(onClick = onDismiss, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.cancel)) } },
+    )
 }
 
 @Composable

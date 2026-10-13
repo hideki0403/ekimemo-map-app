@@ -96,7 +96,7 @@ dependencies {
     implementation(libs.msgpack.core)
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.datastore)
     implementation(libs.androidx.room.runtime)
     implementation(libs.play.services.location)
     implementation(libs.maplibre.android)

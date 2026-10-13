@@ -1,8 +1,6 @@
 package dev.yukineko.ekimemo_map.data.station
 
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import dev.yukineko.ekimemo_map.data.github.GitHubReleases
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
@@ -11,6 +9,7 @@ import okio.Buffer
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -39,21 +38,18 @@ class StationDataRepositoryTest {
         server.close()
     }
 
-    private val dataStore by lazy {
-        PreferenceDataStoreFactory.create { File(folder.root, "settings.preferences_pb") }
-    }
-
     private fun createRepository(): StationDataRepository {
         val releases = GitHubReleases(OkHttpClient(), server.url("/api").toString())
-        return StationDataRepository(file, dataStore, releases)
+        return StationDataRepository(file, releases)
     }
 
-    private fun stationData(treeRoot: Int) = msgpack(
+    private fun stationData(version: String?, treeRoot: Int) = msgpack(
         mapOf(
+            "version" to version,
             "station" to emptyList<Any>(),
             "line" to emptyList<Any>(),
             "tree" to mapOf("root" to treeRoot, "node_list" to emptyList<Any>()),
-        ),
+        ).filterValues { it != null },
     )
 
     private fun enqueueRelease(version: String) {
@@ -71,20 +67,21 @@ class StationDataRepositoryTest {
 
     private suspend fun installVersion(version: String, treeRoot: Int) {
         enqueueRelease(version)
-        enqueueAsset(stationData(treeRoot))
+        enqueueAsset(stationData(version, treeRoot))
         repository.update(repository.checkUpdate()!!)
     }
 
     @Test
-    fun updateReplacesDataAndSavesVersion() = runBlocking {
+    fun updateReplacesData() = runBlocking {
         installVersion("v1", treeRoot = 1)
 
         assertEquals(1, repository.data.value?.treeRoot)
-        assertEquals("v1", repository.version.first())
+        assertEquals("v1", repository.data.value?.version)
         assertFalse(File(file.path + ".tmp").exists())
 
         val reloaded = createRepository().apply { load() }
         assertEquals(1, reloaded.data.value?.treeRoot)
+        assertEquals("v1", reloaded.data.value?.version)
     }
 
     @Test
@@ -96,6 +93,15 @@ class StationDataRepositoryTest {
     }
 
     @Test
+    fun checkUpdateReturnsAssetWhenDataHasNoVersion() = runBlocking {
+        file.writeBytes(stationData(version = null, treeRoot = 1))
+        repository.load()
+        enqueueRelease("v1")
+
+        assertNotNull(repository.checkUpdate())
+    }
+
+    @Test
     fun invalidDownloadKeepsCurrentData() = runBlocking {
         installVersion("v1", treeRoot = 1)
         enqueueRelease("v2")
@@ -103,11 +109,21 @@ class StationDataRepositoryTest {
         val asset = repository.checkUpdate()!!
 
         assertThrows(Exception::class.java) { runBlocking { repository.update(asset) } }
-        assertEquals(1, repository.data.value?.treeRoot)
-        assertEquals("v1", repository.version.first())
+        assertEquals("v1", repository.data.value?.version)
         assertFalse(File(file.path + ".tmp").exists())
 
         val reloaded = createRepository().apply { load() }
-        assertEquals(1, reloaded.data.value?.treeRoot)
+        assertEquals("v1", reloaded.data.value?.version)
+    }
+
+    @Test
+    fun deleteRemovesData() = runBlocking {
+        installVersion("v1", treeRoot = 1)
+
+        repository.delete()
+
+        assertNull(repository.data.value)
+        assertFalse(file.exists())
+        assertNull(createRepository().apply { load() }.data.value)
     }
 }

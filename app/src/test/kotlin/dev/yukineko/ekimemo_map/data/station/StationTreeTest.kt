@@ -40,6 +40,7 @@ class StationTreeTest {
                 id.int to TreeNode(id.int, left.intOrNull, right.intOrNull)
             },
             treeRoot = fixture.getValue("root").jsonPrimitive.int,
+            version = null,
         ),
     )
 

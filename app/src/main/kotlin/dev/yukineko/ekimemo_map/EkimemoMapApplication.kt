@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStore
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import dev.yukineko.ekimemo_map.data.github.GitHubReleases
 import dev.yukineko.ekimemo_map.data.legacy.LegacyDatabaseImporter
@@ -27,7 +26,6 @@ import org.maplibre.android.MapLibre
 import java.io.File
 import kotlin.system.measureTimeMillis
 
-private val Context.dataStore by preferencesDataStore(name = "settings")
 private val Context.settingsStore by dataStore(
     "settings.json",
     JsonSerializer(Settings.serializer(), Settings()),
@@ -45,7 +43,7 @@ class EkimemoMapApplication : Application() {
 
     val gitHubReleases by lazy { GitHubReleases(OkHttpClient()) }
     val stationDataRepository by lazy {
-        StationDataRepository(File(filesDir, "station_database.msgpack"), dataStore, gitHubReleases)
+        StationDataRepository(File(filesDir, "station_database.msgpack"), gitHubReleases)
     }
     val settings get() = settingsStore
     val assistantSettings get() = assistantSettingsStore

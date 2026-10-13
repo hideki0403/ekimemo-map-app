@@ -115,6 +115,18 @@ class StationDataReaderTest {
     }
 
     @Test
+    fun readsVersion() {
+        val result = read(data(emptyList(), emptyList()) + ("version" to "v20260930"))
+
+        assertEquals("v20260930", result.version)
+    }
+
+    @Test
+    fun readsDataWithoutVersion() {
+        assertNull(read(data(emptyList(), emptyList())).version)
+    }
+
+    @Test
     fun ignoresUnknownKeys() {
         val station = station(1).apply { put("extra", mapOf("nested" to listOf(1, 2))) }
         val result = read(data(listOf(station), emptyList()))

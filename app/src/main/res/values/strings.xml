@@ -240,6 +240,16 @@
     <string name="settings_license">オープンソースライセンス</string>
     <string name="settings_debug_mode">デバッグモード</string>
     <string name="settings_debug_mode_locked">デバッグビルドのため切り替えることができません。</string>
+    <string name="settings_section_dev_utilities">Dev Utilities</string>
+    <string name="settings_log_viewer">Log Viewer</string>
+    <string name="settings_delete_station_data">Delete Station Data</string>
+    <string name="settings_delete_station_data_message">駅データを削除しますか？\n削除後はホーム画面から再度ダウンロードできます。</string>
+    <string name="settings_delete_database">Delete Database</string>
+    <string name="settings_delete_database_message">本当にデータベースを削除しますか？\nこの操作は取り消せません。</string>
+    <string name="settings_section_state">State</string>
+    <string name="settings_commit_hash">AppCommitHash</string>
+    <string name="settings_build_number">AppBuildNumber</string>
+    <string name="settings_tree_root">RootTreeNodeID</string>
     <string-array name="prefectures">
         <item>北海道</item>
         <item>青森県</item>

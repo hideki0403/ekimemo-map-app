@@ -26,7 +26,7 @@ class RadarTest {
         )
     }.associateBy { it.id }
 
-    private val data = StationData(stations = stations, lines = emptyMap(), treeNodes = emptyMap(), treeRoot = 0)
+    private val data = StationData(stations = stations, lines = emptyMap(), treeNodes = emptyMap(), treeRoot = 0, version = null)
 
     @Test
     fun radarMatchesFlutter() = runBlocking {

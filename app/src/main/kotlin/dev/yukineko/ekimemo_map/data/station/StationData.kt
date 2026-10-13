@@ -49,4 +49,5 @@ class StationData(
     val lines: Map<Int, Line>,
     val treeNodes: Map<Int, TreeNode>,
     val treeRoot: Int,
+    val version: String?,
 )

@@ -13,8 +13,10 @@ private fun MessageUnpacker.readData(): StationData {
     var lines: List<Line>? = null
     var treeRoot: Int? = null
     var treeNodes: List<TreeNode>? = null
+    var version: String? = null
     forEachKey { key ->
         when (key) {
+            "version" -> version = unpackString()
             "station" -> stations = readList { readStation() }
             "line" -> lines = readList { readLine() }
             "tree" -> forEachKey {
@@ -32,6 +34,7 @@ private fun MessageUnpacker.readData(): StationData {
         lines = required("line", lines).associateBy { it.code },
         treeNodes = required("tree.node_list", treeNodes).associateBy { it.id },
         treeRoot = required("tree.root", treeRoot),
+        version = version,
     )
 }
 
