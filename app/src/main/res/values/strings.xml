@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_home">駅メモマップ</string>
+    <string name="title_settings">設定</string>
+    <string name="title_assistant_flow">Assistant Flow</string>
+    <string name="title_assistant_choose_rect">Choose Rect</string>
+    <string name="assistant_choose_rect_select_image">Select Image</string>
+    <string name="assistant_flow_tap">Tap</string>
+    <string name="assistant_flow_tap_rect">Tap Rect</string>
+    <string name="assistant_flow_wait">Wait</string>
+    <string name="assistant_flow_wait_random">Wait Random</string>
+    <string name="assistant_flow_millis">%1$dms</string>
+    <string name="assistant_flow_max_millis">Max %1$dms</string>
+    <string name="assistant_flow_add">Add</string>
+    <string name="assistant_flow_empty">Empty</string>
+    <string name="assistant_flow_delete_message">削除しますか？</string>
+    <string name="assistant_flow_export">Export</string>
+    <string name="assistant_flow_import">Import</string>
+    <string name="assistant_flow_import_caption">Paste exported code</string>
+    <string name="assistant_flow_imported">Imported</string>
+    <string name="assistant_flow_save_failed">Failed to save</string>
+    <string name="assistant_service_description">Debug Only</string>
+    <string name="title_log">ログ</string>
+    <string name="title_tools">ツール</string>
+    <string name="title_search">検索</string>
+    <string name="title_history">アクセス履歴</string>
+    <string name="title_route_search">ルート探索</string>
+    <string name="title_interval_timer">インターバルタイマー</string>
+    <string name="title_movement_log">移動ログ</string>
+    <string name="title_license">ライセンス</string>
+    <string name="title_map">マップ</string>
+    <string name="title_station_detail">駅情報</string>
+    <string name="title_line_detail">路線情報</string>
+    <string name="tools_search_description">駅の検索を行うことが出来ます</string>
+    <string name="tools_history_description">アクセスした駅の履歴を確認することが出来ます</string>
+    <string name="tools_movement_log_description">移動ログを確認することが出来ます</string>
+    <string name="tools_route_search_description">GPXファイルを読み込み、通過する駅の一覧を表示することが出来ます</string>
+    <string name="tools_interval_timer_description">インターバルタイマーを設定することが出来ます</string>
+    <string name="route_search_description">ルート探索に使用するGPXファイルを選択してください。</string>
+    <string name="route_search_select_file">GPXファイルを選択</string>
+    <string name="route_search_result">探索結果: %1$d駅 (%2$dms)</string>
+    <string name="route_search_file_info">%1$s (%2$d地点)</string>
+    <string name="route_search_failed">GPXファイルの読み込みに失敗しました</string>
+    <string name="interval_timer_new_name">新しいタイマー</string>
+    <string name="interval_timer_empty">インターバルタイマーがありません</string>
+    <string name="interval_timer_add">タイマーを追加</string>
+    <string name="interval_timer_help_title">インターバルタイマーについて</string>
+    <string name="interval_timer_help_message">指定した時間おきに通知を行うことができる機能です。\nタイマーは右下の「＋」ボタンから追加できます。\n表示されている時間をタップすることで、通知を行う間隔を変更可能です。\nまた、タイマー名をタップすることでタイマー名を編集することができます。</string>
+    <string name="interval_timer_settings">タイマーの設定</string>
+    <string name="interval_timer_start">開始</string>
+    <string name="interval_timer_pause">一時停止</string>
+    <string name="interval_timer_stop">停止</string>
+    <string name="interval_timer_reset">リセット</string>
+    <string name="interval_timer_name">タイマー名</string>
+    <string name="interval_timer_duration">通知の間隔</string>
+    <string name="interval_timer_seconds">秒</string>
+    <string name="interval_timer_notification">通知</string>
+    <string name="interval_timer_tts">読み上げ</string>
+    <string name="interval_timer_sound">通知音</string>
+    <string name="interval_timer_vibration">バイブレーション</string>
+    <string name="interval_timer_off">OFF</string>
+    <string name="interval_timer_delete_message">「%1$s」を削除しますか？</string>
+    <string name="interval_timer_save_failed">タイマーの保存に失敗しました</string>
+    <string name="interval_timer_finished">%1$s (%2$s) が終了しました</string>
+    <string name="tts_interval_timer_finished">タイマー「%1$s」が、終了しました</string>
+    <string name="notification_channel_interval_timer_running">インターバルタイマー通知</string>
+    <string name="notification_interval_timer_running">インターバルタイマーを実行しています</string>
+    <string name="notification_sound_name">通知音%1$d</string>
+    <string name="vibration_pattern_name">パターン%1$d</string>
+    <string name="back">戻る</string>
+    <string name="ok">OK</string>
+    <string name="permission_required">権限が必要です</string>
+    <string name="notification_permission_denied">通知の許可がないため、最寄り駅の通知を行うことが出来ません。</string>
+    <string name="location_service_disabled">位置情報が無効です</string>
+    <string name="location_service_disabled_message">位置情報が無効になっているため、駅の探索を行うことが出来ません。</string>
+    <string name="location_permission_denied">位置情報を取得する権限がないため、駅の探索を行うことが出来ません。</string>
+    <string name="notification_channel_search">最寄り駅探索サービス</string>
+    <string name="notification_search_text">最寄り駅を探索中</string>
+    <string name="notification_channel_nearest_station">最寄り駅通知</string>
+    <string name="notification_nearest_changed">%1$sで最寄り駅になりました</string>
+    <string name="tts_nearest_changed">「%1$s」が、最寄り駅になりました</string>
+    <string name="notification_reminder">最後に通知してから%1$d:%2$02dが経過しました</string>
+    <string name="tts_reminder">「%1$s」に、アクセスしてから、%2$d分%3$02d秒が経過しました</string>
+    <string name="title_dev">DevMenu</string>
+    <string name="unknown">不明</string>
+    <string name="close">閉じる</string>
+    <string name="seconds_ago">%1$d秒前</string>
+    <string name="minutes_ago">%1$d分前</string>
+    <string name="hours_ago">%1$d時間前</string>
+    <string name="over_a_day_ago">24時間以上前</string>
+    <string name="home_accuracy">精度</string>
+    <string name="home_speed">速度</string>
+    <string name="search_on">探索 ON</string>
+    <string name="search_off">探索 OFF</string>
+    <string name="home_last_update">最終更新</string>
+    <string name="home_no_station_data">駅データがありません</string>
+    <string name="home_no_station_data_message">下のボタンから駅データを更新することで、利用できるようになります。</string>
+    <string name="home_loading_station_data">駅データを読み込んでいます</string>
+    <string name="update_station_data">駅データを更新</string>
+    <string name="station_data_update_failed">駅データの更新に失敗しました</string>
+    <string name="home_search_off">探索がOFFになっています</string>
+    <string name="home_search_off_message">右上のスイッチで探索をはじめることができます。</string>
+    <string name="home_waiting_location">位置情報を取得しています</string>
+    <string name="mark_accessed">アクセス済みにする</string>
+    <string name="mark_unaccessed">未アクセスにする</string>
+    <string name="start_timer">タイマーをセットする</string>
+    <string name="reset_timer">タイマーをリセットする</string>
+    <string name="show_radar">この駅のレーダー範囲を見る</string>
+    <string name="accessed">アクセス済み</string>
+    <string name="not_accessed">未アクセス</string>
+    <string name="station_access_info">アクセス情報</string>
+    <string name="station_line_info">路線情報</string>
+    <string name="station_access_count">アクセス回数: %1$d回</string>
+    <string name="station_last_access">最終アクセス: %1$s</string>
+    <string name="station_first_access">初回アクセス: %1$s</string>
+    <string name="open_map">マップで見る</string>
+    <string name="map_follow_location">現在地に追従</string>
+    <string name="map_show_pins">マップピン</string>
+    <string name="map_show_access_state">アクセス状態</string>
+    <string name="map_layers">マップの種類と表示</string>
+    <string name="map_mode_title">表示モード</string>
+    <string name="map_mode_normal">アクセスマップ</string>
+    <string name="map_mode_attribute">属性マップ</string>
+    <string name="map_display_title">表示</string>
+    <string name="map_show_attr_icons">属性アイコン</string>
+    <string name="map_show_fill">塗りつぶし</string>
+    <string name="map_too_many_stations">表示範囲内の駅数が多すぎるため、メッシュを描画できませんでした。地図を拡大してください。</string>
+    <string name="map_marked_accessed">%1$sをアクセス済みにしました</string>
+    <string name="map_marked_unaccessed">%1$sを未アクセスにしました</string>
+    <string name="map_distance_from_current">現在地から %1$s</string>
+    <string name="map_reset_camera">表示範囲をリセット</string>
+    <string name="map_reachable_stations">タップした地点からレーダーで届く駅</string>
+    <string name="map_loading_station">駅情報を取得しています</string>
+    <string name="open_station_detail">駅の詳細を見る</string>
+    <string name="station_open_radar">レーダー範囲</string>
+    <string name="radar_title">%1$sのレーダー範囲</string>
+    <string name="radar_help_title">レーダー範囲について</string>
+    <string name="radar_help_message">レーダーで対象の駅にアクセスできる範囲を可視化したマップです。\n線で囲まれた範囲内であれば、理論上レーダーでアクセスできます。\n初期状態ではレーダーの検知数が%1$d駅の場合の範囲を表示します。表示する検知数は画面下部のスライダーで変更できます。</string>
+    <string name="radar_computing">計算中… (%1$d / %2$d)</string>
+    <string name="radar_failed">レーダー範囲の計算に失敗しました</string>
+    <string name="radar_range">レーダー検知数: %1$d駅</string>
+    <string name="radar_selected_only">選択した範囲のみ表示</string>
+    <string name="radar_change_k">検知数を変更</string>
+    <string name="radar_k_title">レーダー検知数</string>
+    <string name="radar_k_suffix">駅</string>
+    <string name="radar_recompute">再計算</string>
+    <string name="station_open_activity">駅のにぎわい (公式サイト)</string>
+    <string name="line_info">路線情報</string>
+    <string name="line_station_info">駅情報</string>
+    <string name="line_station_count">駅数: %1$d</string>
+    <string name="line_accessed_count">アクセス済み駅数: %1$d (%2$s)</string>
+    <string name="line_open_official">路線情報 (公式サイト)</string>
+    <string name="clear">クリア</string>
+    <string name="search_hint">駅名または路線名を入力</string>
+    <string name="search_stations">駅</string>
+    <string name="search_lines">路線</string>
+    <string name="search_station_count">%1$d駅</string>
+    <string name="search_line_count">%1$d路線</string>
+    <string name="search_result">%1$sが見つかりました (%2$dms)</string>
+    <string name="search_no_result">該当する駅または路線はありませんでした (%1$dms)</string>
+    <string name="delete">削除</string>
+    <string name="cancel">キャンセル</string>
+    <string name="history_count">%1$d件</string>
+    <string name="history_empty">アクセス履歴がありません</string>
+    <string name="history_delete_title">アクセス履歴の削除</string>
+    <string name="history_delete_message">アクセス履歴を全て削除しますか？\nこの操作は取り消せません。</string>
+    <string name="history_deleted">アクセス履歴を削除しました</string>
+    <string name="history_distance">距離: %1$s</string>
+    <string name="history_accuracy">精度: %1$s</string>
+    <string name="history_speed">速度: %1$s</string>
+    <string name="move_log_sessions">表示するセッション</string>
+    <string name="move_log_session_time">%1$s〜%2$s</string>
+    <string name="move_log_point_count">%1$d地点</string>
+    <string name="move_log_stats">統計情報</string>
+    <string name="move_log_stats_message">%1$sの移動ログ\nセッション数: %2$d\n記録された地点数: %3$d</string>
+    <string name="move_log_empty">表示できる移動ログがありません</string>
+    <string name="move_log_delete_title">移動ログの削除</string>
+    <string name="move_log_delete_message">%1$d地点を含む移動ログを削除しますか？\nこの操作は取り消せません。</string>
+    <string name="move_log_deleted">移動ログを削除しました</string>
+    <string name="move_log_list_empty">移動ログがありません</string>
+    <string name="move_log_day_empty">%1$sの移動ログはありません</string>
+    <string name="move_log_show_all">全ての移動ログを地図で表示</string>
+    <string name="move_log_show_list">リスト表示</string>
+    <string name="move_log_show_calendar">カレンダー表示</string>
+    <string name="calendar_previous_month">前の月</string>
+    <string name="calendar_next_month">次の月</string>
+    <string name="log_empty">ログがありません</string>
+    <string name="log_delete_title">ログの削除</string>
+    <string name="log_delete_message">ログを削除しますか？\nこの操作は取り消せません。</string>
+    <string name="log_deleted">ログを削除しました</string>
+    <string name="log_copied">クリップボードにコピーしました</string>
+    <string name="log_filter">フィルター</string>
+    <string name="log_filter_level">Level</string>
+    <string name="log_filter_tag">Tag</string>
+    <string name="settings_none">なし</string>
+    <string name="settings_unit_station">駅</string>
+    <string name="settings_unit_second">秒</string>
+    <string name="settings_unit_meter">m</string>
+    <string name="settings_unit_percent">%</string>
+    <string name="settings_duration">%1$d分%2$02d秒</string>
+    <string name="settings_section_search">探索設定</string>
+    <string name="settings_max_results">探索する駅数</string>
+    <string name="settings_max_results_caption">探索する最大駅数を指定できます。1以上で指定してください。</string>
+    <string name="settings_update_frequency">更新頻度</string>
+    <string name="settings_update_frequency_caption">最高更新頻度を指定できます。1.0秒以上で指定してください。</string>
+    <string name="settings_max_accuracy">GPSの取得精度制限</string>
+    <string name="settings_max_accuracy_caption">GPSの精度がここで入力した値を超えた場合に、取得した位置情報を無視します。0mで無効になります。</string>
+    <string name="settings_section_notification">通知設定</string>
+    <string name="settings_enable_notification">通知を有効にする</string>
+    <string name="settings_enable_notification_summary">最寄り駅が変更された場合などに通知を送信します。</string>
+    <string name="settings_enable_reminder">リマインダーを有効にする</string>
+    <string name="settings_enable_reminder_summary">同じ駅に一定時間居た場合に、再度通知を送信します。</string>
+    <string name="settings_cooldown">リマインドを行う間隔</string>
+    <string name="settings_cooldown_caption">10秒以上で指定してください。</string>
+    <string name="settings_notify_during_cooldown">クールダウン中でも通知を送信する</string>
+    <string name="settings_notify_during_cooldown_summary">次のリマインド通知が送信されるまでのクールダウン中でも通知を送信します。</string>
+    <string name="settings_enable_sound">通知音を再生する</string>
+    <string name="settings_enable_sound_summary">最寄り駅が変更された場合などに通知音を再生します。</string>
+    <string name="settings_sound">通知音</string>
+    <string name="settings_volume">通知音量</string>
+    <string name="settings_volume_caption">0〜100%で指定してください。</string>
+    <string name="settings_enable_vibration">バイブレーション</string>
+    <string name="settings_enable_vibration_summary">通知時にバイブレーションでお知らせします。</string>
+    <string name="settings_vibration_pattern">バイブレーションパターン</string>
+    <string name="settings_tts">駅名読み上げ</string>
+    <string name="settings_tts_summary">通知時に駅名の読み上げを行います。</string>
+    <string name="settings_tts_unavailable">言語パックがインストールされていないため、読み上げは利用できません。</string>
+    <string name="settings_section_move_log">移動ログ</string>
+    <string name="settings_move_log">移動ログの記録</string>
+    <string name="settings_move_log_summary">探索をONにしているときに移動ログを記録します。\n記録された移動ログはツール→移動ログから確認できます。</string>
+    <string name="settings_min_distance">最小移動距離</string>
+    <string name="settings_min_distance_caption">前回記録された位置から設定された距離以上移動した場合にのみ、移動ログを記録するようにします。\n0mで無効になります。</string>
+    <string name="settings_section_theme">テーマ</string>
+    <string name="settings_theme_mode">テーマ</string>
+    <string name="theme_mode_system">システム設定に従う</string>
+    <string name="theme_mode_light">ライト</string>
+    <string name="theme_mode_dark">ダーク</string>
+    <string name="settings_dynamic_color">Material You</string>
+    <string name="settings_dynamic_color_summary">アプリの配色に端末のテーマカラーを使用します。</string>
+    <string name="settings_seed_color">テーマカラー</string>
+    <string name="settings_seed_color_summary">アプリのテーマカラーを設定できます。</string>
+    <string name="settings_seed_color_disabled">Material Youが有効の場合は設定できません。</string>
+    <string name="settings_font">フォント</string>
+    <string name="font_noto_sans_jp">Noto Sans JP</string>
+    <string name="font_m_plus_1p">M PLUS 1p</string>
+    <string name="font_m_plus_rounded_1c">M PLUS Rounded 1c</string>
+    <string name="font_biz_ud_gothic">BIZ UDゴシック</string>
+    <string name="font_kosugi_maru">小杉丸ゴシック</string>
+    <string name="font_zen_maru_gothic">Zen丸ゴシック</string>
+    <string name="settings_section_map">マップ</string>
+    <string name="settings_map_rendering_limit">マップの描画駅数上限</string>
+    <string name="settings_map_rendering_limit_caption">描画する最大駅数を指定できます。上限を上げすぎるとパフォーマンスが低下する可能性があります。</string>
+    <string name="settings_section_data">データ管理</string>
+    <string name="settings_backup">バックアップ</string>
+    <string name="settings_backup_summary">駅にアクセスした記録をバックアップします。</string>
+    <string name="settings_backup_succeeded">バックアップに成功しました</string>
+    <string name="settings_backup_failed">バックアップに失敗しました</string>
+    <string name="settings_restore">復元</string>
+    <string name="settings_restore_summary">バックアップした記録を復元します。</string>
+    <string name="settings_restore_title">データの復元</string>
+    <string name="settings_restore_message">既に記録されているデータを削除して復元しますか？\n「上書きして復元」を選択すると、現在のデータを残したまま復元します。</string>
+    <string name="settings_restore_keep">上書きして復元</string>
+    <string name="settings_restore_clear">削除して復元</string>
+    <string name="settings_restore_succeeded">データの復元に成功しました</string>
+    <string name="settings_restore_failed">データの復元に失敗しました</string>
+    <string name="settings_import">インポート</string>
+    <string name="settings_import_summary">他のアプリでエクスポートしたCSVファイルから記録をインポートします。</string>
+    <string name="settings_import_title">データのインポート</string>
+    <string name="settings_import_message">既に記録されているデータを削除してインポートしますか？\n「上書きしてインポート」を選択すると、現在のデータを残したままインポートします。</string>
+    <string name="settings_import_keep">上書きしてインポート</string>
+    <string name="settings_import_clear">削除してインポート</string>
+    <string name="settings_import_unsupported">非対応のファイルです。CSVファイルを選択してください。</string>
+    <string name="settings_import_failed">CSVファイルの読み込みに失敗しました</string>
+    <string name="settings_import_result">データをインポートしました。\nインポートに成功した駅数: %1$d\nインポートに失敗した駅数: %2$d</string>
+    <string name="settings_import_failed_stations">以下の駅のインポートに失敗しました:\n%1$s</string>
+    <string name="settings_section_app">アプリ</string>
+    <string name="settings_app_version">アプリバージョン</string>
+    <string name="settings_station_data_version">駅データバージョン</string>
+    <string name="app_update">アプリ更新</string>
+    <string name="update_check">更新を確認</string>
+    <string name="app_update_banner">%1$s が利用可能です</string>
+    <string name="app_update_confirm">新しいバージョン (%1$s) が利用可能です。更新しますか？</string>
+    <string name="app_update_installing">インストールしています…</string>
+    <string name="app_update_completed">アプリを更新しました</string>
+    <string name="app_update_failed">アプリの更新に失敗しました</string>
+    <string name="notification_channel_app_update">アプリ更新通知</string>
+    <string name="notification_app_updated">タップでアプリを開く</string>
+    <string name="app_update_latest">最新のアプリです</string>
+    <string name="app_update_check_failed">アプリの更新の確認に失敗しました</string>
+    <string name="station_data_update">駅データ更新</string>
+    <string name="station_data_update_banner">駅データ %1$s が利用可能です</string>
+    <string name="station_data_update_confirm">新しい駅データ (%1$s) が利用可能です。更新しますか？</string>
+    <string name="update_downloading">ダウンロードしています…</string>
+    <string name="station_data_update_completed">駅データを更新しました</string>
+    <string name="station_data_latest">最新の駅データです</string>
+    <string name="station_data_update_check_failed">駅データの更新の確認に失敗しました</string>
+    <string name="update">更新</string>
+    <string name="settings_license">オープンソースライセンス</string>
+    <string name="settings_debug_mode">デバッグモード</string>
+    <string name="settings_debug_mode_locked">デバッグビルドのため切り替えることができません。</string>
+    <string name="settings_section_dev_utilities">Dev Utilities</string>
+    <string name="settings_log_viewer">Log Viewer</string>
+    <string name="settings_delete_station_data">Delete Station Data</string>
+    <string name="settings_delete_station_data_message">駅データを削除しますか？\n削除後はホーム画面から再度ダウンロードできます。</string>
+    <string name="settings_delete_database">Delete Database</string>
+    <string name="settings_delete_database_message">本当にデータベースを削除しますか？\nこの操作は取り消せません。</string>
+    <string name="settings_section_state">State</string>
+    <string name="settings_commit_hash">AppCommitHash</string>
+    <string name="settings_build_number">AppBuildNumber</string>
+    <string name="settings_tree_root">RootTreeNodeID</string>
+    <string name="settings_section_assistant">アシスタント (デバッグ用)</string>
+    <string name="settings_debug_package_name">デバッグ対象パッケージ名</string>
+    <string name="settings_package_name">パッケージ名</string>
+    <string name="settings_enable_assistant_flow">Enable AssistantFlow</string>
+    <string name="settings_assistant_flow_editor">Assistant Flow Editor</string>
+    <string-array name="prefectures">
+        <item>北海道</item>
+        <item>青森県</item>
+        <item>岩手県</item>
+        <item>宮城県</item>
+        <item>秋田県</item>
+        <item>山形県</item>
+        <item>福島県</item>
+        <item>茨城県</item>
+        <item>栃木県</item>
+        <item>群馬県</item>
+        <item>埼玉県</item>
+        <item>千葉県</item>
+        <item>東京都</item>
+        <item>神奈川県</item>
+        <item>新潟県</item>
+        <item>富山県</item>
+        <item>石川県</item>
+        <item>福井県</item>
+        <item>山梨県</item>
+        <item>長野県</item>
+        <item>岐阜県</item>
+        <item>静岡県</item>
+        <item>愛知県</item>
+        <item>三重県</item>
+        <item>滋賀県</item>
+        <item>京都府</item>
+        <item>大阪府</item>
+        <item>兵庫県</item>
+        <item>奈良県</item>
+        <item>和歌山県</item>
+        <item>鳥取県</item>
+        <item>島根県</item>
+        <item>岡山県</item>
+        <item>広島県</item>
+        <item>山口県</item>
+        <item>徳島県</item>
+        <item>香川県</item>
+        <item>愛媛県</item>
+        <item>高知県</item>
+        <item>福岡県</item>
+        <item>佐賀県</item>
+        <item>長崎県</item>
+        <item>熊本県</item>
+        <item>大分県</item>
+        <item>宮崎県</item>
+        <item>鹿児島県</item>
+        <item>沖縄県</item>
+    </string-array>
+</resources>

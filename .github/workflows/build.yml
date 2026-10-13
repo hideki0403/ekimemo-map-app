@@ -7,8 +7,10 @@ on:
   push:
     branches: [ master ]
     paths:
-      - 'lib/**'
-      - 'pubspec.yaml'
+      - 'app/**'
+      - 'gradle/**'
+      - '*.gradle.kts'
+      - 'gradle.properties'
   workflow_dispatch:
 
 jobs:
@@ -24,23 +26,17 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-
-      - name: Setup yq
-        uses: vegardit/gha-setup-yq@v1
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Get release version
         id: app_version
         env:
           TZ: 'Asia/Tokyo'
         run: | # shell
-          CURRENT_VERSION=$(yq '.version' pubspec.yaml)
+          CURRENT_VERSION=$(sed -n 's/^version=//p' gradle.properties)
           HEAD=$(date +'%Y.%-m.')
           if [[ "$CURRENT_VERSION" == "$HEAD"* ]]; then
             PATCH=$(echo "$CURRENT_VERSION" | awk -F. '{print $NF}' | awk '{print $1 + 1}')
@@ -48,33 +44,28 @@ jobs:
             PATCH=0
           fi
           echo "release=$HEAD$PATCH" >> $GITHUB_OUTPUT
-          echo "build-number=$(git rev-list HEAD --count)" >> $GITHUB_OUTPUT
 
-      - name: Rewrite pubspec.yaml
+      - name: Rewrite gradle.properties
         run: | # shell
-          sed -i 's/version:.*/version: ${{ steps.app_version.outputs.release }}/' pubspec.yaml
-
-      - name: Get dependencies
-        run: flutter pub get
+          sed -i 's/^version=.*/version=${{ steps.app_version.outputs.release }}/' gradle.properties
 
       - name: Build
         run: |
-          echo '${{ secrets.KEYSTORE_BASE64 }}' | base64 -d > android/release.keystore
+          echo '${{ secrets.KEYSTORE_BASE64 }}' | base64 -d > release.keystore
           export STORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}'
           export KEY_ALIAS='${{ secrets.KEY_ALIAS }}'
           export KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}'
-          flutter build apk --release --build-number=${{ steps.app_version.outputs.build-number }}
+          ./gradlew assembleRelease
 
       - name: Prepare deploy
         run: |
-          mkdir dist
-          cp ./build/app/outputs/flutter-apk/app-release.apk ./
+          cp ./app/build/outputs/apk/release/app-release.apk ./
 
-      - name: Push pubspec.yaml changes
+      - name: Push gradle.properties changes
         run: | # shell
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add pubspec.yaml
+          git add gradle.properties
           git commit -m "release: ${{ steps.app_version.outputs.release }}"
           git push
 
