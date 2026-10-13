@@ -249,7 +249,7 @@ fun HomeScreen(
                     Text(stringResource(R.string.station_data_update_failed), color = MaterialTheme.colorScheme.error)
                 }
             }
-            stations.isEmpty() && isRunning -> EmptyMessage(padding, R.string.home_waiting_location)
+            stations.isEmpty() && isRunning -> EmptyMessage(padding, R.string.home_waiting_location) { LoadingIndicator() }
             stations.isEmpty() -> EmptyMessage(padding, R.string.home_search_off, R.string.home_search_off_message)
             else -> LazyColumn(
                 state = listState,
