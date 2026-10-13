@@ -9,6 +9,8 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
+import kotlin.io.encoding.Base64
 
 @Serializable
 sealed interface AssistantFlowItem {
@@ -32,6 +34,13 @@ sealed interface AssistantFlowItem {
     @SerialName("waitRandom")
     data class WaitRandom(@SerialName("content") val maxMillis: Long) : AssistantFlowItem
 }
+
+fun encodeAssistantFlow(flow: List<AssistantFlowItem>): String =
+    Base64.encode(Json.encodeToString(flow).encodeToByteArray())
+
+fun decodeAssistantFlow(code: String): List<AssistantFlowItem>? = runCatching {
+    Json.decodeFromString<List<AssistantFlowItem>>(Base64.decode(code.trim()).decodeToString())
+}.getOrNull()
 
 private abstract class CommaSeparatedSerializer<T>(
     name: String,

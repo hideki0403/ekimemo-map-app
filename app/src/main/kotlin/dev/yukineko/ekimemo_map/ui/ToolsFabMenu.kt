@@ -27,7 +27,11 @@ import dev.yukineko.ekimemo_map.R
 data class ToolAction(@StringRes val text: Int, val icon: ImageVector, val onClick: () -> Unit)
 
 @Composable
-fun ToolsFabMenu(actions: List<ToolAction>) {
+fun ToolsFabMenu(
+    actions: List<ToolAction>,
+    icon: ImageVector = Icons.Rounded.Menu,
+    @StringRes description: Int = R.string.title_tools,
+) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     BackHandler(expanded) { expanded = false }
 
@@ -36,8 +40,8 @@ fun ToolsFabMenu(actions: List<ToolAction>) {
         button = {
             ToggleFloatingActionButton(checked = expanded, onCheckedChange = { expanded = it }) {
                 Icon(
-                    if (checkedProgress > 0.5f) Icons.Rounded.Close else Icons.Rounded.Menu,
-                    contentDescription = stringResource(R.string.title_tools),
+                    if (checkedProgress > 0.5f) Icons.Rounded.Close else icon,
+                    contentDescription = stringResource(description),
                     modifier = Modifier.animateIcon({ checkedProgress }),
                 )
             }

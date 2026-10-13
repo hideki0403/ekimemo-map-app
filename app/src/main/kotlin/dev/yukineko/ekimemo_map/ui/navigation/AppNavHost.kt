@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import dev.yukineko.ekimemo_map.R
 import dev.yukineko.ekimemo_map.ui.DevScreen
+import dev.yukineko.ekimemo_map.ui.assistant.AssistantFlowScreen
 import dev.yukineko.ekimemo_map.ui.PlaceholderScreen
 import dev.yukineko.ekimemo_map.ui.history.HistoryScreen
 import dev.yukineko.ekimemo_map.ui.home.HomeScreen
@@ -52,7 +53,7 @@ fun AppNavHost() {
         composable<HomeRoute> { HomeScreen(onNavigate = navigate) }
         composable<DevRoute> { DevScreen(onNavigate = navigate, onBack = back) }
         composable<SettingsRoute> { SettingsScreen(onNavigate = navigate, onBack = back) }
-        composable<AssistantFlowRoute> { PlaceholderScreen(R.string.title_assistant_flow, back) }
+        composable<AssistantFlowRoute> { AssistantFlowScreen(onNavigate = navigate, onBack = back) }
         composable<AssistantChooseRectRoute> { PlaceholderScreen(R.string.title_assistant_choose_rect, back) }
         composable<LogRoute> { LogScreen(onBack = back) }
         composable<ToolsRoute> { ToolsScreen(onNavigate = navigate, onBack = back) }

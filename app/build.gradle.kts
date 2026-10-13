@@ -101,6 +101,7 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.maplibre.android)
     implementation(libs.calendar.compose)
+    implementation(libs.reorderable)
     implementation(libs.aboutlibraries.compose.m3)
     ksp(libs.androidx.room.compiler)
     coreLibraryDesugaring(libs.desugar.jdk.libs)

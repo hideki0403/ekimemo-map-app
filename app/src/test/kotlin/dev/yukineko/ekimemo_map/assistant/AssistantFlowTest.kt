@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Rect
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -30,6 +31,23 @@ class AssistantFlowTest {
     @Test
     fun roundTrip() {
         assertEquals(flow, Json.decodeFromString<List<AssistantFlowItem>>(Json.encodeToString(flow)))
+    }
+
+    @Test
+    fun decodesFlutterExportCode() {
+        val code = "W3sidHlwZSI6InRhcCIsImNvbnRlbnQiOiI1NDAuMCwxMjAwLjUifSx7InR5cGUiOiJ3YWl0IiwiY29udGVudCI6NTAwfV0="
+        assertEquals(flow.take(1) + flow[2], decodeAssistantFlow(code))
+    }
+
+    @Test
+    fun exportCodeRoundTrip() {
+        assertEquals(flow, decodeAssistantFlow(encodeAssistantFlow(flow)))
+    }
+
+    @Test
+    fun invalidExportCodeIsRejected() {
+        assertNull(decodeAssistantFlow("invalid"))
+        assertNull(decodeAssistantFlow(""))
     }
 
     @Test
