@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.AppBarWithSearch
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -18,7 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSearchBarState
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,6 +30,7 @@ import dev.yukineko.ekimemo_map.ui.BackButton
 import dev.yukineko.ekimemo_map.ui.LineCard
 import dev.yukineko.ekimemo_map.ui.SectionTitle
 import dev.yukineko.ekimemo_map.ui.SimpleStationCard
+import dev.yukineko.ekimemo_map.ui.appBarColors
 import dev.yukineko.ekimemo_map.ui.navigation.LineDetailRoute
 import dev.yukineko.ekimemo_map.ui.navigation.StationDetailRoute
 
@@ -39,19 +39,22 @@ import dev.yukineko.ekimemo_map.ui.navigation.StationDetailRoute
 fun SearchScreen(onNavigate: (Any) -> Unit, onBack: () -> Unit, viewModel: SearchViewModel = viewModel(factory = SearchViewModel.Factory)) {
     val result by viewModel.result.collectAsState()
 
-    val searchBarState = rememberSearchBarState()
-
     Scaffold(
         topBar = {
-            AppBarWithSearch(
-                state = searchBarState,
+            TopAppBar(
                 navigationIcon = { BackButton(onBack) },
-                colors = SearchBarDefaults.appBarWithSearchColors(appBarContainerColor = MaterialTheme.colorScheme.surfaceContainer),
-                inputField = {
+                colors = appBarColors(),
+                title = {
                     SearchBarDefaults.InputField(
-                        textFieldState = viewModel.query,
-                        searchBarState = searchBarState,
+                        state = viewModel.query,
                         onSearch = {},
+                        expanded = false,
+                        onExpandedChange = {},
+                        textStyle = MaterialTheme.typography.bodyLarge,
+                        colors = SearchBarDefaults.colors().containerColor.let {
+                            SearchBarDefaults.inputFieldColors(focusedContainerColor = it, unfocusedContainerColor = it)
+                        },
+                        modifier = Modifier.padding(end = 16.dp),
                         placeholder = { Text(stringResource(R.string.search_hint)) },
                         leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
                         trailingIcon = {
