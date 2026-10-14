@@ -40,14 +40,18 @@ fun AppNavHost() {
     val slide = motion.defaultSpatialSpec<IntOffset>()
     val fade = motion.defaultEffectsSpec<Float>()
     val offset = { width: Int -> width / 10 }
+    val popEnter = slideInHorizontally(slide) { -offset(it) } + fadeIn(fade)
+    val popExit = slideOutHorizontally(slide) { offset(it) } + fadeOut(fade)
 
     NavHost(
         navController = navController,
         startDestination = HomeRoute,
         enterTransition = { slideInHorizontally(slide) { offset(it) } + fadeIn(fade) },
         exitTransition = { slideOutHorizontally(slide) { -offset(it) } + fadeOut(fade) },
-        popEnterTransition = { slideInHorizontally(slide) { -offset(it) } + fadeIn(fade) },
-        popExitTransition = { slideOutHorizontally(slide) { offset(it) } + fadeOut(fade) },
+        popEnterTransition = { popEnter },
+        popExitTransition = { popExit },
+        predictivePopEnterTransition = { popEnter },
+        predictivePopExitTransition = { popExit },
     ) {
         composable<HomeRoute> { HomeScreen(onNavigate = navigate) }
         composable<DevRoute> { DevScreen(onNavigate = navigate, onBack = back) }
