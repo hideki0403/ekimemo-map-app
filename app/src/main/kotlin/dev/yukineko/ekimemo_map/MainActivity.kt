@@ -1,5 +1,6 @@
 package dev.yukineko.ekimemo_map
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -16,6 +17,11 @@ import dev.yukineko.ekimemo_map.ui.theme.isDark
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (CrashActivity.hasReport(this)) {
+            startActivity(Intent(this, CrashActivity::class.java))
+            finish()
+            return
+        }
         val settingsFlow = (application as EkimemoMapApplication).settings.data
         setContent {
             val settings = settingsFlow.collectAsState(initial = null).value ?: return@setContent

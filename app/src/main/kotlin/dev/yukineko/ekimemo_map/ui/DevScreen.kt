@@ -40,5 +40,6 @@ fun DevScreen(onNavigate: (Any) -> Unit, onBack: () -> Unit) {
         ).forEach { route ->
             TextButton(onClick = { onNavigate(route) }, shapes = ButtonDefaults.shapes()) { Text(route.toString()) }
         }
+        TextButton(onClick = { throw RuntimeException("Test crash") }, shapes = ButtonDefaults.shapes()) { Text("Crash") }
     }
 }

@@ -65,6 +65,7 @@ class EkimemoMapApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        CrashActivity.install(this)
         runCatching { AppDataBackup.applyPendingRestore(this) }
             .onSuccess { if (it) logger.info("Restored user database") }
             .onFailure { logger.error("Failed to restore user database", it) }

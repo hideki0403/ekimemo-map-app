@@ -200,6 +200,10 @@
     <string name="log_filter">フィルター</string>
     <string name="log_filter_level">Level</string>
     <string name="log_filter_tag">Tag</string>
+    <string name="crash_title">クラッシュしました</string>
+    <string name="crash_message">予期しないエラーが発生したためアプリを終了しました。アプリの再起動を行うか、以下のエラーログを報告してください。</string>
+    <string name="crash_copy">エラーログをコピー</string>
+    <string name="crash_restart">アプリを再起動</string>
     <string name="settings_none">なし</string>
     <string name="settings_unit_station">駅</string>
     <string name="settings_unit_second">秒</string>
