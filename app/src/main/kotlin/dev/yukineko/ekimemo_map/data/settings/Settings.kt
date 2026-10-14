@@ -16,6 +16,7 @@ data class Settings(
     val enableReminder: Boolean = false,
     val enableNotification: Boolean = true,
     val enableNotificationDuringCooldown: Boolean = false,
+    val enableLiveNotification: Boolean = true,
     val maxResults: Int = 12,
     val updateFrequency: Double = 3.0,
     val maxAcceptableAccuracy: Int = 0,

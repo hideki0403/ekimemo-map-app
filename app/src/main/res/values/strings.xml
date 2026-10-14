@@ -215,6 +215,8 @@
     <string name="settings_section_notification">通知設定</string>
     <string name="settings_enable_notification">通知を有効にする</string>
     <string name="settings_enable_notification_summary">最寄り駅が変更された場合などに通知を送信します。</string>
+    <string name="settings_live_notification">ライブ通知を有効にする</string>
+    <string name="settings_live_notification_summary">通知に最寄り駅と再通知までの残り時間を表示します。</string>
     <string name="settings_enable_reminder">リマインダーを有効にする</string>
     <string name="settings_enable_reminder_summary">同じ駅に一定時間居た場合に、再度通知を送信します。</string>
     <string name="settings_cooldown">リマインドを行う間隔</string>

@@ -129,7 +129,12 @@ class LocationService : Service() {
 
         val reminderAt = MutableStateFlow<Long?>(null)
         scope.launch {
-            combine(_searchResult.map { it?.stations?.firstOrNull() }.distinctUntilChanged(), reminderAt, ::Pair)
+            combine(
+                _searchResult.map { it?.stations?.firstOrNull() }.distinctUntilChanged(),
+                reminderAt,
+                settings.map { it.enableLiveNotification }.distinctUntilChanged(),
+            ) { nearest, at, live -> if (live) nearest to at else null to null }
+                .distinctUntilChanged()
                 .collectLatest { (nearest, at) ->
                     while (true) {
                         updateNotification(nearest, at)

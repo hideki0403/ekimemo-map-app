@@ -211,6 +211,11 @@ fun SettingsScreen(
                     }
                 },
                 {
+                    SwitchItem(it, stringResource(R.string.settings_live_notification), stringResource(R.string.settings_live_notification_summary), s.enableLiveNotification) { v ->
+                        update { it.copy(enableLiveNotification = v) }
+                    }
+                },
+                {
                     SwitchItem(it, stringResource(R.string.settings_enable_reminder), stringResource(R.string.settings_enable_reminder_summary), s.enableReminder) { v ->
                         update { it.copy(enableReminder = v) }
                     }
