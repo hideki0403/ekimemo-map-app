@@ -105,7 +105,7 @@ import java.time.format.DateTimeFormatter
 private enum class SettingsDialog {
     MAX_RESULTS, UPDATE_FREQUENCY, MAX_ACCURACY, OVERLAY_MAX_RESULTS, OVERLAY_OPACITY, COOLDOWN, SOUND, VOLUME, VIBRATION, MIN_DISTANCE,
     THEME_MODE, SEED_COLOR, FONT, MAP_RENDERING_LIMIT, RESTORE, IMPORT_CSV, DELETE_STATION_DATA, DELETE_DATABASE,
-    DEBUG_PACKAGE_NAME,
+    IMPORT_APP_DATA, DEBUG_PACKAGE_NAME,
 }
 
 private typealias SettingsItem = @Composable (ListItemShapes) -> Unit
@@ -151,6 +151,14 @@ fun SettingsScreen(
     val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
         scope.launch { snackbar.showSnackbar(if (viewModel.restore(uri, importClear)) restoreSucceeded else restoreFailed) }
+    }
+    val exportAppDataLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(APP_DATA_MIME_TYPE)) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch { snackbar.showSnackbar(if (viewModel.exportAppData(uri)) backupSucceeded else backupFailed) }
+    }
+    val importAppDataLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch { if (!viewModel.importAppData(uri)) snackbar.showSnackbar(restoreFailed) }
     }
     var csvImportResult by remember { mutableStateOf<CsvImportResult?>(null) }
     val importUnsupported = stringResource(R.string.settings_import_unsupported)
@@ -395,6 +403,8 @@ fun SettingsScreen(
                     { ClickItem(it, stringResource(R.string.settings_log_viewer), null) { onNavigate(LogRoute) } },
                     { ClickItem(it, stringResource(R.string.settings_delete_station_data), null) { dialog = SettingsDialog.DELETE_STATION_DATA } },
                     { ClickItem(it, stringResource(R.string.settings_delete_database), null) { dialog = SettingsDialog.DELETE_DATABASE } },
+                    { ClickItem(it, stringResource(R.string.settings_export_app_data), null) { exportAppDataLauncher.launch(appDataFileName()) } },
+                    { ClickItem(it, stringResource(R.string.settings_import_app_data), null) { dialog = SettingsDialog.IMPORT_APP_DATA } },
                 ),
             )
             SettingsSection(
@@ -603,6 +613,14 @@ fun SettingsScreen(
                 dismiss()
                 viewModel.deleteDatabase()
             }
+            SettingsDialog.IMPORT_APP_DATA -> ConfirmDialog(
+                stringResource(R.string.settings_import_app_data_message),
+                dismiss,
+                title = stringResource(R.string.settings_import_app_data),
+            ) {
+                dismiss()
+                importAppDataLauncher.launch(arrayOf(APP_DATA_MIME_TYPE))
+            }
             SettingsDialog.DEBUG_PACKAGE_NAME -> InputDialog(
                 title = stringResource(R.string.settings_package_name),
                 icon = Icons.Rounded.Apps,
@@ -622,11 +640,16 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun ConfirmDialog(message: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+private fun ConfirmDialog(
+    message: String,
+    onDismiss: () -> Unit,
+    title: String = stringResource(R.string.delete),
+    onConfirm: () -> Unit,
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(30.dp)) },
-        title = { Text(stringResource(R.string.delete)) },
+        title = { Text(title) },
         text = { Text(message) },
         confirmButton = { TextButton(onClick = onConfirm, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.ok)) } },
         dismissButton = { TextButton(onClick = onDismiss, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.cancel)) } },
@@ -772,7 +795,11 @@ private const val DEBUG_MODE_TAPS = 10
 
 private const val BACKUP_MIME_TYPE = "application/octet-stream"
 
+private const val APP_DATA_MIME_TYPE = "application/zip"
+
 private fun backupFileName() = "ekimemo_map_backup_${LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)}.bin"
+
+private fun appDataFileName() = "ekimemo_map_data_${LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)}.zip"
 
 private val DynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 

@@ -6,6 +6,7 @@ import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStore
 import androidx.room.Room
 import dev.yukineko.ekimemo_map.assistant.AssistantFlowRunner
+import dev.yukineko.ekimemo_map.data.backup.AppDataBackup
 import dev.yukineko.ekimemo_map.data.github.GitHubReleases
 import dev.yukineko.ekimemo_map.data.legacy.LegacyDatabaseImporter
 import dev.yukineko.ekimemo_map.data.legacy.LegacyImportResult
@@ -53,7 +54,7 @@ class EkimemoMapApplication : Application() {
     val assistantSettings get() = assistantSettingsStore
     val assistantFlowRunner by lazy { AssistantFlowRunner(assistantSettings) }
     val userDatabase by lazy {
-        Room.databaseBuilder(this, UserDatabase::class.java, "user.db").build()
+        Room.databaseBuilder(this, UserDatabase::class.java, UserDatabase.NAME).build()
     }
     val notificationPlayer by lazy { NotificationPlayer(this) }
     val intervalTimerRunner by lazy {
@@ -64,6 +65,9 @@ class EkimemoMapApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        runCatching { AppDataBackup.applyPendingRestore(this) }
+            .onSuccess { if (it) logger.info("Restored user database") }
+            .onFailure { logger.error("Failed to restore user database", it) }
         MapLibre.getInstance(this)
         scope.launch {
             runCatching { LegacyPreferencesImporter(this@EkimemoMapApplication, settings).import() }

@@ -11,6 +11,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.yukineko.ekimemo_map.EkimemoMapApplication
 import dev.yukineko.ekimemo_map.assistant.AssistantService
+import dev.yukineko.ekimemo_map.data.backup.AppDataBackup
 import dev.yukineko.ekimemo_map.data.backup.CsvImportResult
 import dev.yukineko.ekimemo_map.data.backup.parseAccessLogCsv
 import dev.yukineko.ekimemo_map.data.backup.readBackup
@@ -44,6 +45,7 @@ class SettingsViewModel(
     private val stationDataRepository: StationDataRepository,
     private val appUpdater: AppUpdater,
     private val userDatabase: UserDatabase,
+    private val appDataBackup: AppDataBackup,
     private val contentResolver: ContentResolver,
 ) : ViewModel() {
     private val logger = Logger("SettingsViewModel")
@@ -113,6 +115,25 @@ class SettingsViewModel(
             .onFailure { logger.error("Failed to restore", it) }
             .isSuccess
 
+    suspend fun exportAppData(uri: Uri): Boolean =
+        runCatching {
+            withContext(Dispatchers.IO) {
+                contentResolver.openOutputStream(uri, "wt")!!.use { appDataBackup.export(it) }
+            }
+        }
+            .onSuccess { logger.info("Export app data success: $uri") }
+            .onFailure { logger.error("Failed to export app data", it) }
+            .isSuccess
+
+    suspend fun importAppData(uri: Uri): Boolean =
+        runCatching {
+            withContext(Dispatchers.IO) {
+                contentResolver.openInputStream(uri)!!.use { appDataBackup.restore(it) }
+            }
+        }
+            .onFailure { logger.error("Failed to import app data", it) }
+            .isSuccess
+
     suspend fun importCsv(uri: Uri, clear: Boolean): CsvImportOutcome {
         val name = withContext(Dispatchers.IO) {
             contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
@@ -156,7 +177,10 @@ class SettingsViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as EkimemoMapApplication
-                SettingsViewModel(app.settings, app.assistantSettings, app.notificationPlayer, app.stationDataRepository, app.appUpdater, app.userDatabase, app.contentResolver)
+                SettingsViewModel(
+                    app.settings, app.assistantSettings, app.notificationPlayer, app.stationDataRepository, app.appUpdater, app.userDatabase,
+                    AppDataBackup(app, app.userDatabase, app.settings, app.assistantSettings), app.contentResolver,
+                )
             }
         }
     }

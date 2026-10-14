@@ -11,7 +11,7 @@ import androidx.room.RoomDatabase
         MoveLog::class,
         IntervalTimer::class,
     ],
-    version = 1,
+    version = UserDatabase.VERSION,
 )
 abstract class UserDatabase : RoomDatabase() {
     abstract fun accessLogDao(): AccessLogDao
@@ -19,4 +19,9 @@ abstract class UserDatabase : RoomDatabase() {
     abstract fun moveLogSessionDao(): MoveLogSessionDao
     abstract fun moveLogDao(): MoveLogDao
     abstract fun intervalTimerDao(): IntervalTimerDao
+
+    companion object {
+        const val NAME = "user.db"
+        const val VERSION = 1
+    }
 }
