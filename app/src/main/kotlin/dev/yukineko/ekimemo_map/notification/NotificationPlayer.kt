@@ -13,12 +13,11 @@ import android.os.Vibrator
 import android.speech.tts.TextToSpeech
 import dev.yukineko.ekimemo_map.data.settings.Settings
 import dev.yukineko.ekimemo_map.log.Logger
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.Locale
-import kotlin.coroutines.resume
 
 class NotificationPlayer(private val context: Context) {
     private val logger = Logger("NotificationPlayer")
@@ -85,17 +84,17 @@ class NotificationPlayer(private val context: Context) {
     }
 
     private suspend fun tts(): TextToSpeech? = ttsMutex.withLock {
-        tts ?: suspendCancellableCoroutine { cont ->
-            lateinit var engine: TextToSpeech
-            engine = TextToSpeech(context) { status ->
-                if (status == TextToSpeech.SUCCESS) {
-                    engine.language = Locale.JAPAN
-                    cont.resume(engine)
-                } else {
-                    logger.error("Failed to initialize TTS: $status")
-                    engine.shutdown()
-                    cont.resume(null)
-                }
+        tts ?: run {
+            val initStatus = CompletableDeferred<Int>()
+            val engine = TextToSpeech(context) { initStatus.complete(it) }
+            val status = initStatus.await()
+            if (status == TextToSpeech.SUCCESS) {
+                engine.language = Locale.JAPAN
+                engine
+            } else {
+                logger.error("Failed to initialize TTS: $status")
+                engine.shutdown()
+                null
             }
         }.also { tts = it }
     }
