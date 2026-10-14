@@ -37,7 +37,7 @@ private val searchPermissions = buildList {
 private fun Context.isGranted(permission: String) =
     ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
 
-private fun Context.permissionIssues() = buildList {
+fun Context.permissionIssues() = buildList {
     if (!NotificationManagerCompat.from(this@permissionIssues).areNotificationsEnabled()) {
         add(PermissionIssue.NotificationDenied)
     }

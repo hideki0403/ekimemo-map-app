@@ -76,6 +76,7 @@
     <string name="location_permission_denied">位置情報を取得する権限がないため、駅の探索を行うことが出来ません。</string>
     <string name="notification_channel_search">最寄り駅探索サービス</string>
     <string name="notification_search_text">最寄り駅を探索中</string>
+    <string name="tile_search">最寄り駅探索</string>
     <string name="notification_search_distance">距離 %1$s</string>
     <string name="notification_search_distance_reminder">距離 %1$s・再通知まで %2$d:%3$02d</string>
     <string name="notification_metric_distance">距離</string>
