@@ -22,6 +22,7 @@ import dev.yukineko.ekimemo_map.data.station.formatDistance
 import dev.yukineko.ekimemo_map.log.Logger
 import dev.yukineko.ekimemo_map.notification.StationNotifier
 import dev.yukineko.ekimemo_map.notification.openAppIntent
+import dev.yukineko.ekimemo_map.overlay.StationOverlay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -52,6 +53,7 @@ private val StationAttr.notificationIcon
 class LocationService : Service() {
     private val logger = Logger("LocationService")
     private val scope = MainScope()
+    private var overlay: StationOverlay? = null
 
     override fun onBind(intent: Intent?) = null
 
@@ -74,6 +76,17 @@ class LocationService : Service() {
         scope.launch {
             settings.map { (it.updateFrequency * 1000).toLong() }.distinctUntilChanged().collectLatest { interval ->
                 locationUpdates(interval).collect { _location.value = it }
+            }
+        }
+
+        val overlay = StationOverlay(this, app.settings, app.userDatabase.accessLogDao(), scope)
+        this.overlay = overlay
+        scope.launch {
+            settings.distinctUntilChangedBy { it.enableOverlay to it.overlayCompact }.collect { current ->
+                overlay.hide()
+                if (!current.enableOverlay) return@collect
+                runCatching { overlay.show(current) }
+                    .onFailure { logger.error("Failed to show overlay", it) }
             }
         }
 
@@ -153,6 +166,7 @@ class LocationService : Service() {
 
     override fun onDestroy() {
         scope.cancel()
+        overlay?.hide()
         _isRunning.value = false
         _location.value = null
         _searchResult.value = null

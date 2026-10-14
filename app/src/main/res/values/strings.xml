@@ -232,6 +232,15 @@
     <string name="settings_tts">駅名読み上げ</string>
     <string name="settings_tts_summary">通知時に駅名の読み上げを行います。</string>
     <string name="settings_tts_unavailable">言語パックがインストールされていないため、読み上げは利用できません。</string>
+    <string name="settings_section_overlay">オーバーレイ</string>
+    <string name="settings_overlay">オーバーレイ表示</string>
+    <string name="settings_overlay_summary">探索が有効の時に駅リストをオーバーレイ表示します。</string>
+    <string name="settings_overlay_max_results">オーバーレイに表示する駅数</string>
+    <string name="settings_overlay_max_results_caption">オーバーレイに表示する最大駅数を指定できます。1以上で指定してください。\n「探索する駅数」で設定された数値を超えて表示することはできません。</string>
+    <string name="settings_overlay_compact">コンパクトモード</string>
+    <string name="settings_overlay_compact_summary">オーバーレイのウィンドウをコンパクトにします。</string>
+    <string name="settings_overlay_opacity">背景の不透明度</string>
+    <string name="settings_overlay_opacity_caption">0〜100%で指定してください。</string>
     <string name="settings_section_move_log">移動ログ</string>
     <string name="settings_move_log">移動ログの記録</string>
     <string name="settings_move_log_summary">探索をONにしているときに移動ログを記録します。\n記録された移動ログはツール→移動ログから確認できます。</string>
@@ -249,7 +258,7 @@
     <string name="settings_seed_color_disabled">Material Youが有効の場合は設定できません。</string>
     <string name="settings_font">フォント</string>
     <string name="settings_number_in_attr_icon">属性アイコンと番号を統合</string>
-    <string name="settings_number_in_attr_icon_summary">ホーム画面の駅リストに表示される、属性表示内のアイコンを番号に置き換えます。</string>
+    <string name="settings_number_in_attr_icon_summary">ホーム画面などの駅リストに表示される、属性表示内のアイコンを番号に置き換えます。</string>
     <string name="font_noto_sans_jp">Noto Sans JP</string>
     <string name="font_m_plus_1p">M PLUS 1p</string>
     <string name="font_m_plus_rounded_1c">M PLUS Rounded 1c</string>

@@ -1,6 +1,8 @@
 package dev.yukineko.ekimemo_map.ui.settings
 
+import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -28,7 +30,9 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.FontDownload
+import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.Map
+import androidx.compose.material.icons.rounded.Opacity
 import androidx.compose.material.icons.rounded.Place
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Restore
@@ -67,9 +71,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.yukineko.ekimemo_map.BuildConfig
 import dev.yukineko.ekimemo_map.R
@@ -97,7 +103,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private enum class SettingsDialog {
-    MAX_RESULTS, UPDATE_FREQUENCY, MAX_ACCURACY, COOLDOWN, SOUND, VOLUME, VIBRATION, MIN_DISTANCE,
+    MAX_RESULTS, UPDATE_FREQUENCY, MAX_ACCURACY, OVERLAY_MAX_RESULTS, OVERLAY_OPACITY, COOLDOWN, SOUND, VOLUME, VIBRATION, MIN_DISTANCE,
     THEME_MODE, SEED_COLOR, FONT, MAP_RENDERING_LIMIT, RESTORE, IMPORT_CSV, DELETE_STATION_DATA, DELETE_DATABASE,
     DEBUG_PACKAGE_NAME,
 }
@@ -125,6 +131,11 @@ fun SettingsScreen(
     val meter = stringResource(R.string.settings_unit_meter)
     val percent = stringResource(R.string.settings_unit_percent)
     val none = stringResource(R.string.settings_none)
+
+    val context = LocalContext.current
+    val overlayPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (Settings.canDrawOverlays(context)) update { it.copy(enableOverlay = true) }
+    }
 
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
@@ -231,6 +242,35 @@ fun SettingsScreen(
                     val summary = stringResource(if (ttsAvailable == false) R.string.settings_tts_unavailable else R.string.settings_tts_summary)
                     SwitchItem(it, stringResource(R.string.settings_tts), summary, s.enableTts, enabled = ttsAvailable == true) { v ->
                         update { it.copy(enableTts = v) }
+                    }
+                },
+            ),
+        )
+        SettingsSection(
+            stringResource(R.string.settings_section_overlay),
+            listOf(
+                {
+                    SwitchItem(it, stringResource(R.string.settings_overlay), stringResource(R.string.settings_overlay_summary), s.enableOverlay) { v ->
+                        if (v && !Settings.canDrawOverlays(context)) {
+                            overlayPermissionLauncher.launch(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:${context.packageName}".toUri()))
+                        } else {
+                            update { it.copy(enableOverlay = v) }
+                        }
+                    }
+                },
+                {
+                    SwitchItem(it, stringResource(R.string.settings_overlay_compact), stringResource(R.string.settings_overlay_compact_summary), s.overlayCompact) { v ->
+                        update { it.copy(overlayCompact = v) }
+                    }
+                },
+                {
+                    ClickItem(it, stringResource(R.string.settings_overlay_max_results), "${s.overlayMaxResults}$station") {
+                        dialog = SettingsDialog.OVERLAY_MAX_RESULTS
+                    }
+                },
+                {
+                    ClickItem(it, stringResource(R.string.settings_overlay_opacity), "${s.overlayOpacity}$percent") {
+                        dialog = SettingsDialog.OVERLAY_OPACITY
                     }
                 },
             ),
@@ -412,6 +452,24 @@ fun SettingsScreen(
                 parse = { it.toIntOrNull()?.takeIf { v -> v >= 0 } },
                 onDismiss = dismiss,
             ) { v -> update { it.copy(maxAcceptableAccuracy = v) } }
+            SettingsDialog.OVERLAY_MAX_RESULTS -> NumberDialog(
+                title = stringResource(R.string.settings_overlay_max_results),
+                icon = Icons.Rounded.Layers,
+                caption = stringResource(R.string.settings_overlay_max_results_caption),
+                initial = s.overlayMaxResults,
+                suffix = station,
+                parse = { it.toIntOrNull()?.takeIf { v -> v >= 1 } },
+                onDismiss = dismiss,
+            ) { v -> update { it.copy(overlayMaxResults = v) } }
+            SettingsDialog.OVERLAY_OPACITY -> NumberDialog(
+                title = stringResource(R.string.settings_overlay_opacity),
+                icon = Icons.Rounded.Opacity,
+                caption = stringResource(R.string.settings_overlay_opacity_caption),
+                initial = s.overlayOpacity,
+                suffix = percent,
+                parse = { it.toIntOrNull()?.takeIf { v -> v in 0..100 } },
+                onDismiss = dismiss,
+            ) { v -> update { it.copy(overlayOpacity = v) } }
             SettingsDialog.COOLDOWN -> NumberDialog(
                 title = stringResource(R.string.settings_cooldown),
                 icon = Icons.Rounded.Alarm,
